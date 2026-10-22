@@ -52,6 +52,9 @@ GPT, Claude 등 이 저장소에서 작업하는 모든 AI와 팀원이 따르�
 ### 4.2 Entity (JPA)
 - `data class` 금지. 일반 `class`를 사용한다.
 - 필드는 외부 setter 없이 `var ... private set` / `protected set`으로 기존 접근 수준을 재현한다.
+  - 단, 아래 `allOpen` 설정 때문에 엔티티 프로퍼티는 기본적으로 `open` 상태다. Kotlin은 `open` 프로퍼티에 `private set`을 허용하지 않는다
+    (`Private setters for open properties are prohibited` 컴파일 에러). 그래서 엔티티의 `id`처럼 생성자로 못 받고 나중에 채워지는
+    필드는 `private set` 대신 **`protected set`을 기본으로 쓴다.**
 - 연관관계의 `fetch`, `nullable`, `optional`은 기존과 정확히 일치시킨다.
 - `@NoArgsConstructor(access = PROTECTED)`는 `kotlin-jpa` 플러그인으로 대체한다. (플러그인 도입은 §2 공유 대상)
 - **`allOpen` 설정 (팀 공유 사항)**: Kotlin 클래스는 기본이 `final`이라 Hibernate의 지연 로딩 프록시(상속 기반)가 동작하지 않는다.
