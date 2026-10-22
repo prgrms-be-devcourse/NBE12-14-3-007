@@ -74,7 +74,7 @@ public class FestivalService {
 		saveRawSource(allRows);
 
 		// seq 존재 여부로 신규 행사를 정확히 판별한다 (건수 비교보다 API 응답 순서에 안전하다).
-		List<String> seqs = allRows.stream().map(CultureInfoPeriodRow::seq).toList(); // 14,592건에서 seq 값들만 뽑아서 리스트로 만듦
+		List<String> seqs = allRows.stream().map(CultureInfoPeriodRow::getSeq).toList(); // 14,592건에서 seq 값들만 뽑아서 리스트로 만듦
 		List<String> existingSeqs = festivalRepository.findExistingExternalIds(ProviderType.PUBLIC, seqs); //seq들 중 이미 DB에 저장된 것만 조회
 		List<String> newSeqs = seqs.stream() //seqs에서 existingSeqs에 없는 것만 걸러냄 → 신규 행사
 			.filter(seq -> !existingSeqs.contains(seq))
