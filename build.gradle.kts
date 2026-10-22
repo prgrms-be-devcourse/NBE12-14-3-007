@@ -1,5 +1,8 @@
 plugins {
 	java
+	kotlin("jvm") version "2.3.21"
+	kotlin("plugin.spring") version "2.3.21"
+	kotlin("plugin.jpa") version "2.3.21"
 	id("org.springframework.boot") version "4.1.1"
 	id("io.spring.dependency-management") version "1.1.7"
 }
@@ -13,11 +16,30 @@ java {
 	}
 }
 
+kotlin {
+	jvmToolchain(25)
+	compilerOptions {
+		// Spring의 null 어노테이션을 Kotlin 타입에 반영하고, 파라미터 이름을 남긴다.
+		freeCompilerArgs.addAll("-Xjsr305=strict", "-java-parameters")
+	}
+}
+
+// Kotlin 클래스는 기본이 final이라 Hibernate 지연 로딩 프록시가 동작하지 않는다.
+// 엔티티 관련 클래스를 자동으로 open 처리한다. (AGENTS.md §4.2 참고)
+allOpen {
+	annotation("jakarta.persistence.Entity")
+	annotation("jakarta.persistence.MappedSuperclass")
+	annotation("jakarta.persistence.Embeddable")
+}
+
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("tools.jackson.module:jackson-module-kotlin")
+
 	// Cloudflare R2는 S3 호환이라 AWS S3 SDK를 엔드포인트만 바꿔서 사용한다.
 	implementation(platform("software.amazon.awssdk:bom:2.35.0"))
 	implementation("software.amazon.awssdk:s3")
