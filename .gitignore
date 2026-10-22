@@ -46,3 +46,6 @@ out/
 ### macOS / Claude Code ###
 .DS_Store
 .claude/
+
+### Kotlin 마이그레이션 개인 메모 ###
+docs/kotlin-migration-pending.md
