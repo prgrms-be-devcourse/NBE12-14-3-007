@@ -34,7 +34,7 @@ import org.springframework.data.domain.PageRequest;
  * 좋아요순 정렬 쿼리와 후기 좋아요 수(post.like_count) 갱신을 실제 PostgreSQL 에서 검증한다.
  * 정렬, 동점 처리, 페이징, UPDATE 쿼리는 DB 가 해야 의미가 있어서 목(mock)으로는 확인할 수 없다.
  *
- * 로컬 DB(.env)에 붙고, 테스트마다 트랜잭션이 롤백돼 데이터가 남지 않는다.
+ * test 프로필의 임시 PostgreSQL(Testcontainers)에 붙고, 테스트마다 트랜잭션이 롤백된다.
  * 로컬 DB에 다른 데이터가 있어도 섞이지 않게, 테스트마다 고유 토큰을 제목에 넣고 그 토큰으로 검색한다.
  */
 @DataJpaTest

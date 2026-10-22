@@ -16,7 +16,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
  * 탈퇴 회원 개인정보 파기 쿼리를 실제 PostgreSQL 에서 검증한다.
  * 되돌릴 수 없는 대량 UPDATE 라서, 비워야 할 행만 비우는지가 핵심이다.
  *
- * 로컬 DB(.env)에 붙고 테스트마다 트랜잭션이 롤백돼 데이터가 남지 않는다.
+ * test 프로필의 임시 PostgreSQL(Testcontainers)에 붙고 테스트마다 트랜잭션이 롤백된다.
  * 로컬 DB의 다른 회원도 같은 조건이면 함께 갱신되므로, 반환 건수로 단정하는 대신
  * 이 테스트가 만든 회원의 상태를 직접 확인한다.
  */

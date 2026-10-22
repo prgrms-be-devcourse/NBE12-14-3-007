@@ -16,6 +16,7 @@ import com.team007.room_escape.domain.member.infra.entity.MemberRole;
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository;
 import com.team007.room_escape.global.exception.BusinessException;
 import com.team007.room_escape.global.response.code.MemberExceptionCode;
+import com.team007.room_escape.support.TestDatabase;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -46,15 +47,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class MemberTrustGradeConcurrencyTest {
 	private static final String SCHEMA = "trust_grade_" + UUID.randomUUID().toString().replace("-", "");
-	private static final String DATABASE_URL = System.getenv().getOrDefault("TRUST_TEST_DATABASE_URL",
-		"jdbc:postgresql://localhost:55432/roomescape_policy_test");
 
 	@DynamicPropertySource
 	static void database(DynamicPropertyRegistry properties) {
-		properties.add("spring.datasource.url", () -> DATABASE_URL
-			+ (DATABASE_URL.contains("?") ? "&" : "?") + "currentSchema=" + SCHEMA + ",public");
-		properties.add("spring.flyway.schemas", () -> SCHEMA);
-		properties.add("spring.jpa.properties.hibernate.default_schema", () -> SCHEMA);
+		TestDatabase.configure(properties, SCHEMA);
 	}
 
 	@Autowired MemberRepository members;

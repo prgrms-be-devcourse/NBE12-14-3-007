@@ -5,6 +5,7 @@ import com.team007.room_escape.domain.deletion.infra.entity.*;
 import com.team007.room_escape.domain.deletion.infra.repository.DeletionHistoryRepository;
 import com.team007.room_escape.domain.member.infra.entity.Member;
 import com.team007.room_escape.domain.member.infra.entity.MemberRole;
+import com.team007.room_escape.support.TestDatabase;
 import jakarta.persistence.EntityManager;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -42,10 +43,7 @@ class DeletionHistoryRepositoryTest {
 	private static final String SCHEMA = "history_" + UUID.randomUUID().toString().replace("-", "");
 	@DynamicPropertySource
 	static void database(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", () ->
-			"jdbc:postgresql://localhost:5432/roomescape_policy_test?currentSchema=" + SCHEMA + ",public");
-		registry.add("spring.flyway.schemas", () -> SCHEMA);
-		registry.add("spring.jpa.properties.hibernate.default_schema", () -> SCHEMA);
+		TestDatabase.configure(registry, SCHEMA);
 	}
 	@Autowired EntityManager entityManager;
 	@Autowired DeletionHistoryRepository histories;

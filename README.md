@@ -7,8 +7,33 @@
 
 - JDK **25**
 - Docker Desktop (PostgreSQL용)
-- IDE: IntelliJ 또는 Cursor  
+- IDE: IntelliJ 또는 Cursor
 Lombok 플러그인을 켜 두세요. 안 켜면 빨간 줄이 많이 납니다.
+
+## 백엔드 테스트 실행 (팀 공통)
+
+Docker Desktop의 실행 준비가 끝나면 IntelliJ에서 테스트를 실행합니다.
+Testcontainers가 임시 PostgreSQL을 자동 생성하고 종료 시 정리합니다.
+개발 서버·개발 DB·테스트 서버를 따로 켜거나 포트를 설정할 필요는 없습니다.
+
+터미널을 사용하는 경우 프로젝트 루트에서:
+
+```bash
+./gradlew test
+```
+
+PowerShell에서는 `./gradlew.bat test`를 사용합니다.
+Gradle 의존성을 갱신한 뒤 실행하세요. 최초 실행은 의존성과 Docker 이미지 다운로드로 더 오래 걸릴 수 있습니다.
+
+- 테스트 DB: PostgreSQL 16 임시 컨테이너, 포트는 자동 배정 (개발 DB와 분리)
+- 테스트는 기본적으로 `test` 프로필을 사용하며 `.env`와 실제 외부 서비스 키를 읽지 않습니다.
+- IDE 실행 설정에 `local`·`prod` 활성 프로필이나 개발 DB 접속값을 별도로 지정하지 마세요.
+- 검색 확장 기능 `pg_trgm`은 JDBC 초기화 스크립트로 `public` 스키마에 설치됩니다.
+- 기존 `TRUST_TEST_DATABASE_URL`과 수동 테스트 컨테이너는 더 이상 사용하지 않습니다.
+- Docker가 꺼져 있으면 DB 테스트는 실패합니다. 자동으로 건너뛰지 않습니다.
+- 결과: `build/reports/tests/test/index.html`
+
+테스트 DB 데이터는 보존하지 않습니다. 실제 개발·운영 데이터에는 접속하지 않습니다.
 
 ## 한 번에 실행
 

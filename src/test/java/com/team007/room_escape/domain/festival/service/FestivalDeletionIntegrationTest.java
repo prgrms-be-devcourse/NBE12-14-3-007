@@ -18,6 +18,7 @@ import com.team007.room_escape.domain.festival.dto.FestivalAccuracyVoteRequest;
 import com.team007.room_escape.domain.like.infra.entity.Like;
 import com.team007.room_escape.domain.like.infra.repository.LikeRepository;
 import com.team007.room_escape.global.response.code.FestivalExceptionCode;
+import com.team007.room_escape.support.TestDatabase;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -47,10 +48,7 @@ class FestivalDeletionIntegrationTest {
 
 	@DynamicPropertySource
 	static void isolatedDatabase(DynamicPropertyRegistry properties) {
-		properties.add("spring.datasource.url", () ->
-			"jdbc:postgresql://localhost:5432/roomescape_policy_test?currentSchema=" + TEST_SCHEMA + ",public");
-		properties.add("spring.flyway.schemas", () -> TEST_SCHEMA);
-		properties.add("spring.jpa.properties.hibernate.default_schema", () -> TEST_SCHEMA);
+		TestDatabase.configure(properties, TEST_SCHEMA);
 	}
 	@TestConfiguration
 	static class StorageConfiguration {

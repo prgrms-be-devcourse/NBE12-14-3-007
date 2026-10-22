@@ -81,6 +81,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webclient-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+	// Docker Desktop만 켜면 테스트가 임시 PostgreSQL을 자동으로 준비한다.
+	testImplementation("org.testcontainers:testcontainers-postgresql")
 	testCompileOnly("org.projectlombok:lombok")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testAnnotationProcessor("org.projectlombok:lombok")

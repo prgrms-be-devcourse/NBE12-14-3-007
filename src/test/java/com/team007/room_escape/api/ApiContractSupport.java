@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 실제 JwtProvider 로 토큰을 발급해 보안 필터와 @PreAuthorize 를 그대로 태운다.
  * 목으로 SecurityContext 를 주입하면 정작 검증하려는 인가 설정을 건너뛰게 된다.
  *
- * 로컬 DB(.env)에 붙고 테스트마다 트랜잭션이 롤백돼 데이터가 남지 않는다.
+ * test 프로필의 임시 PostgreSQL(Testcontainers)에 붙고 테스트마다 트랜잭션이 롤백된다.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

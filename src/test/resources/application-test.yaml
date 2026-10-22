@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16-alpine:///roomescape_policy_test?TC_INITSCRIPT=db/init/001_extensions.sql
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: roomescape
+    password: roomescape
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration_v2
+  mail:
+    host: localhost
+    port: 2525
+    username: test@example.invalid
+    password: test-only
+
+# 공개된 테스트 전용 값이다. 실제 인증키·외부 서비스 계정은 사용하지 않는다.
+jwt:
+  secret: test-only-access-key-at-least-sixty-four-characters-long-for-hmac-signing-2026
+  refresh-secret: test-only-refresh-key-at-least-sixty-four-characters-long-for-hmac-signing-2026
+  refresh-cleanup-cron: "-"
+privacy:
+  purge-cron: "-"
+app:
+  cors:
+    allowed-origins: http://localhost:3001
+  cookie:
+    secure: false
+    same-site: Lax
+r2:
+  account-id: test-only
+  access-key: test-only
+  secret-key: test-only
+  bucket: test-only
+  public-url: https://images.example.invalid
+public-api:
+  culture-info:
+    url: http://localhost:1
+    service-key: test-only
+    sync-cron: "-"
+  weather:
+    url: http://localhost:1
+    service-key: test-only
