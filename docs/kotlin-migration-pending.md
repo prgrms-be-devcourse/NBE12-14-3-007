@@ -38,6 +38,11 @@ AGENTS.md 규칙 때문에 멈춘 항목과 발견만 하고 고치지 않은 �
 `CustomUserDetails`의 `@RequiredArgsConstructor` 생성자를 Kotlin이 인식하지 못한다 (AGENTS.md §4.1).
 `CustomUserDetails`를 먼저 변환한 뒤 같이 진행한다.
 
+## 보류 3. `FestivalExceptionCode` (festival 작업 종료 후 진행)
+
+`global/response/code`에 있지만 festival 도메인이 코드를 추가·수정할 수 있어 충돌을 피하려고 보류한다.
+나머지 10개 ExceptionCode enum은 변환 완료. `FESTIVAL008` 번호는 재사용하지 않는다는 기존 주석을 그대로 옮겨야 한다.
+
 ## 발견했지만 고치지 않은 것
 
 - `ValidPassword` Javadoc은 "8~15자"인데 실제 `@Size`는 `max = 25`다. 주석과 코드가 다르다.
@@ -51,3 +56,4 @@ AGENTS.md 규칙 때문에 멈춘 항목과 발견만 하고 고치지 않은 �
 
 - global 1단계: `ExceptionCode`, `ValidPassword`, `ValidPhone`, `StringUtil`, `RichTextSanitizer`
 - global 2단계: `JwtAccessDeniedHandler`, `JwtAuthenticationEntryPoint`, `OpenApiConfig`
+- global 3단계: `response/code`의 ExceptionCode enum 10개 (`FestivalExceptionCode` 제외)
