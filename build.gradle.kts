@@ -3,6 +3,8 @@ plugins {
 	kotlin("jvm") version "2.3.21"
 	kotlin("plugin.spring") version "2.3.21"
 	kotlin("plugin.jpa") version "2.3.21"
+	// Java 클래스의 Lombok이 만든 getter·생성자·builder를 Kotlin이 인식하게 한다.
+	kotlin("plugin.lombok") version "2.3.21"
 	id("org.springframework.boot") version "4.1.1"
 	id("io.spring.dependency-management") version "1.1.7"
 }
