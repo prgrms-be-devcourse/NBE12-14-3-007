@@ -1,23 +1,18 @@
-package com.team007.room_escape.global.exception;
-
-import lombok.Getter;
+package com.team007.room_escape.global.exception
 
 /**
  * 비즈니스 규칙 위반 시 던지는 예외.
  * ExceptionCode만 넘기면 핸들러가 HTTP 상태/응답 코드/메시지를 맞춰 ApiResponse로 내려준다.
  */
-@Getter
-public class BusinessException extends RuntimeException {
+class BusinessException : RuntimeException {
 
-	private final ExceptionCode exceptionCode;
+    val exceptionCode: ExceptionCode
 
-	public BusinessException(ExceptionCode exceptionCode) {
-		super(exceptionCode.getMessage());
-		this.exceptionCode = exceptionCode;
-	}
+    constructor(exceptionCode: ExceptionCode) : super(exceptionCode.message) {
+        this.exceptionCode = exceptionCode
+    }
 
-	public BusinessException(ExceptionCode exceptionCode, String message) {
-		super(message);
-		this.exceptionCode = exceptionCode;
-	}
+    constructor(exceptionCode: ExceptionCode, message: String?) : super(message) {
+        this.exceptionCode = exceptionCode
+    }
 }
