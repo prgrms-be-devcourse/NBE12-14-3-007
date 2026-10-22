@@ -54,6 +54,9 @@ GPT, Claude 등 이 저장소에서 작업하는 모든 AI와 팀원이 따르�
 - 필드는 외부 setter 없이 `var ... private set` / `protected set`으로 기존 접근 수준을 재현한다.
 - 연관관계의 `fetch`, `nullable`, `optional`은 기존과 정확히 일치시킨다.
 - `@NoArgsConstructor(access = PROTECTED)`는 `kotlin-jpa` 플러그인으로 대체한다. (플러그인 도입은 §2 공유 대상)
+- **`allOpen` 설정 (팀 공유 사항)**: Kotlin 클래스는 기본이 `final`이라 Hibernate의 지연 로딩 프록시(상속 기반)가 동작하지 않는다.
+  그래서 `build.gradle.kts`에 `allOpen`으로 `@Entity`, `@MappedSuperclass`, `@Embeddable`이 붙은 클래스를 자동으로 `open` 처리한다.
+  엔티티에 `open`을 직접 붙이지 않는다. 이 설정을 바꾸거나 빼야 할 것 같으면 직접 고치지 말고 팀과 상의 후 진행한다. (§2 빌드 설정 변경)
 - `@Builder`: **수동 빌더를 `companion object`에 만든다.** 기존 테스트의 `Xxx.builder().field(v).build()` 호출이
   그대로 컴파일·동작해야 한다. 빌더·메서드 이름은 Lombok이 만들던 것과 같아야 한다.
 - `BaseTimeEntity`, `SoftDeletableEntity`의 `delete()` / `restore()` / `isDeleted()` 이름과 동작을 유지한다.
