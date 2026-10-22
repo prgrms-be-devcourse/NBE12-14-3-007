@@ -93,9 +93,9 @@ public class FestivalPublicApiClientV2 {
 	}
 
 	private URI buildPeriodUri(int pageNo, int numOfRows, String from, String to) {
-		return UriComponentsBuilder.fromUriString(properties.url())
+		return UriComponentsBuilder.fromUriString(properties.getUrl())
 			.path("/period2")
-			.queryParam("serviceKey", properties.serviceKey())
+			.queryParam("serviceKey", properties.getServiceKey())
 			.queryParam("PageNo", pageNo)
 			.queryParam("numOfrows", numOfRows)
 			.queryParam("from", from)
@@ -105,9 +105,9 @@ public class FestivalPublicApiClientV2 {
 	}
 
 	private URI buildDetailUri(String seq) {
-		return UriComponentsBuilder.fromUriString(properties.url())
+		return UriComponentsBuilder.fromUriString(properties.getUrl())
 			.path("/detail2")
-			.queryParam("serviceKey", properties.serviceKey())
+			.queryParam("serviceKey", properties.getServiceKey())
 			.queryParam("seq", seq)
 			.build()
 			.toUri();
