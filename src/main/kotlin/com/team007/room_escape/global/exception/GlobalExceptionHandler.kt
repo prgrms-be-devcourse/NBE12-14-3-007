@@ -41,7 +41,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse<Void?>> {
         val message = e.bindingResult.fieldErrors
-            .joinToString(", ") { fe -> fe.field + ": " + fe.defaultMessage }
+            .joinToString(", ") { fe -> "${fe.field}: ${fe.defaultMessage}" }
         val ec = CommonExceptionCode.INVALID_INPUT
         log.warn("[{}] {}", ec.code, message)
         return ResponseEntity.status(ec.status)
@@ -110,7 +110,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(ec.status)
             .body(
                 ApiResponse.error(
-                    "'" + e.name + "' 값이 올바르지 않습니다.", ec.code
+                    "'${e.name}' 값이 올바르지 않습니다.", ec.code
                 )
             )
     }
@@ -123,7 +123,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(ec.status)
             .body(
                 ApiResponse.error(
-                    "'" + e.parameterName + "' 값이 필요합니다.", ec.code
+                    "'${e.parameterName}' 값이 필요합니다.", ec.code
                 )
             )
     }
@@ -136,7 +136,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(ec.status)
             .body(
                 ApiResponse.error(
-                    "'" + e.propertyName + "' 으로는 정렬할 수 없습니다.", ec.code
+                    "'${e.propertyName}' 으로는 정렬할 수 없습니다.", ec.code
                 )
             )
     }

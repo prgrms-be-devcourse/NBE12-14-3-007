@@ -28,18 +28,18 @@ class InquiryService(
     @Transactional
     fun create(memberId: UUID, request: InquiryRequest.Create): InquiryResponse.Detail {
         val member = memberReader.getActiveMember(memberId)
-        targetValidator.validate(request.targetType(), request.targetId())
-        r2StorageService.requireOwnedBy(request.img(), null, memberId)
+        targetValidator.validate(request.targetType, request.targetId)
+        r2StorageService.requireOwnedBy(request.img, null, memberId)
 
         val inquiry = Inquiry.builder()
             .member(member)
-            .category(request.category())
-            .targetType(request.targetType())
-            .targetId(emptyToNull(request.targetId()))
-            .title(request.title())
-            .content(request.content())
+            .category(request.category)
+            .targetType(request.targetType)
+            .targetId(emptyToNull(request.targetId))
+            .title(request.title)
+            .content(request.content)
             // 첨부 없음을 null 하나로 맞춘다.
-            .img(emptyToNull(request.img()))
+            .img(emptyToNull(request.img))
             .status(InquiryStatus.PENDING)
             .build()
 
@@ -51,17 +51,16 @@ class InquiryService(
     /** 내 문의 목록. 최신순. */
     @Transactional(readOnly = true)
     fun findMine(memberId: UUID): List<InquiryResponse.ListItem> {
-        return inquiryRepository.findAllByMember_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId).stream()
-            .map(InquiryResponse.ListItem::from)
-            .toList()
+        return inquiryRepository.findAllByMember_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId)
+            .map { InquiryResponse.ListItem.from(it) }
     }
 
     /** 내 문의 상세. 남의 문의는 존재를 숨기려고 404로 응답한다. */
     @Transactional(readOnly = true)
     fun findMineById(inquiryId: UUID, memberId: UUID): InquiryResponse.Detail {
-        val inquiry = inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId)
-            .filter { found -> found.isWrittenBy(memberId) }
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        val inquiry = inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId).orElse(null)
+            ?.takeIf { it.isWrittenBy(memberId) }
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
         return InquiryResponse.Detail.from(inquiry, imageUrlResolver.resolve(inquiry.img))
     }
@@ -69,9 +68,9 @@ class InquiryService(
     /** 문의 수정. 답변이 달린 뒤에는 수정할 수 없다. */
     @Transactional
     fun update(inquiryId: UUID, memberId: UUID, request: InquiryRequest.Update): InquiryResponse.Detail {
-        val inquiry = inquiryRepository.findForProcessing(inquiryId)
-            .filter { found -> !found.isDeleted() }
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        val inquiry = inquiryRepository.findForProcessing(inquiryId).orElse(null)
+            ?.takeIf { !it.isDeleted() }
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
         // 수정은 관리자도 불가.
         if (!inquiry.isWrittenBy(memberId)) {
@@ -81,10 +80,10 @@ class InquiryService(
             throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_ANSWERED)
         }
 
-        r2StorageService.requireOwnedBy(request.img(), inquiry.img, memberId)
+        r2StorageService.requireOwnedBy(request.img, inquiry.img, memberId)
 
         val previousImg = inquiry.img
-        inquiry.update(request.category(), request.title(), request.content(), request.img())
+        inquiry.update(request.category, request.title, request.content, request.img)
 
         deleteReplacedImage(previousImg, inquiry.img, memberId)
 
@@ -94,9 +93,9 @@ class InquiryService(
     /** 문의 삭제. 작성자 본인과 관리자가 삭제할 수 있다. */
     @Transactional
     fun delete(inquiryId: UUID, memberId: UUID, isAdmin: Boolean) {
-        val inquiry = inquiryRepository.findForProcessing(inquiryId)
-            .filter { found -> !found.isDeleted() }
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        val inquiry = inquiryRepository.findForProcessing(inquiryId).orElse(null)
+            ?.takeIf { !it.isDeleted() }
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
         if (!inquiry.isWrittenBy(memberId) && !isAdmin) {
             throw BusinessException(InquiryExceptionCode.INQUIRY_DELETE_FORBIDDEN)

@@ -25,7 +25,7 @@ class ImageUrlResolver(
         if (value == null || isBlank(value)) {
             return value
         }
-        val prefix = prefix() + "/"
+        val prefix = "${prefix()}/"
         return if (value.startsWith(prefix)) value.substring(prefix.length) else value
     }
 

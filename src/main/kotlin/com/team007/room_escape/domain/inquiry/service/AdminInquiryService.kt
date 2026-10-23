@@ -33,15 +33,14 @@ class AdminInquiryService(
 
         return inquiryRepository.search(
             request.titleOrEmpty(),
-            request.status(),
-            request.category(),
+            request.status,
+            request.category,
             request.includeDeletedOrFalse(),
             pageable
         ).map { inquiry ->
-            val member = inquiry.member
             AdminInquiryResponse.ListItem.from(
                 inquiry,
-                if (member == null) null else imageUrlResolver.resolve(member.profileImg)
+                inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) }
             )
         }
     }
@@ -61,8 +60,8 @@ class AdminInquiryService(
      */
     @Transactional
     fun answer(inquiryId: UUID, request: AdminInquiryRequest.Answer): AdminInquiryResponse.Detail {
-        val inquiry = inquiryRepository.findForProcessing(inquiryId)
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        val inquiry = inquiryRepository.findForProcessing(inquiryId).orElse(null)
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
         if (inquiry.isDeleted()) {
             throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_DELETED)
@@ -74,20 +73,16 @@ class AdminInquiryService(
     }
 
     private fun findOrThrow(inquiryId: UUID): Inquiry {
-        return inquiryRepository.findDetailById(inquiryId)
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        return inquiryRepository.findDetailById(inquiryId).orElse(null)
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
     }
 
     /** 저장된 key를 공개 URL로 바꿔 채운다. 회원이 없으면 프로필 URL도 없다. */
     private fun toDetail(inquiry: Inquiry): AdminInquiryResponse.Detail {
-        val member = inquiry.member
         return AdminInquiryResponse.Detail.from(
             inquiry,
             imageUrlResolver.resolve(inquiry.img),
-            if (member == null)
-                null
-            else
-                imageUrlResolver.resolve(member.profileImg),
+            inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) },
             findCommentPostId(inquiry)
         )
     }
@@ -103,7 +98,7 @@ class AdminInquiryService(
             return null
         }
         try {
-            val commentId = java.lang.Long.valueOf(inquiry.targetId)
+            val commentId = inquiry.targetId?.toLong() ?: return null
             return if (type == InquiryTargetType.COMMENT)
                 commentRepository.findById(commentId)
                     .map { comment -> comment.post.id }
@@ -118,9 +113,7 @@ class AdminInquiryService(
     }
 
     private fun validateSort(sort: Sort) {
-        val hasUnknownField = sort.stream()
-            .map(Sort.Order::getProperty)
-            .anyMatch { property -> !SORTABLE.contains(property) }
+        val hasUnknownField = sort.any { it.property !in SORTABLE }
 
         if (hasUnknownField) {
             throw BusinessException(CommonExceptionCode.INVALID_INPUT)

@@ -19,8 +19,8 @@ class InquiryDeletionProcessor(
 
     @Transactional(propagation = Propagation.MANDATORY)
     fun complete(inquiryId: UUID, deletion: DeletionHistory) {
-        val inquiry = inquiries.findForProcessing(inquiryId)
-            .orElseThrow { BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND) }
+        val inquiry = inquiries.findForProcessing(inquiryId).orElse(null)
+            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
         if (inquiry.isDeleted()) {
             throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_DELETED)
         }
@@ -35,9 +35,9 @@ class InquiryDeletionProcessor(
         ) {
             throw BusinessException(InquiryExceptionCode.INQUIRY_TARGET_MISMATCH)
         }
-        var answer = "신고된 콘텐츠를 삭제했습니다. 사유: " + deletion.reason.description
+        var answer = "신고된 콘텐츠를 삭제했습니다. 사유: ${deletion.reason.description}"
         if (deletion.reasonDetail != null) {
-            answer += " — " + deletion.reasonDetail
+            answer += " — ${deletion.reasonDetail}"
         }
         inquiry.answer(answer)
     }

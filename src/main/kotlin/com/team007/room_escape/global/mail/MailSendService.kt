@@ -50,6 +50,6 @@ class MailSendService(
         if (at <= 1) {
             return "***"
         }
-        return email[0] + "***" + email.substring(at)
+        return "${email[0]}***${email.substring(at)}"
     }
 }

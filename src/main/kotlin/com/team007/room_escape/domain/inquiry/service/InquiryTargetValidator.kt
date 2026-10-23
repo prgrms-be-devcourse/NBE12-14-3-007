@@ -49,7 +49,7 @@ class InquiryTargetValidator(
         // Java에서는 targetId가 null이면 trim()에서 NPE가 났다. 같은 시점에 예외를 낸다.
         requireNotNull(targetId)
         try {
-            return java.lang.Long.valueOf(targetId.trim())
+            return targetId.trim().toLong()
         } catch (e: NumberFormatException) {
             throw targetNotFound()
         }
