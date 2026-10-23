@@ -28,18 +28,18 @@ class InquiryService(
     @Transactional
     fun create(memberId: UUID, request: InquiryRequest.Create): InquiryResponse.Detail {
         val member = memberReader.getActiveMember(memberId)
-        targetValidator.validate(request.targetType(), request.targetId())
-        r2StorageService.requireOwnedBy(request.img(), null, memberId)
+        targetValidator.validate(request.targetType, request.targetId)
+        r2StorageService.requireOwnedBy(request.img, null, memberId)
 
         val inquiry = Inquiry.builder()
             .member(member)
-            .category(request.category())
-            .targetType(request.targetType())
-            .targetId(emptyToNull(request.targetId()))
-            .title(request.title())
-            .content(request.content())
+            .category(request.category)
+            .targetType(request.targetType)
+            .targetId(emptyToNull(request.targetId))
+            .title(request.title)
+            .content(request.content)
             // 첨부 없음을 null 하나로 맞춘다.
-            .img(emptyToNull(request.img()))
+            .img(emptyToNull(request.img))
             .status(InquiryStatus.PENDING)
             .build()
 
@@ -52,7 +52,7 @@ class InquiryService(
     @Transactional(readOnly = true)
     fun findMine(memberId: UUID): List<InquiryResponse.ListItem> {
         return inquiryRepository.findAllByMember_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId)
-            .map(InquiryResponse.ListItem::from)
+            .map { InquiryResponse.ListItem.from(it) }
     }
 
     /** 내 문의 상세. 남의 문의는 존재를 숨기려고 404로 응답한다. */
@@ -80,10 +80,10 @@ class InquiryService(
             throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_ANSWERED)
         }
 
-        r2StorageService.requireOwnedBy(request.img(), inquiry.img, memberId)
+        r2StorageService.requireOwnedBy(request.img, inquiry.img, memberId)
 
         val previousImg = inquiry.img
-        inquiry.update(request.category(), request.title(), request.content(), request.img())
+        inquiry.update(request.category, request.title, request.content, request.img)
 
         deleteReplacedImage(previousImg, inquiry.img, memberId)
 

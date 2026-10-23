@@ -33,8 +33,8 @@ class AdminInquiryService(
 
         return inquiryRepository.search(
             request.titleOrEmpty(),
-            request.status(),
-            request.category(),
+            request.status,
+            request.category,
             request.includeDeletedOrFalse(),
             pageable
         ).map { inquiry ->
