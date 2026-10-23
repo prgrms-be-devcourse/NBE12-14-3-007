@@ -117,7 +117,7 @@ export function FestivalPosts({ festivalId }: { festivalId?: number }) {
         <>
           <div className="post-list">
             {data.content.map((post) => (
-              <ReviewRow post={post} key={post.id} />
+              <ReviewRow post={post} key={post.id} placeholder />
             ))}
           </div>
           <Pagination

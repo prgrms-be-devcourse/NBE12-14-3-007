@@ -13,7 +13,7 @@ export function Layout() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
   return (
-    <>
+    <div className="theme-c">
       <a className="skip-link" href="#main">
         본문으로 바로가기
       </a>
@@ -99,6 +99,6 @@ export function Layout() {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

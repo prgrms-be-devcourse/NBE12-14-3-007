@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ThumbsUp } from "lucide-react";
+import { ArrowRight, ImageOff, ThumbsUp } from "lucide-react";
 import { dateText, dateTimeText } from "../lib/format";
 import type { PostSummary } from "../lib/types";
 import { Badge, Photo } from "./ui";
@@ -7,9 +7,12 @@ import { Badge, Photo } from "./ui";
 export function ReviewRow({
   post,
   management,
+  placeholder = false,
 }: {
   post: PostSummary;
   management?: { deletedAt: string | null; onOpen?: () => void };
+  /** 카드형 목록에서 사진이 없을 때 빈 자리 대신 기본 이미지를 보여준다. */
+  placeholder?: boolean;
 }) {
   const deletedAt = management?.deletedAt;
   const canOpen = !deletedAt && (!management || !!management.onOpen);
@@ -85,6 +88,12 @@ export function ReviewRow({
             {photo}
           </Link>
         ))}
+      {!post.thumbnail && placeholder && (
+        <div className="post-thumbnail post-thumbnail-empty" aria-hidden="true">
+          <ImageOff size={30} />
+          사진 없이 남긴 후기예요
+        </div>
+      )}
       {canOpen &&
         (management ? (
           <button
