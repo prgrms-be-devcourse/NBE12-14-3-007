@@ -39,6 +39,7 @@ GPT, Claude 등 이 저장소에서 작업하는 모든 AI와 팀원이 따르�
 
 허용되는 예외: Java `record` → Kotlin `data class` 변환으로 생기는 접근 형태 변화
 (`dto.email()` → `dto.getEmail()`). 아직 Java인 **호출부**만 고치고, 선언 이름은 바꾸지 않는다.
+호출부가 `src/test`에 있으면 고칠 수 없으므로 §4.3의 `@JvmRecord` 규칙을 따른다.
 
 ## 4. Kotlin 변환 규칙
 
@@ -62,10 +63,24 @@ GPT, Claude 등 이 저장소에서 작업하는 모든 AI와 팀원이 따르�
   엔티티에 `open`을 직접 붙이지 않는다. 이 설정을 바꾸거나 빼야 할 것 같으면 직접 고치지 말고 팀과 상의 후 진행한다. (§2 빌드 설정 변경)
 - `@Builder`: **수동 빌더를 `companion object`에 만든다.** 기존 테스트의 `Xxx.builder().field(v).build()` 호출이
   그대로 컴파일·동작해야 한다. 빌더·메서드 이름은 Lombok이 만들던 것과 같아야 한다.
+- **non-null 필드와 빌더**: DB에서 `nullable = false`인 필드는 Kotlin에서도 non-null 타입으로 선언한다.
+  - 기본: 빌더의 `build()`에서 `requireNotNull(title) { "title은 필수입니다." }`로 필수 처리한다. (예: `Inquiry`)
+  - 예외: 기존 테스트가 그 필드를 빼고 빌더를 호출하면(`Post.builder().id(..).member(..).build()` 등) 필수 처리 시 테스트가 깨진다.
+    이때는 `lateinit var title: String` + `protected set`으로 선언하고, 빌더는 값이 들어온 필드만 설정한다.
+    타입은 non-null로 유지되고, 값을 넣지 않은 필드를 읽는 순간 예외가 난다. 그 테스트의 실행 경로가 해당 필드를 읽지 않는지 확인한다.
+  - Lombok 빌더는 빠진 필드를 null로 두었지만, 운영 코드는 요청 DTO 검증(`@NotBlank` 등)을 거쳐 값을 채우고 DB가 NOT NULL을 보장한다.
+    그래서 엔티티 타입을 nullable로 풀거나 빌더에 기본값(`""` 등)을 넣지 않고 위 두 방식 중 하나로 처리한다.
 - `BaseTimeEntity`, `SoftDeletableEntity`의 `delete()` / `restore()` / `isDeleted()` 이름과 동작을 유지한다.
 
 ### 4.3 DTO
 - `record` → `data class`. 중첩 구조(`AuthRequest.Login` 등)를 그대로 유지한다.
+- **테스트가 record 접근자를 호출하는 경우**: `src/test`에서 `dto.likeCount()`, `Dto::likeCount`처럼 record 접근자를 쓰면
+  `@JvmRecord data class`로 변환한다. 실제 Java record로 컴파일되어 Java에서는 `likeCount()`, Kotlin에서는 `.likeCount`로 그대로 접근한다.
+  - 일반 `data class`로 바꾸면 Java 접근자가 `getLikeCount()`로 바뀌어 테스트 컴파일이 깨진다. 테스트는 수정할 수 없다(§1, §2).
+  - 접근자를 맞추려고 `fun likeCount()` 같은 메서드를 추가하거나 `@get:JvmName`을 쓰지 않는다.
+    `@get:JvmName`은 getter 이름이 `getXxx`가 아니게 되어 Jackson이 JSON 필드를 놓칠 수 있다.
+  - `@JvmRecord` 조건: 모든 프로퍼티가 생성자의 `val`이고, 다른 클래스를 상속하지 않는다.
+  - 변환 후 API 계약 테스트(`*ApiContractTest`)로 JSON 필드가 그대로인지 확인한다.
 - **검증 어노테이션은 항상 `@field:` 사용 대상을 명시한다.**
   (`@field:NotBlank`, `@field:Email`, `@field:Size`, `@field:ValidPassword`, `@field:ValidPhone` 등)
   명시하지 않으면 검증이 에러 없이 사라질 수 있다.
