@@ -114,7 +114,7 @@ export function KoreaMap({
               type="button"
               className={`map-label ${count === 0 ? "zero" : ""} ${highlighted === code ? "on" : ""}`}
               style={{
-                left: `${((p.label[0] - V.x) / V.w) * 100}%`,
+                left: `clamp(64px, ${((p.label[0] - V.x) / V.w) * 100}%, calc(100% - 64px))`,
                 top: `${((p.label[1] - V.y) / V.h) * 100}%`,
               }}
               onClick={() => onSelect(code)}

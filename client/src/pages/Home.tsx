@@ -131,6 +131,21 @@ export function Home() {
     () => (region && date ? api.weather(region, date) : Promise.resolve(null)),
     [api, region, date],
   );
+  const today = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const mapWeather = useLoad(
+    () =>
+      picked
+        ? api.weather(picked, today).then((weather) => ({ region: picked, weather }))
+        : Promise.resolve(null),
+    [api, picked, today],
+  );
+  const selectedWeather =
+    mapWeather.data?.region === picked ? mapWeather.data.weather : null;
   // 시도별 진행 중인 행사 수. 개수 전용 API가 없어 목록 API의 totalElements를 쓴다.
   const counts = useLoad(
     () =>
@@ -206,12 +221,6 @@ export function Home() {
           : [];
       })
     : [];
-  const rank = counts.data
-    ? PROVINCE_ORDER.map((code) => ({ code, n: counts.data![code] || 0 }))
-        .filter((x) => x.n > 0)
-        .sort((a, b) => b.n - a.n)
-        .slice(0, 5)
-    : [];
   const empties = counts.data
     ? PROVINCE_ORDER.filter((code) => !counts.data![code]).map(
         (code) => PROVINCES[code].short,
@@ -227,73 +236,6 @@ export function Home() {
     <div className="home-c">
       <section className="home-hero container" aria-labelledby="home-title">
         <h1 id="home-title">이번 주말, 어디로 떠나볼까요?</h1>
-        <p>
-          지도에서 지역을 누르면 그곳으로 다가가서, 지금 열리는 행사를 위치와
-          함께 보여줘요.
-        </p>
-        <form
-          className="discovery-search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const params = new URLSearchParams();
-            if (region) params.set("region", region);
-            if (date) params.set("date", date);
-            if (query.trim()) params.set("q", query.trim());
-            navigate(`/explore?${params}`);
-          }}
-        >
-          <div className="discovery-search-filters">
-            <label className="filter-chip">
-              <MapPin size={15} />
-              <select
-                aria-label="지역 선택"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-              >
-                <option value="">전국</option>
-                {regionGroups.map((group) => (
-                  <option key={group.value} value={group.value}>
-                    {group.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} />
-            </label>
-            <label className="filter-chip">
-              <CalendarDays size={15} />
-              <input
-                aria-label="행사 날짜"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onClick={(e) => e.currentTarget.showPicker?.()}
-              />
-            </label>
-            {weather.data && weather.data.condition !== "UNKNOWN" && (
-              <WeatherBadge
-                condition={weather.data.condition}
-                precipitationProbability={weather.data.precipitationProbability}
-              />
-            )}
-            {weather.data && weather.data.condition === "UNKNOWN" && (
-              <span className="weather-hint">
-                {date < new Date().toISOString().slice(0, 10)
-                  ? "지난 날짜는 날씨 제공이 불가합니다"
-                  : "오늘 기준 +4일치만 날씨 제공이 가능합니다"}
-              </span>
-            )}
-          </div>
-          <div className="discovery-search-bar">
-            <Search size={19} />
-            <input
-              aria-label="행사 검색어"
-              placeholder="어떤 행사를 찾고 있나요?"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <button className="btn primary">검색</button>
-          </div>
-        </form>
         <div className="category-tabs" role="group" aria-label="행사 종류">
           {categories.map((c) => (
             <button
@@ -314,6 +256,31 @@ export function Home() {
 
       <section className="home-map container" aria-label="지역 지도와 행사">
         <div className="home-map-col">
+          <div className="home-map-weather" role="status" aria-live="polite">
+            {picked ? (
+              <>
+              <h2>{regions[picked]} 오늘의 날씨</h2>
+              {mapWeather.loading ? (
+                <p>날씨를 불러오는 중이에요.</p>
+              ) : mapWeather.error || !selectedWeather || selectedWeather.condition === "UNKNOWN" ? (
+                <p>날씨 정보를 불러올 수 없어요.</p>
+              ) : (
+                <>
+                  <WeatherBadge condition={selectedWeather.condition} />
+                  {selectedWeather.precipitationProbability != null && (
+                    <p>강수확률 {selectedWeather.precipitationProbability}%</p>
+                  )}
+                </>
+              )}
+              <small>지역 대표 지점 기준 예보{mode === "preview" ? " · 미리보기 데이터" : ""}</small>
+              </>
+            ) : (
+              <>
+                <h2>지역별 행사 찾기</h2>
+                <p>지도에서 지역을 눌러보세요.</p>
+              </>
+            )}
+          </div>
           <KoreaMap
             counts={counts.data}
             selected={picked}
@@ -328,24 +295,6 @@ export function Home() {
             </span>
             <span>진행 중인 {label} 기준</span>
           </div>
-          {rank.length > 0 && (
-            <div className="map-rank">
-              <h2>{label} 많이 열리는 곳</h2>
-              <div>
-                {rank.map((r, i) => (
-                  <button
-                    key={r.code}
-                    type="button"
-                    aria-pressed={picked === r.code}
-                    onClick={() => pick(r.code)}
-                  >
-                    <i>{i + 1}</i>
-                    {PROVINCES[r.code].short} {r.n}개
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <aside
@@ -358,13 +307,6 @@ export function Home() {
               <h2 id="board-title">
                 {pickedName} {label}
               </h2>
-              <p>
-                {board.loading
-                  ? "행사를 불러오는 중이에요."
-                  : total
-                    ? `진행 중인 ${label} ${total}개${total > 4 ? " 중 4개를 먼저 보여드려요" : ""}. ${picked ? "포스터 번호가 지도 위 핀 번호예요." : "포스터에 마우스를 올리면 지도에 지역이 표시돼요."}`
-                    : `지금 열리는 ${label}를 아직 못 찾았어요.`}
-              </p>
             </div>
             {picked && (
               <button
@@ -485,6 +427,72 @@ export function Home() {
             </div>
           )}
         </aside>
+      </section>
+
+      <section className="home-search container" aria-label="조건으로 행사 검색">
+        <form
+          className="discovery-search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const params = new URLSearchParams();
+            if (region) params.set("region", region);
+            if (date) params.set("date", date);
+            if (query.trim()) params.set("q", query.trim());
+            navigate(`/explore?${params}`);
+          }}
+        >
+          <div className="discovery-search-filters">
+            <label className="filter-chip">
+              <MapPin size={15} />
+              <select
+                aria-label="지역 선택"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+              >
+                <option value="">전국</option>
+                {regionGroups.map((group) => (
+                  <option key={group.value} value={group.value}>
+                    {group.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} />
+            </label>
+            <label className="filter-chip">
+              <CalendarDays size={15} />
+              <input
+                aria-label="행사 날짜"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+              />
+            </label>
+            {weather.data && weather.data.condition !== "UNKNOWN" && (
+              <WeatherBadge
+                condition={weather.data.condition}
+                precipitationProbability={weather.data.precipitationProbability}
+              />
+            )}
+            {weather.data && weather.data.condition === "UNKNOWN" && (
+              <span className="weather-hint">
+                {date < new Date().toISOString().slice(0, 10)
+                  ? "지난 날짜는 날씨 제공이 불가합니다"
+                  : "오늘 기준 +4일치만 날씨 제공이 가능합니다"}
+              </span>
+            )}
+          </div>
+          <div className="discovery-search-bar">
+            <Search size={19} />
+            <input
+              aria-label="행사 검색어"
+              placeholder="어떤 행사를 찾고 있나요?"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <button className="btn primary">검색</button>
+          </div>
+        </form>
       </section>
 
       <section className="home-band" aria-labelledby="home-reports">
