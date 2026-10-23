@@ -31,10 +31,8 @@ class R2StorageService(
             throw BusinessException(StorageExceptionCode.EMPTY_FILE)
         }
 
-        val extension = ALLOWED_TYPES.get(file.contentType)
-        if (extension == null) {
-            throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
-        }
+        val extension = ALLOWED_TYPES[file.contentType]
+            ?: throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
 
         val key = "$directory/$ownerId/${UUID.randomUUID()}.$extension"
         try {
@@ -60,10 +58,8 @@ class R2StorageService(
 
     /** 서버가 만든 바이트 배열을 업로드한다. 배치처럼 MultipartFile이 없을 때 쓰고, contentType은 직접 넘긴다. */
     fun upload(content: ByteArray, contentType: String, directory: String): String {
-        val extension = ALLOWED_TYPES.get(contentType)
-        if (extension == null) {
-            throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
-        }
+        val extension = ALLOWED_TYPES[contentType]
+            ?: throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
 
         val key = "$directory/${UUID.randomUUID()}.$extension"
         try {
