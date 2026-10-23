@@ -16,6 +16,7 @@ export const regions: Record<string, string> = {
   GYEONGNAM: "경상남도",
   JEJU: "제주특별자치도",
   GYEONGGI: "경기도",
+  JEONNAM_GWANGJU: "전남광주통합특별시",
   ...Object.fromEntries(
     [
       ["SUWON", "수원시"],
