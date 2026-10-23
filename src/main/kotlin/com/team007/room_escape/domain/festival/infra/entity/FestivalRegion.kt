@@ -21,6 +21,11 @@ enum class FestivalRegion(val displayName: String) {
     JEJU("제주특별자치도"),
     GYEONGGI("경기도"),
 
+    // 전라남도·광주광역시 행정구역 통합(전남광주통합특별시). 공공 API가 이 지역 행사의 area를
+    // 더 이상 "전남"/"광주"로 나눠 보내지 않고 통합 명칭으로 보내서 별도 enum으로 분리했다.
+    // GWANGJU/JEONNAM은 과거 데이터·회원 제보용으로 남겨두고 삭제하지 않는다.
+    JEONNAM_GWANGJU("전남광주통합특별시"),
+
     // TODO: 사용자 제보 데이터가 충분히 쌓이면 시·군·구를 별도 필드로 분리하고 검색 필터 도입 검토
     // 경기도 31개 시·군
     GYEONGGI_SUWON("경기도 수원시"),
@@ -66,6 +71,22 @@ enum class FestivalRegion(val displayName: String) {
             values().filter { !it.displayName.contains(" ") }
                 .associateBy { normalizeUnit(it.displayName) }
 
+        // 줄임말 중 normalizeUnit()의 접미사 제거 로직으로는 원래 이름과 매칭이 안 되는 경우를 직접 등록해둔다.
+        // - "대구": 끝의 "구"가 "~구"(강남구 등) 접미사로 오인되어 "대"로 잘림
+        // - "충북"/"충남"/"경북"/"경남": 끝 글자가 "도"가 아니라 접미사 제거가 안 되고,
+        //   저장된 키는 풀네임에서 "도"만 뗀 "충청북"/"충청남"/"경상북"/"경상남"이라 매칭이 안 됨
+        // - "광주"/"전남": 행정구역 통합 이후 공공 API가 이 두 값을 전부 통합 지역(JEONNAM_GWANGJU)으로 보낸다.
+        //   그대로 두면 "광주"는 normalizeUnit 결과가 우연히 GWANGJU 키("광주")와 같아서 옛 단독 광주로 잘못 분류된다.
+        private val SHORT_NAME_ALIASES: Map<String, FestivalRegion> = mapOf(
+            "대구" to DAEGU,
+            "충북" to CHUNGBUK,
+            "충남" to CHUNGNAM,
+            "경북" to GYEONGBUK,
+            "경남" to GYEONGNAM,
+            "광주" to JEONNAM_GWANGJU,
+            "전남" to JEONNAM_GWANGJU
+        )
+
         /**
          * 새 API의 area를 FestivalRegion(광역 단위)으로 바꾼다.
          * "강원특별자치도"처럼 접미사가 풀로 오든 "강원"처럼 줄여서 오든 둘 다 받아들인다.
@@ -76,7 +97,8 @@ enum class FestivalRegion(val displayName: String) {
             if (area == null || area.isBlank()) {
                 return null
             }
-            return BY_NORMALIZED_AREA[normalizeUnit(area)]
+            val trimmed = area.trim()
+            return SHORT_NAME_ALIASES[trimmed] ?: BY_NORMALIZED_AREA[normalizeUnit(trimmed)]
         }
 
         private fun normalizeUnit(value: String): String {
