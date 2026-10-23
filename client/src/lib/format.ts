@@ -54,12 +54,15 @@ export const regions: Record<string, string> = {
 };
 export const categories = [
   "전체",
-  "축제",
-  "공연",
+  "연극",
+  "음악/콘서트",
+  "뮤지컬/오페라",
+  "무용/발레",
+  "국악",
+  "아동/가족",
   "전시",
-  "체험",
-  "플리마켓",
-  "교육",
+  "교육/체험",
+  "행사/축제",
   "기타",
 ];
 export const roleNames: Record<string, string> = {

@@ -677,6 +677,12 @@
   border: 0;
   padding: 0;
 }
+.home-c .home-search {
+  padding-bottom: 64px;
+}
+.home-c .home-search .discovery-search {
+  margin-top: 0;
+}
 .home-c .discovery-search-bar {
   background: var(--c-surface);
   border: 2px solid var(--c-ink);
@@ -698,6 +704,44 @@
 .home-c .home-map-col {
   flex: 0 1 540px;
   min-width: 0;
+  align-self: center;
+}
+.home-map-weather {
+  height: 180px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.home-map-weather h2 {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 2.2vw, 28px);
+}
+.home-map-weather p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.home-map-weather .weather-badge {
+  margin: 8px 0;
+  font-size: 32px;
+}
+.home-map-weather .weather-badge svg {
+  width: 40px;
+  height: 40px;
+}
+.home-map-weather small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+}
+@media (min-width: 1101px) {
+  .home-c .home-map-col {
+    transform: translateY(-24px);
+  }
 }
 .korea-map {
   position: relative;
