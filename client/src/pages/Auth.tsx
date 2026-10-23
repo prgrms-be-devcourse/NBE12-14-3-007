@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useApp } from "../lib/context";
@@ -59,23 +59,121 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
   }
   return (
     <div className="container auth-page">
-      <div className="auth-visual">
-        <img src="/images/garden.jpg" alt="가을 정원" />
-        <div />
-        <section>
-          <span>EVERYDAY, A LITTLE MORE SPECIAL</span>
-          <h2>
-            우리의 다음 즐거움은
-            <br />
-            생각보다 가까이에.
-          </h2>
-          <p>
-            새로운 발견과 소중한 순간을
-            <br />
-            방구석탈출에서 함께 나눠요.
-          </p>
-        </section>
-      </div>
+      <section className="auth-collage" aria-label="방구석탈출 소개">
+        <p className="eyebrow">{signup ? "처음 오셨군요" : "로그인"}</p>
+        <h2>
+          {signup ? "동네 행사를" : "이번 주말 갈 곳,"}
+          <br />
+          {signup ? "같이 채워 가요" : "같이 골라 봐요"}
+        </h2>
+        <p>
+          {signup
+            ? "가입하면 마음에 드는 행사를 모아 두고, 다녀온 이야기를 이웃과 나눌 수 있어요."
+            : "로그인하고 이번 주말에 갈 곳을 골라 보세요."}
+        </p>
+        <div className="auth-board" aria-hidden="true">
+          <span
+            className="poster"
+            style={
+              {
+                "--r": "-6deg",
+                left: 0,
+                top: 30,
+                width: "46%",
+                background: "#fffdf6",
+              } as CSSProperties
+            }
+          >
+            <span
+              className="poster-tape"
+              style={{
+                left: "50%",
+                marginLeft: -39,
+                transform: "rotate(4deg)",
+                background: "#f2c14ed9",
+              }}
+            />
+            <img src="/images/palace.jpg" alt="" />
+            <span className="poster-title">달빛 아래 산책</span>
+          </span>
+          <span
+            className="poster"
+            style={
+              {
+                "--r": "4deg",
+                left: "34%",
+                top: 0,
+                width: "44%",
+                background: "#2343d1",
+                color: "#fff",
+                zIndex: 1,
+              } as CSSProperties
+            }
+          >
+            <span
+              className="poster-tape"
+              style={{
+                left: 16,
+                transform: "rotate(-6deg)",
+                background: "#fffdf6b3",
+              }}
+            />
+            <img
+              src="/images/music.jpg"
+              alt=""
+              style={{ filter: "grayscale(1) contrast(1.15)" }}
+            />
+            <span className="poster-title">잔디밭 음악회</span>
+          </span>
+          <span
+            className="poster"
+            style={
+              {
+                "--r": "-2deg",
+                left: "18%",
+                top: 200,
+                width: "48%",
+                background: "#f2c14e",
+                zIndex: 2,
+              } as CSSProperties
+            }
+          >
+            <span
+              className="poster-tape"
+              style={{
+                right: 20,
+                transform: "rotate(5deg)",
+                background: "#fffdf6cc",
+              }}
+            />
+            <img src="/images/market.jpg" alt="" />
+            <span className="poster-title">주말 플리마켓</span>
+          </span>
+          <span
+            className="sticky-note"
+            style={
+              {
+                "--r": "3deg",
+                right: 0,
+                top: 180,
+                width: "34%",
+                background: "#f6c6c0",
+                zIndex: 3,
+                padding: "18px 16px 16px",
+              } as CSSProperties
+            }
+          >
+            <strong className="auth-note-title">로그인하면</strong>
+            <span className="auth-note-body">
+              좋아요한 행사 모아 보기
+              <br />
+              후기와 쪽지 남기기
+              <br />
+              동네 행사 제보하기
+            </span>
+          </span>
+        </div>
+      </section>
       <div className="auth-panel">
         <Link className="back-link" to="/">
           <ArrowLeft size={15} />

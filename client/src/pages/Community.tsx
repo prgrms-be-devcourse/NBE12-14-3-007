@@ -29,6 +29,7 @@ import {
   Pagination,
 } from "../components/ui";
 import { useApp, useLoad } from "../lib/context";
+import { TrustGradeBadge } from "../components/TrustGradeBadge";
 import { dateTimeText, errorText, imageUrl } from "../lib/format";
 import type {
   CommunityCategory,
@@ -173,7 +174,12 @@ export function CommunityPage() {
                   )}
                 </h2>
                 <div className="community-row-meta">
-                  <span>{post.member.nickname}</span>
+                  <span>
+                    {post.member.nickname}
+                    {post.member.role && (
+                      <TrustGradeBadge member={{ role: post.member.role }} />
+                    )}
+                  </span>
                   <span>{dateTimeText(post.createdAt)}</span>
                   <span>
                     <Eye size={12} /> {post.viewCount}
