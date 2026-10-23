@@ -414,17 +414,6 @@ function EventDetail({ event }: { event: EventView }) {
                       </dt>
                       <dd>{event.partcptExpnInfo || "별도 안내 없음"}</dd>
                     </div>
-                    <div>
-                      <dt>
-                        <Landmark size={17} />
-                        주최·운영
-                      </dt>
-                      <dd>
-                        {[event.hostInstNm, event.instNm]
-                          .filter(Boolean)
-                          .join(" · ") || "별도 안내 없음"}
-                      </dd>
-                    </div>
                     {event.manager && (
                       <div>
                         <dt>
