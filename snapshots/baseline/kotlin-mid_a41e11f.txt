@@ -1,0 +1,6621 @@
+# label: a41e11f (origin/dev PR #29 머지 시점, Java 92개 / Kotlin 81개) - 변환 중간 시점
+
+### 미인증 내 문의 목록
+status: 401
+content-type: application/json
+{
+  "code" : "AUTH200",
+  "data" : null,
+  "message" : "인증 토큰이 필요합니다.",
+  "success" : false
+}
+
+### 없는 경로
+status: 401
+content-type: application/json
+{
+  "code" : "AUTH200",
+  "data" : null,
+  "message" : "인증 토큰이 필요합니다.",
+  "success" : false
+}
+
+### 잘못된 메서드
+status: 401
+content-type: application/json
+{
+  "code" : "AUTH200",
+  "data" : null,
+  "message" : "인증 토큰이 필요합니다.",
+  "success" : false
+}
+
+### 깨진 JSON 문의 등록
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "요청 형식이 올바르지 않습니다.",
+  "success" : false
+}
+
+### 문의 등록 - 제목 없음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "title: must not be blank",
+  "success" : false
+}
+
+### 문의 등록 - 종류 없음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "category: must not be null",
+  "success" : false
+}
+
+### 문의 등록 - 일반 문의에 대상 지정
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "targetValid: 신고·제보 대상 종류와 대상 ID는 함께 입력해야 합니다.",
+  "success" : false
+}
+
+### 문의 등록 - 없는 대상 신고
+status: 404
+content-type: application/json
+{
+  "code" : "INQUIRY005",
+  "data" : null,
+  "message" : "신고·제보 대상을 찾을 수 없습니다.",
+  "success" : false
+}
+
+### 문의 등록 성공
+status: 201
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "answer" : null,
+    "category" : "QUESTION",
+    "content" : "문의 내용",
+    "createdAt" : "<ts>",
+    "id" : "<uuid>",
+    "img" : null,
+    "status" : "PENDING",
+    "targetId" : null,
+    "targetType" : null,
+    "title" : "스냅샷 문의"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 내 문의 목록
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : [ {
+    "category" : "QUESTION",
+    "createdAt" : "<ts>",
+    "id" : "<uuid>",
+    "status" : "PENDING",
+    "targetId" : null,
+    "targetType" : null,
+    "title" : "스냅샷 문의"
+  } ],
+  "message" : "",
+  "success" : true
+}
+
+### 내 문의 상세
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "answer" : null,
+    "category" : "QUESTION",
+    "content" : "문의 내용",
+    "createdAt" : "<ts>",
+    "id" : "<uuid>",
+    "img" : null,
+    "status" : "PENDING",
+    "targetId" : null,
+    "targetType" : null,
+    "title" : "스냅샷 문의"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 남의 문의 상세
+status: 404
+content-type: application/json
+{
+  "code" : "INQUIRY000",
+  "data" : null,
+  "message" : "존재하지 않는 문의입니다.",
+  "success" : false
+}
+
+### 문의 수정
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "answer" : null,
+    "category" : "QUESTION",
+    "content" : "문의 내용",
+    "createdAt" : "<ts>",
+    "id" : "<uuid>",
+    "img" : null,
+    "status" : "PENDING",
+    "targetId" : null,
+    "targetType" : null,
+    "title" : "수정된 제목"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 관리자 문의 목록
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "category" : "QUESTION",
+      "createdAt" : "<ts>",
+      "deletedAt" : null,
+      "id" : "<uuid>",
+      "status" : "PENDING",
+      "targetId" : null,
+      "targetType" : null,
+      "title" : "수정된 제목",
+      "writer" : {
+        "createdAt" : "<ts>",
+        "deletedAt" : null,
+        "email" : "<uuid>@example.com",
+        "id" : "<uuid>",
+        "nickname" : "계약테스트 <t>",
+        "phone" : null,
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED",
+        "updatedAt" : "<ts>"
+      }
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : true,
+    "number" : 0,
+    "numberOfElements" : 1,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 20,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 20,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 1,
+    "totalPages" : 1
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 관리자 문의 목록 - 잘못된 정렬
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "요청 값이 올바르지 않습니다.",
+  "success" : false
+}
+
+### 관리자 문의 목록 - 일반 회원
+status: 403
+content-type: application/json
+{
+  "code" : "AUTH100",
+  "data" : null,
+  "message" : "접근 권한이 없습니다.",
+  "success" : false
+}
+
+### 관리자 문의 상세
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "answer" : null,
+    "category" : "QUESTION",
+    "content" : "문의 내용",
+    "createdAt" : "<ts>",
+    "deletedAt" : null,
+    "id" : "<uuid>",
+    "img" : null,
+    "status" : "PENDING",
+    "targetId" : null,
+    "targetPostId" : null,
+    "targetType" : null,
+    "title" : "수정된 제목",
+    "updatedAt" : "<ts>",
+    "writer" : {
+      "createdAt" : "<ts>",
+      "deletedAt" : null,
+      "email" : "<uuid>@example.com",
+      "id" : "<uuid>",
+      "nickname" : "계약테스트 <t>",
+      "phone" : null,
+      "profileImg" : null,
+      "role" : "ROLE_UNVERIFIED",
+      "updatedAt" : "<ts>"
+    }
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 관리자 답변 - 빈 답변
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "answer: must not be blank",
+  "success" : false
+}
+
+### 관리자 답변
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "answer" : "확인했습니다",
+    "category" : "QUESTION",
+    "content" : "문의 내용",
+    "createdAt" : "<ts>",
+    "deletedAt" : null,
+    "id" : "<uuid>",
+    "img" : null,
+    "status" : "ANSWERED",
+    "targetId" : null,
+    "targetPostId" : null,
+    "targetType" : null,
+    "title" : "수정된 제목",
+    "updatedAt" : "<ts>",
+    "writer" : {
+      "createdAt" : "<ts>",
+      "deletedAt" : null,
+      "email" : "<uuid>@example.com",
+      "id" : "<uuid>",
+      "nickname" : "계약테스트 <t>",
+      "phone" : null,
+      "profileImg" : null,
+      "role" : "ROLE_UNVERIFIED",
+      "updatedAt" : "<ts>"
+    }
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 답변 후 문의 수정
+status: 409
+content-type: application/json
+{
+  "code" : "INQUIRY003",
+  "data" : null,
+  "message" : "답변이 완료된 문의는 수정할 수 없습니다.",
+  "success" : false
+}
+
+### 남의 문의 삭제
+status: 403
+content-type: application/json
+{
+  "code" : "INQUIRY002",
+  "data" : null,
+  "message" : "해당 문의를 삭제할 권한이 없습니다.",
+  "success" : false
+}
+
+### 내 문의 삭제
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : null,
+  "message" : "",
+  "success" : true
+}
+
+### 삭제 후 내 문의 상세
+status: 404
+content-type: application/json
+{
+  "code" : "INQUIRY000",
+  "data" : null,
+  "message" : "존재하지 않는 문의입니다.",
+  "success" : false
+}
+
+### 후기 작성 - 제목 짧음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "title: 제목은 2글자 이상 30글자 이하로 작성해주세요.",
+  "success" : false
+}
+
+### 후기 작성 - 내용 없음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "요청 값이 올바르지 않습니다.",
+  "success" : false
+}
+
+### 후기 작성
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "id" : "<uuid>"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 상세(비회원)
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : "<p>본문 굵게 </p>",
+    "date" : "<ts>",
+    "festivalId" : <n>,
+    "festivalTitle" : "계약테스트 행사 <t>",
+    "id" : "<uuid>",
+    "likeCount" : 0,
+    "likedByMe" : false,
+    "member" : {
+      "id" : "<uuid>",
+      "nickname" : "계약테스트 <t>",
+      "profileImg" : null,
+      "role" : "ROLE_UNVERIFIED"
+    },
+    "thumbnail" : null,
+    "title" : "스냅샷 후기"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 상세(회원)
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : "<p>본문 굵게 </p>",
+    "date" : "<ts>",
+    "festivalId" : <n>,
+    "festivalTitle" : "계약테스트 행사 <t>",
+    "id" : "<uuid>",
+    "likeCount" : 0,
+    "likedByMe" : false,
+    "member" : {
+      "id" : "<uuid>",
+      "nickname" : "계약테스트 <t>",
+      "profileImg" : null,
+      "role" : "ROLE_UNVERIFIED"
+    },
+    "thumbnail" : null,
+    "title" : "스냅샷 후기"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 목록
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "계약테스트 행사 <t>",
+      "id" : "<uuid>",
+      "likeCount" : 0,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "계약테스트 <t>",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "스냅샷 후기"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "제24차 세계한상대회",
+      "id" : "<uuid>",
+      "likeCount" : 2,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "행사 탐험가",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "처음 방문한 한상대회 관람 후기"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "제24차 세계한상대회",
+      "id" : "<uuid>",
+      "likeCount" : 4,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "팔도 철새",
+        "profileImg" : null,
+        "role" : "ROLE_TRUSTED"
+      },
+      "thumbnail" : null,
+      "title" : "전시 부스를 돌며 얻은 새로운 아이디어"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "2026년 하반기 진로활동 바리스타",
+      "id" : "<uuid>",
+      "likeCount" : 1,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "직접 해보니 달랐던 바리스타 수업"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "2026년 하반기 진로활동 바리스타",
+      "id" : "<uuid>",
+      "likeCount" : 3,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "커피 향으로 기억하는 첫 바리스타 체험"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "시간저장소, 그날의 데이터",
+      "id" : "<uuid>",
+      "likeCount" : 0,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "아이와 이야기하며 둘러본 박물관"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "시간저장소, 그날의 데이터",
+      "id" : "<uuid>",
+      "likeCount" : 5,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "기록을 보는 시선이 달라진 전시"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "생명을 잇는 걸음 워크온 챌린지",
+      "id" : "<uuid>",
+      "likeCount" : 2,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "행사 탐험가",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "퇴근 후 짧은 산책이 습관이 됐어요"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "생명을 잇는 걸음 워크온 챌린지",
+      "id" : "<uuid>",
+      "likeCount" : 4,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "걷기 챌린지 덕분에 동네를 새로 봤어요"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : false,
+    "number" : 0,
+    "numberOfElements" : 9,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 9,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 9,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 22,
+    "totalPages" : 3
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 행사별 후기 목록
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "계약테스트 행사 <t>",
+      "id" : "<uuid>",
+      "likeCount" : 0,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "계약테스트 <t>",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "스냅샷 후기"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : true,
+    "number" : 0,
+    "numberOfElements" : 1,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 10,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 10,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 1,
+    "totalPages" : 1
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 목록 - 좋아요순
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "시간저장소, 그날의 데이터",
+      "id" : "<uuid>",
+      "likeCount" : 5,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "기록을 보는 시선이 달라진 전시"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "국제 하이퍼-리얼리즘 가장 완벽한 환영",
+      "id" : "<uuid>",
+      "likeCount" : 5,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "행사 탐험가",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "가까이서 보고 더 놀란 극사실 작품"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "2026 미디어아트 프로젝트 줄리안 오피",
+      "id" : "<uuid>",
+      "likeCount" : 5,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "미디어아트는 천천히 볼수록 좋았어요"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "제24차 세계한상대회",
+      "id" : "<uuid>",
+      "likeCount" : 4,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "팔도 철새",
+        "profileImg" : null,
+        "role" : "ROLE_TRUSTED"
+      },
+      "thumbnail" : null,
+      "title" : "전시 부스를 돌며 얻은 새로운 아이디어"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "생명을 잇는 걸음 워크온 챌린지",
+      "id" : "<uuid>",
+      "likeCount" : 4,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "걷기 챌린지 덕분에 동네를 새로 봤어요"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "국가유산 미디어아트",
+      "id" : "<uuid>",
+      "likeCount" : 4,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "해가 진 뒤 더 예뻤던 미디어아트"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "2026년 하반기 진로활동 바리스타",
+      "id" : "<uuid>",
+      "likeCount" : 3,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "커피 향으로 기억하는 첫 바리스타 체험"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "저지문화예술인마을 제주 서쪽, 저지에서 놀자!",
+      "id" : "<uuid>",
+      "likeCount" : 3,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "저지마을 골목에서 보낸 느린 오후"
+    }, {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "탐나는 마켓 X 섬섬옥수 업사이클링 초보 재봉 워크숍",
+      "id" : "<uuid>",
+      "likeCount" : 3,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "팔도 철새",
+        "profileImg" : null,
+        "role" : "ROLE_TRUSTED"
+      },
+      "thumbnail" : null,
+      "title" : "처음 만든 재봉 소품이 제일 뿌듯해요"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : false,
+    "number" : 0,
+    "numberOfElements" : 9,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 9,
+      "paged" : true,
+      "sort" : {
+        "empty" : true,
+        "sorted" : false,
+        "unsorted" : true
+      },
+      "unpaged" : false
+    },
+    "size" : 9,
+    "sort" : {
+      "empty" : true,
+      "sorted" : false,
+      "unsorted" : true
+    },
+    "totalElements" : 22,
+    "totalPages" : 3
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 검색
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "date" : "<ts>",
+      "festivalId" : <n>,
+      "festivalTitle" : "계약테스트 행사 <t>",
+      "id" : "<uuid>",
+      "likeCount" : 0,
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "계약테스트 <t>",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "스냅샷 후기"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : true,
+    "number" : 0,
+    "numberOfElements" : 1,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 9,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 9,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 1,
+    "totalPages" : 1
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 관리자 후기 목록
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : [ {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "계약테스트 행사 <t>",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "계약테스트 <t>",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "스냅샷 후기"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "제24차 세계한상대회",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "행사 탐험가",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "처음 방문한 한상대회 관람 후기"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "제24차 세계한상대회",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "팔도 철새",
+        "profileImg" : null,
+        "role" : "ROLE_TRUSTED"
+      },
+      "thumbnail" : null,
+      "title" : "전시 부스를 돌며 얻은 새로운 아이디어"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "2026년 하반기 진로활동 바리스타",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "직접 해보니 달랐던 바리스타 수업"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "2026년 하반기 진로활동 바리스타",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "커피 향으로 기억하는 첫 바리스타 체험"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "시간저장소, 그날의 데이터",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "주말 탈출 꿈나무",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "아이와 이야기하며 둘러본 박물관"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "시간저장소, 그날의 데이터",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "기록을 보는 시선이 달라진 전시"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "생명을 잇는 걸음 워크온 챌린지",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "행사 탐험가",
+        "profileImg" : null,
+        "role" : "ROLE_UNVERIFIED"
+      },
+      "thumbnail" : null,
+      "title" : "퇴근 후 짧은 산책이 습관이 됐어요"
+    }, {
+      "date" : "<ts>",
+      "deletedAt" : null,
+      "festivalId" : <n>,
+      "festivalTitle" : "생명을 잇는 걸음 워크온 챌린지",
+      "id" : "<uuid>",
+      "member" : {
+        "id" : "<uuid>",
+        "nickname" : "동네 참새",
+        "profileImg" : null,
+        "role" : "ROLE_RECOGNIZED"
+      },
+      "thumbnail" : null,
+      "title" : "걷기 챌린지 덕분에 동네를 새로 봤어요"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : false,
+    "number" : 0,
+    "numberOfElements" : 9,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 9,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 9,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 22,
+    "totalPages" : 3
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 수정 - 남의 후기
+status: 403
+content-type: application/json
+{
+  "code" : "POST001",
+  "data" : null,
+  "message" : "해당 후기를 수정하거나 삭제 할 권한이 없습니다.",
+  "success" : false
+}
+
+### 후기 수정
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "content" : "<p>수정 본문</p>",
+    "date" : "<ts>",
+    "festivalId" : <n>,
+    "festivalTitle" : "계약테스트 행사 <t>",
+    "id" : "<uuid>",
+    "likeCount" : 0,
+    "likedByMe" : false,
+    "member" : {
+      "id" : "<uuid>",
+      "nickname" : "계약테스트 <t>",
+      "profileImg" : null,
+      "role" : "ROLE_UNVERIFIED"
+    },
+    "thumbnail" : null,
+    "title" : "수정된 후기"
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 후기 삭제
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : null,
+  "message" : "",
+  "success" : true
+}
+
+### 삭제된 후기 상세
+status: 404
+content-type: application/json
+{
+  "code" : "POST000",
+  "data" : null,
+  "message" : "존재하지 않는 후기입니다.",
+  "success" : false
+}
+
+### 날씨
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "condition" : "UNKNOWN",
+    "date" : "2026-10-23",
+    "precipitationProbability" : null
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 날씨 - 먼 미래
+status: 200
+content-type: application/json
+{
+  "code" : "0000",
+  "data" : {
+    "condition" : "UNKNOWN",
+    "date" : "2027-10-23",
+    "precipitationProbability" : null
+  },
+  "message" : "",
+  "success" : true
+}
+
+### 날씨 - 지역 없음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "'region' 값이 필요합니다.",
+  "success" : false
+}
+
+### 날씨 - 없는 지역
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "'region' 값이 올바르지 않습니다.",
+  "success" : false
+}
+
+### 날씨 - 날짜 형식 오류
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "'date' 값이 올바르지 않습니다.",
+  "success" : false
+}
+
+### 이미지 업로드 - 파일 없음
+status: 400
+content-type: application/json
+{
+  "code" : "COMMON_INVALID_INPUT",
+  "data" : null,
+  "message" : "'type' 값이 필요합니다.",
+  "success" : false
+}
+
+### OpenAPI 문서
+status: 200
+content-type: application/json
+{
+  "components" : {
+    "schemas" : {
+      "AdminCommentInfo" : {
+        "description" : "삭제된 댓글과 최신 삭제 사유를 포함한 관리자용 댓글",
+        "properties" : {
+          "content" : {
+            "type" : "string"
+          },
+          "date" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletion" : {
+            "$ref" : "#/components/schemas/Latest"
+          },
+          "id" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "parentDeleted" : {
+            "type" : "boolean"
+          },
+          "parentId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "postId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "replies" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AdminCommentInfo"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "AdminDeletionCreate" : {
+        "description" : "관리자 콘텐츠 삭제 조치",
+        "properties" : {
+          "inquiryId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "reasonCode" : {
+            "enum" : [ "AUTHOR_REQUEST", "DUPLICATE", "INCORRECT_INFORMATION", "SPAM", "ABUSIVE_CONTENT", "PRIVACY_EXPOSURE", "OTHER", "ADMIN_RESTORE" ],
+            "type" : "string"
+          },
+          "reasonDetail" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "targetId" : {
+            "maxLength" : 64,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "targetType" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "reasonCode", "targetId", "targetType" ],
+        "type" : "object"
+      },
+      "AdminDeletionRestore" : {
+        "description" : "관리자가 삭제한 콘텐츠 복구 조치",
+        "properties" : {
+          "targetId" : {
+            "maxLength" : 64,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "targetType" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "targetId", "targetType" ],
+        "type" : "object"
+      },
+      "AdminFestivalListItem" : {
+        "description" : "관리자 행사 목록 항목",
+        "properties" : {
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "행사 종류",
+            "type" : "string"
+          },
+          "createdAt" : {
+            "description" : "행사 등록 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletedAt" : {
+            "description" : "삭제 시각. 삭제되지 않았으면 null",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletion" : {
+            "$ref" : "#/components/schemas/FestivalDeletionInfo",
+            "description" : "삭제 주체 구분 및 안내 사유"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "type" : "string"
+          },
+          "providerType" : {
+            "description" : "데이터 출처",
+            "enum" : [ "PUBLIC", "MEMBER" ],
+            "example" : "PUBLIC",
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          },
+          "status" : {
+            "description" : "진행 상태. 종료일에서 계산된다",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AdminFestivalUpdateRequest" : {
+        "description" : "관리자 행사 수정 요청",
+        "properties" : {
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "example" : "<ts>",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "행사 카테고리",
+            "example" : "축제",
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "example" : "<ts>",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalContent" : {
+            "description" : "행사 소개",
+            "example" : "화성행궁 일대에서 열리는 가을 축제입니다.",
+            "type" : "string"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "partcptExpnInfo" : {
+            "description" : "참가 비용 정보",
+            "example" : "무료",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "referenceUrl" : {
+            "description" : "행사 참고 링크",
+            "example" : "https://example.com/festival",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "example" : "GYEONGGI_SUWON",
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 상세 주소",
+            "example" : "수원시 팔달구 정조로 825",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telnoInfo" : {
+            "description" : "전화번호",
+            "example" : "031-123-4567",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 이름",
+            "example" : "수원 화성 문화제",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "beginDe", "category", "endDe", "region", "title" ],
+        "type" : "object"
+      },
+      "AdminInfo" : {
+        "properties" : {
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "profileImg" : {
+            "type" : "string"
+          },
+          "role" : {
+            "enum" : [ "ROLE_WARNING", "ROLE_UNVERIFIED", "ROLE_RECOGNIZED", "ROLE_TRUSTED", "ROLE_ADMIN" ],
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AdminInquiryAnswerRequest" : {
+        "description" : "관리자 문의 답변 요청",
+        "properties" : {
+          "answer" : {
+            "description" : "답변 내용",
+            "example" : "확인 결과 중복 등록이 맞아 해당 제보를 숨김 처리했습니다.",
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "answer" ],
+        "type" : "object"
+      },
+      "AdminInquiryDetail" : {
+        "description" : "관리자 문의 상세",
+        "properties" : {
+          "answer" : {
+            "description" : "관리자 답변. 아직 답변 전이면 null",
+            "type" : [ "string", "null" ]
+          },
+          "category" : {
+            "description" : "접수 종류",
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "example" : "REPORT",
+            "type" : "string"
+          },
+          "content" : {
+            "description" : "본문",
+            "type" : "string"
+          },
+          "createdAt" : {
+            "description" : "등록 시각",
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "deletedAt" : {
+            "description" : "삭제 시각. 삭제되지 않았으면 null",
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "id" : {
+            "description" : "문의 번호",
+            "format" : "uuid",
+            "type" : [ "string", "null" ]
+          },
+          "img" : {
+            "description" : "첨부 이미지 공개 URL. 첨부가 없으면 null",
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "description" : "답변 상태",
+            "enum" : [ "PENDING", "ANSWERED" ],
+            "example" : "PENDING",
+            "type" : [ "string", "null" ]
+          },
+          "targetId" : {
+            "description" : "신고·제보 대상 ID. 일반 문의면 null",
+            "example" : "123",
+            "type" : [ "string", "null" ]
+          },
+          "targetPostId" : {
+            "description" : "댓글 신고일 때 그 댓글이 달린 글 ID. 그 외에는 null",
+            "format" : "uuid",
+            "type" : [ "string", "null" ]
+          },
+          "targetType" : {
+            "description" : "신고·제보 대상 종류. 일반 문의면 null",
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "MEMBER", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "example" : "FESTIVAL",
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "description" : "제목",
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "description" : "최종 수정 시각",
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "writer" : {
+            "description" : "작성자. 회원 정보가 없으면 null",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/AdminInfo"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        },
+        "type" : "object"
+      },
+      "AdminInquiryListItem" : {
+        "description" : "관리자 문의 목록 항목",
+        "properties" : {
+          "category" : {
+            "description" : "접수 종류",
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "example" : "REPORT",
+            "type" : "string"
+          },
+          "createdAt" : {
+            "description" : "등록 시각",
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "deletedAt" : {
+            "description" : "삭제 시각. 삭제되지 않았으면 null",
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "id" : {
+            "description" : "문의 번호",
+            "format" : "uuid",
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "description" : "답변 상태",
+            "enum" : [ "PENDING", "ANSWERED" ],
+            "example" : "PENDING",
+            "type" : [ "string", "null" ]
+          },
+          "targetId" : {
+            "description" : "신고·제보 대상 ID. 일반 문의면 null",
+            "example" : "123",
+            "type" : [ "string", "null" ]
+          },
+          "targetType" : {
+            "description" : "신고·제보 대상 종류. 일반 문의면 null",
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "MEMBER", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "example" : "FESTIVAL",
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "description" : "제목",
+            "type" : "string"
+          },
+          "writer" : {
+            "description" : "작성자. 회원 정보가 없으면 null",
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/AdminInfo"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        },
+        "type" : "object"
+      },
+      "AdminMemberRoleChangeRequest" : {
+        "description" : "회원 등급 변경 요청",
+        "properties" : {
+          "role" : {
+            "description" : "변경할 등급. ROLE_ADMIN은 부여할 수 없다",
+            "enum" : [ "ROLE_WARNING", "ROLE_UNVERIFIED", "ROLE_RECOGNIZED", "ROLE_TRUSTED", "ROLE_ADMIN" ],
+            "example" : "ROLE_TRUSTED",
+            "type" : "string"
+          }
+        },
+        "required" : [ "role" ],
+        "type" : "object"
+      },
+      "ApiResponseAdminInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/AdminInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseAdminInquiryDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/AdminInquiryDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseAuthToken" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/AuthToken"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseCommentInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CommentInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseCommunityCommentInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CommunityCommentInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseCommunityPostDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/CommunityPostDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseFestivalAccuracyVoteInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/FestivalAccuracyVoteInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseFestivalDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/FestivalDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseFestivalSubmissionCreate" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/FestivalSubmissionCreate"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseFestivalSubmissionDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/FestivalSubmissionDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseInquiryDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/InquiryDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseLatest" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/Latest"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseLikeResponse" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/LikeResponse"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseListFestivalSubmissionListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FestivalSubmissionListItem"
+            },
+            "type" : [ "array", "null" ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseListInquiryListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "items" : {
+              "$ref" : "#/components/schemas/InquiryListItem"
+            },
+            "type" : [ "array", "null" ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseMyPageInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/MyPageInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageAdminCommentInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageAdminCommentInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageAdminFestivalListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageAdminFestivalListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageAdminInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageAdminInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageAdminInquiryListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageAdminInquiryListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageCommentInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageCommentInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageCommunityCommentInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageCommunityCommentInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageCommunityPostListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageCommunityPostListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageFestivalListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageFestivalListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePageItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PageItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePagePostAdminListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PagePostAdminListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePagePostListItem" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PagePostListItem"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePostCreate" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PostCreate"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponsePostDetail" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PostDetail"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseSyncResponse" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/SyncResponse"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseUploadInfo" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/UploadInfo"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseVoid" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "type" : "null"
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ApiResponseWeatherResponse" : {
+        "properties" : {
+          "code" : {
+            "type" : [ "string", "null" ]
+          },
+          "data" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/WeatherResponse"
+            }, {
+              "type" : "null"
+            } ]
+          },
+          "message" : {
+            "type" : [ "string", "null" ]
+          },
+          "success" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "AuthLoginRequest" : {
+        "description" : "로그인 요청",
+        "properties" : {
+          "email" : {
+            "description" : "회원 이메일",
+            "example" : "user@example.com",
+            "format" : "email",
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "password" : {
+            "description" : "비밀번호",
+            "example" : "Password1!",
+            "minLength" : 1,
+            "type" : "string"
+          }
+        },
+        "required" : [ "email", "password" ],
+        "type" : "object"
+      },
+      "AuthSignupRequest" : {
+        "description" : "회원가입 요청",
+        "properties" : {
+          "email" : {
+            "description" : "회원 이메일",
+            "example" : "user@example.com",
+            "format" : "email",
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "nickname" : {
+            "description" : "닉네임",
+            "example" : "축제좋아",
+            "maxLength" : 30,
+            "minLength" : 2,
+            "type" : "string"
+          },
+          "password" : {
+            "description" : "8~15자이며 영문, 숫자, 특수문자(!@#%^&*)를 포함한 비밀번호",
+            "example" : "Password1!",
+            "maxLength" : 25,
+            "minLength" : 8,
+            "pattern" : "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#%^&*]).*$",
+            "type" : "string"
+          },
+          "phone" : {
+            "description" : "휴대폰 번호. 하이픈 없이 숫자만",
+            "example" : "01012345678",
+            "pattern" : "^$|^01[016789]\\d{7,8}$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "email", "nickname", "password" ],
+        "type" : "object"
+      },
+      "AuthToken" : {
+        "description" : "Access Token 응답",
+        "properties" : {
+          "accessToken" : {
+            "description" : "Access Token",
+            "type" : "string"
+          },
+          "tokenType" : {
+            "description" : "토큰 종류",
+            "example" : "Bearer",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CommentCreateRequest" : {
+        "description" : "댓글 작성 요청",
+        "properties" : {
+          "content" : {
+            "description" : "댓글 내용",
+            "example" : "행사 정말 재미있었어요!",
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "parentId" : {
+            "description" : "답글을 달 댓글 ID. 일반 댓글이면 비운다. 대댓글을 지정하면 그 대댓글의 부모 아래에 붙는다.",
+            "example" : 1,
+            "format" : "int64",
+            "type" : [ "integer", "null" ]
+          }
+        },
+        "required" : [ "content" ],
+        "type" : "object"
+      },
+      "CommentInfo" : {
+        "description" : "후기 댓글",
+        "properties" : {
+          "content" : {
+            "description" : "댓글 내용. 삭제된 댓글은 \"삭제된 댓글입니다\"",
+            "example" : "행사 정말 재미있었어요!",
+            "type" : "string"
+          },
+          "date" : {
+            "description" : "댓글 작성 일시",
+            "example" : "<ts>",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deleted" : {
+            "description" : "삭제 여부. true면 content는 \"삭제된 댓글입니다\", member는 null",
+            "type" : "boolean"
+          },
+          "id" : {
+            "description" : "댓글 ID",
+            "example" : 1,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo",
+            "description" : "작성자. 탈퇴 회원은 닉네임만 \"탈퇴한 사용자\", 삭제된 댓글은 null",
+            "type" : "null"
+          },
+          "parentId" : {
+            "description" : "부모 댓글 ID. 일반 댓글이면 null",
+            "example" : 1,
+            "format" : "int64",
+            "type" : [ "integer", "null" ]
+          },
+          "postId" : {
+            "description" : "후기 ID",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "replies" : {
+            "description" : "대댓글. 오래된 순. 대댓글 자신과 작성·수정 응답에서는 빈 배열",
+            "items" : {
+              "$ref" : "#/components/schemas/CommentInfo"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "CommentUpsertRequest" : {
+        "description" : "댓글 수정 요청",
+        "properties" : {
+          "content" : {
+            "description" : "댓글 내용",
+            "example" : "행사 정말 재미있었어요!",
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "content" ],
+        "type" : "object"
+      },
+      "CommunityCommentCreateRequest" : {
+        "description" : "커뮤니티 댓글 작성 요청",
+        "properties" : {
+          "content" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "parentId" : {
+            "description" : "답글을 달 댓글 ID. 일반 댓글이면 비운다. 대댓글을 지정하면 그 대댓글의 부모 아래에 붙는다.",
+            "example" : 1,
+            "format" : "int64",
+            "type" : [ "integer", "null" ]
+          }
+        },
+        "required" : [ "content" ],
+        "type" : "object"
+      },
+      "CommunityCommentInfo" : {
+        "description" : "커뮤니티 댓글",
+        "properties" : {
+          "content" : {
+            "description" : "댓글 내용. 삭제된 댓글은 \"삭제된 댓글입니다\"",
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deleted" : {
+            "description" : "삭제 여부. true면 content는 \"삭제된 댓글입니다\", member는 null",
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo",
+            "description" : "작성자. 삭제된 댓글은 null",
+            "type" : "null"
+          },
+          "parentId" : {
+            "description" : "부모 댓글 ID. 일반 댓글이면 null",
+            "format" : "int64",
+            "type" : [ "integer", "null" ]
+          },
+          "postId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "replies" : {
+            "description" : "대댓글. 오래된 순. 대댓글 자신과 작성·수정 응답에서는 빈 배열",
+            "items" : {
+              "$ref" : "#/components/schemas/CommunityCommentInfo"
+            },
+            "type" : "array"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CommunityCommentUpsertRequest" : {
+        "description" : "커뮤니티 댓글 수정 요청",
+        "properties" : {
+          "content" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "content" ],
+        "type" : "object"
+      },
+      "CommunityPostDetail" : {
+        "description" : "커뮤니티 글 상세",
+        "properties" : {
+          "category" : {
+            "enum" : [ "FREE", "EVENT", "RESTAURANT" ],
+            "type" : "string"
+          },
+          "commentCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "content" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "viewCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "CommunityPostListItem" : {
+        "description" : "커뮤니티 글 목록 항목",
+        "properties" : {
+          "category" : {
+            "enum" : [ "FREE", "EVENT", "RESTAURANT" ],
+            "type" : "string"
+          },
+          "commentCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "viewCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "CommunityPostUpsertRequest" : {
+        "description" : "커뮤니티 글 작성·수정 요청",
+        "properties" : {
+          "category" : {
+            "enum" : [ "FREE", "EVENT", "RESTAURANT" ],
+            "type" : "string"
+          },
+          "content" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "title" : {
+            "maxLength" : 100,
+            "minLength" : 2,
+            "type" : "string"
+          }
+        },
+        "required" : [ "category", "content", "title" ],
+        "type" : "object"
+      },
+      "FestivalAccuracyVoteInfo" : {
+        "description" : "행사 정보 정확도 평가 결과",
+        "properties" : {
+          "accurateCount" : {
+            "description" : "정확해요 개수",
+            "example" : 18,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "inaccurateCount" : {
+            "description" : "정보가 달라요 개수",
+            "example" : 2,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "myVote" : {
+            "description" : "현재 사용자의 평가, 평가하지 않았다면 null",
+            "enum" : [ "ACCURATE", "INACCURATE" ],
+            "example" : "ACCURATE",
+            "type" : [ "string", "null" ]
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalAccuracyVoteUpsertRequest" : {
+        "description" : "행사 정보 정확도 평가 요청",
+        "properties" : {
+          "voteType" : {
+            "description" : "행사 정보 정확도 평가",
+            "enum" : [ "ACCURATE", "INACCURATE" ],
+            "example" : "ACCURATE",
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "voteType" ],
+        "type" : "object"
+      },
+      "FestivalDeletionInfo" : {
+        "description" : "현재 삭제 상태. 삭제되지 않았으면 null",
+        "properties" : {
+          "deletedAt" : {
+            "description" : "행사 삭제 시각",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "reason" : {
+            "description" : "작성자에게 안내하는 삭제 사유",
+            "type" : "string"
+          },
+          "type" : {
+            "description" : "이력에 기록된 삭제 주체. AUTHOR, ADMIN. 이력이 없으면 null",
+            "enum" : [ "AUTHOR", "ADMIN" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalDetail" : {
+        "description" : "행사 상세",
+        "properties" : {
+          "accurateCount" : {
+            "description" : "정확해요 개수",
+            "example" : 18,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "행사 종류",
+            "type" : "string"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalContent" : {
+            "description" : "행사 소개",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "type" : "string"
+          },
+          "inaccurateCount" : {
+            "description" : "부정확해요 개수",
+            "example" : 2,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "likeCount" : {
+            "description" : "좋아요 개수",
+            "example" : 7,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "likedByMe" : {
+            "description" : "현재 사용자의 좋아요 여부",
+            "example" : true,
+            "type" : "boolean"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo",
+            "description" : "회원 제보 행사 작성자 정보. 공공데이터 행사는 null",
+            "type" : "null"
+          },
+          "myVote" : {
+            "description" : "현재 사용자의 평가, 평가하지 않았다면 null",
+            "enum" : [ "ACCURATE", "INACCURATE" ],
+            "example" : "ACCURATE",
+            "type" : [ "string", "null" ]
+          },
+          "partcptExpnInfo" : {
+            "description" : "참가 비용 정보",
+            "type" : "string"
+          },
+          "providerType" : {
+            "description" : "데이터 출처",
+            "enum" : [ "PUBLIC", "MEMBER" ],
+            "example" : "MEMBER",
+            "type" : "string"
+          },
+          "referenceUrl" : {
+            "description" : "사용자에게 안내할 행사 참고 링크",
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 상세 주소",
+            "type" : "string"
+          },
+          "status" : {
+            "description" : "행사 상태",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          },
+          "telnoInfo" : {
+            "description" : "전화번호",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          },
+          "url" : {
+            "description" : "행사 원문 주소",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalListItem" : {
+        "description" : "행사 목록 항목",
+        "properties" : {
+          "accurateCount" : {
+            "description" : "정확해요 개수. 공공데이터 행사는 0",
+            "example" : 3,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "행사 종류",
+            "type" : "string"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "type" : "string"
+          },
+          "inaccurateCount" : {
+            "description" : "부정확해요 개수. 공공데이터 행사는 0",
+            "example" : 1,
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "likeCount" : {
+            "description" : "좋아요 수",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo",
+            "description" : "회원 제보 행사 작성자 정보. 공공데이터 행사는 null",
+            "type" : "null"
+          },
+          "providerType" : {
+            "description" : "데이터 출처",
+            "enum" : [ "PUBLIC", "MEMBER" ],
+            "example" : "PUBLIC",
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 지역 상세(시·군·구)",
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "description" : "행사 상태",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionCreate" : {
+        "description" : "행사 등록 결과",
+        "properties" : {
+          "festivalId" : {
+            "description" : "생성된 행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "festivalSubmissionId" : {
+            "description" : "생성된 행사 제보 번호",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "description" : "행사 상태",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionDetail" : {
+        "description" : "[ME] 내 행사 상세",
+        "properties" : {
+          "submission" : {
+            "$ref" : "#/components/schemas/FestivalSubmissionInfo",
+            "description" : "행사 제보 정보"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionFestivalInfo" : {
+        "description" : "제보한 행사 정보",
+        "properties" : {
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "행사 종류",
+            "type" : "string"
+          },
+          "deletion" : {
+            "$ref" : "#/components/schemas/FestivalDeletionInfo",
+            "description" : "삭제 정보. 삭제되지 않았으면 null"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalContent" : {
+            "description" : "행사 상세 내용",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "type" : "string"
+          },
+          "partcptExpnInfo" : {
+            "description" : "참가 비용 정보",
+            "type" : "string"
+          },
+          "referenceUrl" : {
+            "description" : "행사 정보를 확인할 수 있는 참고 링크",
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 상세 주소",
+            "type" : "string"
+          },
+          "status" : {
+            "description" : "행사 상태",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          },
+          "telnoInfo" : {
+            "description" : "전화번호",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionInfo" : {
+        "description" : "행사 제보 정보",
+        "properties" : {
+          "createdAt" : {
+            "description" : "행사 제보 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festival" : {
+            "$ref" : "#/components/schemas/FestivalSubmissionFestivalInfo",
+            "description" : "행사 정보"
+          },
+          "festivalSubmissionId" : {
+            "description" : "행사 제보 번호",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "description" : "마지막 수정 일시",
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionListItem" : {
+        "description" : "[ME] 내 행사 목록 항목",
+        "properties" : {
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "createdAt" : {
+            "description" : "행사 제보 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletion" : {
+            "$ref" : "#/components/schemas/FestivalDeletionInfo",
+            "description" : "삭제 정보. 삭제되지 않았으면 null"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "festivalSubmissionId" : {
+            "description" : "행사 제보 번호",
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 상세 주소",
+            "type" : "string"
+          },
+          "status" : {
+            "description" : "행사 상태",
+            "enum" : [ "OPEN", "CLOSED" ],
+            "example" : "OPEN",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FestivalSubmissionUpsertRequest" : {
+        "description" : "행사 제보 등록·수정 요청",
+        "properties" : {
+          "beginDe" : {
+            "description" : "행사 시작 일시",
+            "example" : "<ts>",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "category" : {
+            "description" : "제보 행사 카테고리",
+            "example" : "플리마켓",
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "endDe" : {
+            "description" : "행사 종료 일시",
+            "example" : "<ts>",
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalContent" : {
+            "description" : "공개할 행사 상세 내용",
+            "type" : "string"
+          },
+          "imgUrl" : {
+            "description" : "행사 이미지 URL",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "partcptExpnInfo" : {
+            "description" : "참가 비용 정보",
+            "example" : "무료",
+            "type" : "string"
+          },
+          "referenceUrl" : {
+            "description" : "행사 정보를 확인할 수 있는 참고 링크",
+            "example" : "https://www.instagram.com/example-event",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "region" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "example" : "GYEONGGI",
+            "type" : "string"
+          },
+          "regionDetail" : {
+            "description" : "행사 상세 주소",
+            "example" : "팔달구 효원로 1",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telnoInfo" : {
+            "description" : "전화번호",
+            "example" : "010-1234-5678",
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "행사 이름",
+            "example" : "성수 독립 플리마켓",
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "validPeriod" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "beginDe", "category", "endDe", "referenceUrl", "region", "title" ],
+        "type" : "object"
+      },
+      "InquiryCreateRequest" : {
+        "description" : "문의 등록 요청",
+        "properties" : {
+          "category" : {
+            "description" : "접수 종류. QUESTION(일반 문의), REPORT(신고), TIP(제보)",
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "example" : "QUESTION",
+            "type" : [ "string", "null" ]
+          },
+          "content" : {
+            "description" : "내용",
+            "example" : "신청 취소 버튼을 눌러도 목록에 그대로 남아 있습니다.",
+            "minLength" : 1,
+            "type" : [ "string", "null" ]
+          },
+          "img" : {
+            "description" : "첨부 이미지 key. 업로드 API가 돌려준 key",
+            "example" : "inquiries/<uuid>.png",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          },
+          "targetId" : {
+            "description" : "신고·제보 대상 ID. 일반 문의는 생략",
+            "example" : "123",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          },
+          "targetType" : {
+            "description" : "신고·제보 대상 종류. FESTIVAL, POST, COMMENT, MEMBER, COMMUNITY_POST, COMMUNITY_COMMENT. 일반 문의는 생략",
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "MEMBER", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "example" : "FESTIVAL",
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "description" : "제목",
+            "example" : "행사 신청이 취소되지 않습니다",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "category", "content", "title" ],
+        "type" : "object"
+      },
+      "InquiryDetail" : {
+        "description" : "문의 상세",
+        "properties" : {
+          "answer" : {
+            "type" : [ "string", "null" ]
+          },
+          "category" : {
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "type" : "string"
+          },
+          "content" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : [ "string", "null" ]
+          },
+          "img" : {
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "enum" : [ "PENDING", "ANSWERED" ],
+            "type" : [ "string", "null" ]
+          },
+          "targetId" : {
+            "type" : [ "string", "null" ]
+          },
+          "targetType" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "MEMBER", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "InquiryListItem" : {
+        "description" : "내 문의 목록 항목",
+        "properties" : {
+          "category" : {
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : [ "string", "null" ]
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "enum" : [ "PENDING", "ANSWERED" ],
+            "type" : [ "string", "null" ]
+          },
+          "targetId" : {
+            "type" : [ "string", "null" ]
+          },
+          "targetType" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "MEMBER", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "InquiryUpdateRequest" : {
+        "description" : "문의 수정 요청",
+        "properties" : {
+          "category" : {
+            "description" : "접수 종류. 생략하면 변경하지 않는다",
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "example" : "REPORT",
+            "type" : [ "string", "null" ]
+          },
+          "content" : {
+            "description" : "내용. 생략하면 변경하지 않는다",
+            "example" : "내용을 수정합니다",
+            "type" : [ "string", "null" ]
+          },
+          "img" : {
+            "description" : "첨부 이미지 key. 빈 문자열이면 첨부를 지운다",
+            "example" : "inquiries/<uuid>.png",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          },
+          "title" : {
+            "description" : "제목. 생략하면 변경하지 않는다",
+            "example" : "제목을 수정합니다",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : [ "string", "null" ]
+          }
+        },
+        "type" : "object"
+      },
+      "Item" : {
+        "properties" : {
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletion" : {
+            "$ref" : "#/components/schemas/Latest"
+          },
+          "originalPath" : {
+            "type" : "string"
+          },
+          "parentDeleted" : {
+            "type" : "boolean"
+          },
+          "targetId" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Latest" : {
+        "properties" : {
+          "action" : {
+            "enum" : [ "DELETE", "RESTORE" ],
+            "type" : "string"
+          },
+          "actorType" : {
+            "enum" : [ "AUTHOR", "ADMIN" ],
+            "type" : "string"
+          },
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "reasonCode" : {
+            "enum" : [ "AUTHOR_REQUEST", "DUPLICATE", "INCORRECT_INFORMATION", "SPAM", "ABUSIVE_CONTENT", "PRIVACY_EXPOSURE", "OTHER", "ADMIN_RESTORE" ],
+            "type" : "string"
+          },
+          "reasonDetail" : {
+            "type" : "string"
+          },
+          "reasonLabel" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LikeResponse" : {
+        "properties" : {
+          "likeCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "MemberInfo" : {
+        "description" : "작성자 정보",
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "profileImg" : {
+            "type" : "string"
+          },
+          "role" : {
+            "enum" : [ "ROLE_WARNING", "ROLE_UNVERIFIED", "ROLE_RECOGNIZED", "ROLE_TRUSTED", "ROLE_ADMIN" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "MemberUpdateRequest" : {
+        "description" : "마이페이지 회원 정보 수정 요청",
+        "properties" : {
+          "nickname" : {
+            "description" : "닉네임. 생략하면 변경하지 않는다",
+            "example" : "축제좋아",
+            "maxLength" : 30,
+            "minLength" : 2,
+            "type" : "string"
+          },
+          "phone" : {
+            "description" : "휴대폰 번호. 숫자만. 빈 문자열이면 지운다",
+            "example" : "01012345678",
+            "pattern" : "^$|^01[016789]\\d{7,8}$",
+            "type" : "string"
+          },
+          "profileImg" : {
+            "description" : "프로필 이미지 key. 빈 문자열이면 지운다",
+            "example" : "profiles/<uuid>.png",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "MemberWithdrawRequest" : {
+        "description" : "회원 탈퇴 요청",
+        "properties" : {
+          "password" : {
+            "description" : "본인 확인용 현재 비밀번호",
+            "example" : "Password1!",
+            "minLength" : 1,
+            "type" : "string"
+          }
+        },
+        "required" : [ "password" ],
+        "type" : "object"
+      },
+      "MyPageInfo" : {
+        "properties" : {
+          "createdAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "profileImg" : {
+            "type" : "string"
+          },
+          "role" : {
+            "enum" : [ "ROLE_WARNING", "ROLE_UNVERIFIED", "ROLE_RECOGNIZED", "ROLE_TRUSTED", "ROLE_ADMIN" ],
+            "type" : "string"
+          },
+          "updatedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PageAdminCommentInfo" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AdminCommentInfo"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageAdminFestivalListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AdminFestivalListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageAdminInfo" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AdminInfo"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageAdminInquiryListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AdminInquiryListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageCommentInfo" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CommentInfo"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageCommunityCommentInfo" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CommunityCommentInfo"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageCommunityPostListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CommunityPostListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageFestivalListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FestivalListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PageItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Item"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PagePostAdminListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PostAdminListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PagePostListItem" : {
+        "properties" : {
+          "content" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PostListItem"
+            },
+            "type" : "array"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numberOfElements" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
+          },
+          "size" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "totalElements" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPages" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "Pageable" : {
+        "properties" : {
+          "page" : {
+            "format" : "int32",
+            "minimum" : 0,
+            "type" : "integer"
+          },
+          "size" : {
+            "format" : "int32",
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "sort" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "PageableObject" : {
+        "properties" : {
+          "offset" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pageNumber" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pageSize" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "paged" : {
+            "type" : "boolean"
+          },
+          "sort" : {
+            "$ref" : "#/components/schemas/SortObject"
+          },
+          "unpaged" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "PasswordChangeRequest" : {
+        "description" : "새 비밀번호 설정 요청",
+        "properties" : {
+          "newPassword" : {
+            "description" : "새 비밀번호. 8~25자이며 영문, 숫자, 특수문자(!@#%^&*)를 포함",
+            "example" : "NewPassword1!",
+            "maxLength" : 25,
+            "minLength" : 8,
+            "pattern" : "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#%^&*]).*$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "newPassword" ],
+        "type" : "object"
+      },
+      "PasswordVerifyRequest" : {
+        "description" : "비밀번호 변경 인증 코드 확인 요청",
+        "properties" : {
+          "code" : {
+            "description" : "메일로 받은 6자리 인증 코드",
+            "example" : "042913",
+            "minLength" : 1,
+            "pattern" : "^\\d{6}$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "code" ],
+        "type" : "object"
+      },
+      "PostAdminListItem" : {
+        "description" : "관리자 후기 목록 항목",
+        "properties" : {
+          "date" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "festivalTitle" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "thumbnail" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PostCreate" : {
+        "description" : "후기 작성 결과",
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PostDetail" : {
+        "description" : "후기 상세",
+        "properties" : {
+          "content" : {
+            "type" : "string"
+          },
+          "date" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "festivalTitle" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "likeCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "likedByMe" : {
+            "type" : "boolean"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "thumbnail" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PostListItem" : {
+        "description" : "후기 목록 항목",
+        "properties" : {
+          "date" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "festivalId" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "festivalTitle" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "likeCount" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/MemberInfo"
+          },
+          "thumbnail" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PostRequest" : {
+        "description" : "후기 작성 및 수정 요청",
+        "properties" : {
+          "content" : {
+            "description" : "후기 내용",
+            "example" : "불꽃축제가 정말 재미있었습니다.",
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "thumbnail" : {
+            "description" : "썸네일 이미지 key (이미지 업로드 API가 돌려준 key)",
+            "example" : "posts/{회원ID}/{파일명}.png",
+            "maxLength" : 2048,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "title" : {
+            "description" : "후기 제목",
+            "example" : "서울 불꽃축제 다녀왔어요",
+            "maxLength" : 30,
+            "minLength" : 2,
+            "type" : "string"
+          }
+        },
+        "required" : [ "content", "title" ],
+        "type" : "object"
+      },
+      "SortObject" : {
+        "properties" : {
+          "empty" : {
+            "type" : "boolean"
+          },
+          "sorted" : {
+            "type" : "boolean"
+          },
+          "unsorted" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "SyncResponse" : {
+        "description" : "공공 행사 동기화 결과",
+        "properties" : {
+          "closedFestivals" : {
+            "description" : "종료 처리(CLOSED)된 행사 목록",
+            "items" : {
+              "$ref" : "#/components/schemas/SyncedFestival"
+            },
+            "type" : "array"
+          },
+          "savedFestivals" : {
+            "description" : "새로 저장된 행사 목록",
+            "items" : {
+              "$ref" : "#/components/schemas/SyncedFestival"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "SyncedFestival" : {
+        "description" : "동기화된 행사 요약",
+        "properties" : {
+          "festivalId" : {
+            "description" : "행사 번호",
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "title" : {
+            "description" : "행사 제목",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "UploadInfo" : {
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "type" : "object"
+      },
+      "WeatherResponse" : {
+        "description" : "지역·날짜별 간단 날씨",
+        "properties" : {
+          "condition" : {
+            "description" : "날씨 상태",
+            "enum" : [ "SUNNY", "CLOUDY", "RAIN", "RAIN_SNOW", "SNOW", "UNKNOWN" ],
+            "example" : "SUNNY",
+            "type" : "string"
+          },
+          "date" : {
+            "description" : "조회한 날짜",
+            "example" : "2026-09-25",
+            "format" : "date",
+            "type" : "string"
+          },
+          "precipitationProbability" : {
+            "description" : "강수확률(%). 값이 없으면 null",
+            "example" : 30,
+            "format" : "int32",
+            "type" : [ "integer", "null" ]
+          }
+        },
+        "type" : "object"
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "bearerFormat" : "JWT",
+        "in" : "header",
+        "name" : "Authorization",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  },
+  "info" : {
+    "description" : "Access Token을 Authorize에 넣으면 됩니다. Bearer 접두사는 자동으로 붙습니다.",
+    "title" : "roomescape API",
+    "version" : "v1"
+  },
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/api/v1/admin/deletions" : {
+      "post" : {
+        "description" : "삭제와 사유 이력을 함께 저장합니다. inquiryId는 선택이며 지정하면 동일 대상의 미처리 신고만 처리 완료로 변경합니다. 연결 실패 시 삭제도 취소됩니다.",
+        "operationId" : "delete",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminDeletionCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 콘텐츠 삭제",
+        "tags" : [ "admin-deletion-controller" ]
+      }
+    },
+    "/api/v1/admin/deletions/latest" : {
+      "get" : {
+        "description" : "기록이 없으면 data는 null입니다. 현재 삭제 상태는 콘텐츠 조회 결과로 확인하며 최종 복구 가능 여부는 복구 요청 시 다시 검증합니다.",
+        "operationId" : "latest",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "targetType",
+          "required" : true,
+          "schema" : {
+            "enum" : [ "FESTIVAL", "POST", "COMMENT", "COMMUNITY_POST", "COMMUNITY_COMMENT" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "targetId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLatest"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 최신 삭제·복구 이력 조회",
+        "tags" : [ "admin-deletion-controller" ]
+      }
+    },
+    "/api/v1/admin/deletions/restore" : {
+      "post" : {
+        "description" : "행사·후기·후기 댓글·커뮤니티 글/댓글을 복구합니다. 최근 조치가 관리자 삭제인 경우만 허용하며 댓글은 부모 글이 게시 중이어야 합니다. 기존 이력은 보존합니다.",
+        "operationId" : "restore",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminDeletionRestore"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 콘텐츠 복구",
+        "tags" : [ "admin-deletion-controller" ]
+      }
+    },
+    "/api/v1/admin/festivals" : {
+      "get" : {
+        "description" : "행사명·기관명·상세주소 검색어와 데이터 출처로 검색한다.",
+        "operationId" : "search_2",
+        "parameters" : [ {
+          "description" : "행사명·기관명·상세주소 검색어. 부분 일치, 대소문자 무시",
+          "example" : "수원",
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "description" : "행사명·기관명·상세주소 검색어. 부분 일치, 대소문자 무시",
+            "example" : "수원",
+            "type" : "string"
+          }
+        }, {
+          "description" : "데이터 출처. PUBLIC(공공) 또는 MEMBER(회원 제보)",
+          "example" : "PUBLIC",
+          "in" : "query",
+          "name" : "providerType",
+          "required" : false,
+          "schema" : {
+            "description" : "데이터 출처. PUBLIC(공공) 또는 MEMBER(회원 제보)",
+            "enum" : [ "PUBLIC", "MEMBER" ],
+            "example" : "PUBLIC",
+            "type" : "string"
+          }
+        }, {
+          "description" : "종료된 행사 제외 여부. 기본값 false",
+          "in" : "query",
+          "name" : "excludeClosed",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "description" : "종료된 행사 제외 여부. 기본값 false",
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "삭제된 행사 포함 여부. 기본값 false",
+          "in" : "query",
+          "name" : "includeDeleted",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "description" : "삭제된 행사 포함 여부. 기본값 false",
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "default" : [ "createdAt,DESC" ],
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAdminFestivalListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 행사 목록 조회",
+        "tags" : [ "Admin Festival" ]
+      }
+    },
+    "/api/v1/admin/festivals/{festivalId}" : {
+      "patch" : {
+        "description" : "보낸 값으로 행사 정보를 전부 덮어쓴다.",
+        "operationId" : "update_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "festivalId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminFestivalUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 행사 수정",
+        "tags" : [ "Admin Festival" ]
+      }
+    },
+    "/api/v1/admin/inquiries" : {
+      "get" : {
+        "description" : "제목, 답변 상태, 문의 종류로 검색한다. 조건을 비우면 전체를 조회한다",
+        "operationId" : "search_1",
+        "parameters" : [ {
+          "description" : "제목 검색어. 부분 일치, 대소문자 무시",
+          "example" : "취소",
+          "in" : "query",
+          "name" : "title",
+          "required" : false,
+          "schema" : {
+            "description" : "제목 검색어. 부분 일치, 대소문자 무시",
+            "example" : "취소",
+            "type" : "string"
+          }
+        }, {
+          "description" : "답변 상태. PENDING(답변 대기) 또는 ANSWERED(답변 완료)",
+          "example" : "PENDING",
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "description" : "답변 상태. PENDING(답변 대기) 또는 ANSWERED(답변 완료)",
+            "enum" : [ "PENDING", "ANSWERED" ],
+            "example" : "PENDING",
+            "type" : "string"
+          }
+        }, {
+          "description" : "접수 종류. QUESTION(일반 문의), REPORT(신고), TIP(제보)",
+          "example" : "REPORT",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "description" : "접수 종류. QUESTION(일반 문의), REPORT(신고), TIP(제보)",
+            "enum" : [ "QUESTION", "REPORT", "TIP" ],
+            "example" : "REPORT",
+            "type" : "string"
+          }
+        }, {
+          "description" : "삭제된 문의 포함 여부. 기본값 false",
+          "example" : false,
+          "in" : "query",
+          "name" : "includeDeleted",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "description" : "삭제된 문의 포함 여부. 기본값 false",
+            "example" : false,
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "default" : [ "createdAt,DESC" ],
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAdminInquiryListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 문의·신고·제보 목록 조회",
+        "tags" : [ "Admin Inquiry" ]
+      }
+    },
+    "/api/v1/admin/inquiries/{inquiryId}" : {
+      "get" : {
+        "description" : "본문, 첨부, 작성자, 답변까지 함께 조회한다",
+        "operationId" : "findById",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "inquiryId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdminInquiryDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 문의·신고·제보 상세 조회",
+        "tags" : [ "Admin Inquiry" ]
+      }
+    },
+    "/api/v1/admin/inquiries/{inquiryId}/answer" : {
+      "patch" : {
+        "description" : "답변을 등록하고 상태를 ANSWERED로 바꾼다.",
+        "operationId" : "answer",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "inquiryId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminInquiryAnswerRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdminInquiryDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 문의·신고·제보 답변 등록",
+        "tags" : [ "Admin Inquiry" ]
+      }
+    },
+    "/api/v1/admin/members" : {
+      "get" : {
+        "description" : "닉네임·이메일 검색어와 등급으로 검색한다.",
+        "operationId" : "search",
+        "parameters" : [ {
+          "description" : "닉네임 또는 이메일 검색어. 부분 일치, 대소문자 무시",
+          "example" : "autumn",
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "description" : "닉네임 또는 이메일 검색어. 부분 일치, 대소문자 무시",
+            "example" : "autumn",
+            "type" : "string"
+          }
+        }, {
+          "description" : "회원 등급. 비우면 전체 등급을 조회한다",
+          "example" : "ROLE_WARNING",
+          "in" : "query",
+          "name" : "role",
+          "required" : false,
+          "schema" : {
+            "description" : "회원 등급. 비우면 전체 등급을 조회한다",
+            "enum" : [ "ROLE_WARNING", "ROLE_UNVERIFIED", "ROLE_RECOGNIZED", "ROLE_TRUSTED", "ROLE_ADMIN" ],
+            "example" : "ROLE_WARNING",
+            "type" : "string"
+          }
+        }, {
+          "description" : "탈퇴 회원 포함 여부. 기본값 false",
+          "example" : false,
+          "in" : "query",
+          "name" : "includeDeleted",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "description" : "탈퇴 회원 포함 여부. 기본값 false",
+            "example" : false,
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 20,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "default" : [ "createdAt,DESC" ],
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAdminInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 회원 목록 조회",
+        "tags" : [ "Admin Member" ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}" : {
+      "get" : {
+        "description" : "탈퇴 회원도 조회된다.",
+        "operationId" : "get",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdminInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 회원 단건 조회",
+        "tags" : [ "Admin Member" ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/role" : {
+      "patch" : {
+        "description" : "회원의 신뢰 등급을 변경한다. 관리자 관련 변경은 막는다.",
+        "operationId" : "changeRole",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdminMemberRoleChangeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdminInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 회원 등급 변경",
+        "tags" : [ "Admin Member" ]
+      }
+    },
+    "/api/v1/admin/posts" : {
+      "get" : {
+        "description" : "삭제된 후기를 포함하여 후기 목록을 조회하거나 검색합니다.",
+        "operationId" : "searchPostsForAdmin",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "type",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "TITLE", "MEMBER_NICKNAME", "FESTIVAL_TITLE" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePagePostAdminListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "관리자 후기 조회",
+        "tags" : [ "Post" ]
+      }
+    },
+    "/api/v1/admin/posts/{id}/comments" : {
+      "get" : {
+        "description" : "일반 댓글 기준 오래된 순 페이지와 대댓글을 제공합니다. 삭제된 댓글의 원문·작성자·최신 삭제 사유는 관리자에게만 제공합니다.",
+        "operationId" : "getCommentsForAdmin",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAdminCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ADMIN] 후기 댓글 관리 목록",
+        "tags" : [ "comment-controller" ]
+      }
+    },
+    "/api/v1/auth/login" : {
+      "post" : {
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AuthLoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAuthToken"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "로그인",
+        "tags" : [ "인증 API" ]
+      }
+    },
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "operationId" : "logout",
+        "parameters" : [ {
+          "in" : "cookie",
+          "name" : "refreshToken",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "로그아웃",
+        "tags" : [ "인증 API" ]
+      }
+    },
+    "/api/v1/auth/refresh" : {
+      "post" : {
+        "operationId" : "refresh",
+        "parameters" : [ {
+          "in" : "cookie",
+          "name" : "refreshToken",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAuthToken"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Access Token 재발급",
+        "tags" : [ "인증 API" ]
+      }
+    },
+    "/api/v1/auth/signup" : {
+      "post" : {
+        "operationId" : "signup",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AuthSignupRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "회원가입",
+        "tags" : [ "인증 API" ]
+      }
+    },
+    "/api/v1/comments/{id}" : {
+      "delete" : {
+        "description" : "작성자 본인이 삭제합니다. 관리자의 타인 댓글 삭제는 공통 관리자 조치 API를 사용합니다.",
+        "operationId" : "deleteComment_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "댓글 삭제",
+        "tags" : [ "comment-controller" ]
+      },
+      "patch" : {
+        "description" : "본인이 작성한 댓글을 수정합니다.",
+        "operationId" : "updateComment_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommentUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "댓글 수정",
+        "tags" : [ "comment-controller" ]
+      }
+    },
+    "/api/v1/community/comments/{commentId}" : {
+      "delete" : {
+        "description" : "작성자 본인만 삭제합니다. 관리자의 타인 댓글 삭제는 공통 관리자 조치 API를 사용합니다.",
+        "operationId" : "deleteComment",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "commentId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 댓글 삭제",
+        "tags" : [ "Community" ]
+      },
+      "patch" : {
+        "operationId" : "updateComment",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "commentId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommunityCommentUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommunityCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 댓글 수정",
+        "tags" : [ "Community" ]
+      }
+    },
+    "/api/v1/community/posts" : {
+      "get" : {
+        "operationId" : "getPosts",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "FREE", "EVENT", "RESTAURANT" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageCommunityPostListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 글 목록",
+        "tags" : [ "Community" ]
+      },
+      "post" : {
+        "operationId" : "createPost_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommunityPostUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommunityPostDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 글 작성",
+        "tags" : [ "Community" ]
+      }
+    },
+    "/api/v1/community/posts/{postId}" : {
+      "delete" : {
+        "description" : "작성자 본인만 삭제합니다. 관리자의 타인 글 삭제는 공통 관리자 조치 API를 사용합니다.",
+        "operationId" : "deletePost_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 글 삭제",
+        "tags" : [ "Community" ]
+      },
+      "get" : {
+        "operationId" : "getPost",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommunityPostDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 글 상세",
+        "tags" : [ "Community" ]
+      },
+      "patch" : {
+        "operationId" : "updatePost_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommunityPostUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommunityPostDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 글 수정",
+        "tags" : [ "Community" ]
+      }
+    },
+    "/api/v1/community/posts/{postId}/comments" : {
+      "get" : {
+        "description" : "댓글을 오래된 순으로 조회한다. 페이지는 일반 댓글 기준이고, 대댓글은 각 댓글의 replies에 담긴다. 삭제된 댓글은 \"삭제된 댓글입니다\"로 내려간다.",
+        "operationId" : "getComments_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageCommunityCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 댓글 목록",
+        "tags" : [ "Community" ]
+      },
+      "post" : {
+        "description" : "parentId를 넣으면 그 댓글의 대댓글이 된다.",
+        "operationId" : "createComment_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "postId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommunityCommentCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommunityCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "커뮤니티 댓글 작성",
+        "tags" : [ "Community" ]
+      }
+    },
+    "/api/v1/festivals" : {
+      "get" : {
+        "description" : "공공행사와 사용자 등록 행사를 통합 검색한다. 모든 조건은 선택이다.",
+        "operationId" : "searchFestivals",
+        "parameters" : [ {
+          "description" : "검색어",
+          "example" : "수원",
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "description" : "검색어",
+            "example" : "수원",
+            "type" : "string"
+          }
+        }, {
+          "description" : "행사 지역",
+          "example" : "GYEONGGI",
+          "in" : "query",
+          "name" : "region",
+          "required" : false,
+          "schema" : {
+            "description" : "행사 지역",
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "example" : "GYEONGGI",
+            "type" : "string"
+          }
+        }, {
+          "description" : "행사 지역 상세(시·군·구)",
+          "example" : "수원시",
+          "in" : "query",
+          "name" : "regionDetail",
+          "required" : false,
+          "schema" : {
+            "description" : "행사 지역 상세(시·군·구)",
+            "example" : "수원시",
+            "type" : "string"
+          }
+        }, {
+          "description" : "데이터 출처",
+          "example" : "PUBLIC",
+          "in" : "query",
+          "name" : "providerType",
+          "required" : false,
+          "schema" : {
+            "description" : "데이터 출처",
+            "enum" : [ "PUBLIC", "MEMBER" ],
+            "example" : "PUBLIC",
+            "type" : "string"
+          }
+        }, {
+          "description" : "행사 카테고리",
+          "example" : "축제",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "description" : "행사 카테고리",
+            "example" : "축제",
+            "type" : "string"
+          }
+        }, {
+          "description" : "행사 진행 일자",
+          "example" : "2026-09-21",
+          "in" : "query",
+          "name" : "date",
+          "required" : false,
+          "schema" : {
+            "description" : "행사 진행 일자",
+            "example" : "2026-09-21",
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "description" : "종료 행사 제외 여부",
+          "example" : false,
+          "in" : "query",
+          "name" : "excludeClosed",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "description" : "종료 행사 제외 여부",
+            "example" : false,
+            "type" : "boolean"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "default" : 0,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "default" : 9,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageFestivalListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 통합 검색",
+        "tags" : [ "festival-controller" ]
+      }
+    },
+    "/api/v1/festivals/submissions" : {
+      "post" : {
+        "description" : "로그인한 사용자가 행사 내용을 제보합니다.",
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FestivalSubmissionUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalSubmissionCreate"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 정보 등록",
+        "tags" : [ "festival-submission-controller" ]
+      }
+    },
+    "/api/v1/festivals/sync" : {
+      "post" : {
+        "description" : "관리자가 공공 API 데이터를 즉시 동기화하고, 끝나면 결과를 반환합니다. 이미 진행 중이면 409를 반환합니다.",
+        "operationId" : "syncPublicFestivals",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseSyncResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "공공 행사 수동 동기화",
+        "tags" : [ "festival-controller" ]
+      }
+    },
+    "/api/v1/festivals/{festivalId}" : {
+      "get" : {
+        "description" : "공공행사 또는 회원 제보 행사 1건의 상세 정보를 조회합니다.",
+        "operationId" : "getFestival",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "festivalId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 상세 조회",
+        "tags" : [ "festival-controller" ]
+      }
+    },
+    "/api/v1/festivals/{festivalId}/accuracy-votes/me" : {
+      "delete" : {
+        "description" : "로그인한 사용자의 행사 정보 정확도 평가를 취소합니다.",
+        "operationId" : "cancelVote",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "festivalId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalAccuracyVoteInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 정보 정확도 평가 취소",
+        "tags" : [ "festival-accuracy-vote-controller" ]
+      },
+      "put" : {
+        "description" : "사용자 등록 행사에 정확해요 또는 정보가 달라요 평가를 등록하거나 변경합니다.",
+        "operationId" : "vote",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "festivalId",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FestivalAccuracyVoteUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalAccuracyVoteInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 정보 정확도 평가",
+        "tags" : [ "festival-accuracy-vote-controller" ]
+      }
+    },
+    "/api/v1/festivals/{id}/likes/me" : {
+      "delete" : {
+        "description" : "특정 행사에 좋아요를 취소합니다.",
+        "operationId" : "deleteFestivalLike",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLikeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 좋아요 취소",
+        "tags" : [ "like-controller" ]
+      },
+      "post" : {
+        "description" : "특정 행사에 좋아요를 등록합니다.",
+        "operationId" : "createFestivalLike",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLikeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사 좋아요 등록",
+        "tags" : [ "like-controller" ]
+      }
+    },
+    "/api/v1/festivals/{id}/posts" : {
+      "get" : {
+        "description" : "행사별 후기를 검색합니다. sort=likeCount,desc 로 좋아요순 정렬할 수 있습니다.",
+        "operationId" : "getPostsByFestival",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePagePostListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "행사별 후기 다건 조회",
+        "tags" : [ "Post" ]
+      },
+      "post" : {
+        "description" : "특정 행사에 후기를 작성합니다.",
+        "operationId" : "createPost",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePostCreate"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 작성",
+        "tags" : [ "Post" ]
+      }
+    },
+    "/api/v1/images" : {
+      "post" : {
+        "description" : "이미지를 업로드하고 저장 key와 공개 URL을 돌려준다. DB에는 URL이 아니라 key를 저장한다. jpeg/png/webp만 허용하며 최대 5MB.",
+        "operationId" : "upload",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "type",
+          "required" : true,
+          "schema" : {
+            "enum" : [ "POST", "PROFILE", "INQUIRY", "FESTIVAL" ],
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "file" : {
+                    "format" : "binary",
+                    "type" : "string"
+                  }
+                },
+                "required" : [ "file" ],
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseUploadInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "이미지 업로드",
+        "tags" : [ "Image" ]
+      }
+    },
+    "/api/v1/inquiries" : {
+      "post" : {
+        "description" : "문의, 신고 또는 제보를 등록한다 첨부 이미지는 업로드 API가 돌려준 key를 넣는다.",
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/InquiryCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseInquiryDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "문의 등록",
+        "tags" : [ "Inquiry" ]
+      }
+    },
+    "/api/v1/inquiries/me" : {
+      "get" : {
+        "description" : "로그인한 사용자가 등록한 문의를 최신순으로 조회한다. 남의 문의는 조회할 수 없다.",
+        "operationId" : "findMine_1",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListInquiryListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 문의 목록 조회",
+        "tags" : [ "Inquiry" ]
+      }
+    },
+    "/api/v1/inquiries/{inquiryId}" : {
+      "delete" : {
+        "description" : "본인이 작성한 문의를 삭제한다. 관리자는 모든 문의를 삭제할 수 있다. ",
+        "operationId" : "delete_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "inquiryId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "문의 삭제",
+        "tags" : [ "Inquiry" ]
+      },
+      "get" : {
+        "description" : "본인이 등록한 문의를 상세 조회한다. 남의 문의를 조회하면 404로 응답한다.",
+        "operationId" : "findMineById",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "inquiryId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseInquiryDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 문의 상세 조회",
+        "tags" : [ "Inquiry" ]
+      },
+      "patch" : {
+        "description" : "본인이 작성한 문의를 수정한다. 보낸 필드만 반영된다. ",
+        "operationId" : "update_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "inquiryId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/InquiryUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseInquiryDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "문의 수정",
+        "tags" : [ "Inquiry" ]
+      }
+    },
+    "/api/v1/members/me" : {
+      "delete" : {
+        "description" : "현재 비밀번호로 본인 확인 후 탈퇴한다.",
+        "operationId" : "withdraw",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MemberWithdrawRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 회원 탈퇴",
+        "tags" : [ "Member" ]
+      },
+      "get" : {
+        "description" : "로그인한 본인의 정보를 조회한다.",
+        "operationId" : "getMyPage",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseMyPageInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "마이페이지 조회",
+        "tags" : [ "Member" ]
+      },
+      "patch" : {
+        "description" : "닉네임·연락처·프로필 이미지를 수정한다. 보낸 필드만 반영된다.",
+        "operationId" : "updateMyPage",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MemberUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseMyPageInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "마이페이지 수정",
+        "tags" : [ "Member" ]
+      }
+    },
+    "/api/v1/members/me/comments" : {
+      "get" : {
+        "description" : "후기·커뮤니티 댓글을 삭제 여부와 관계없이 조회합니다.",
+        "operationId" : "comments",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "내가 작성한 댓글",
+        "tags" : [ "my-content-controller" ]
+      }
+    },
+    "/api/v1/members/me/password" : {
+      "patch" : {
+        "description" : "인증을 통과한 상태에서 새 비밀번호를 설정한다.",
+        "operationId" : "changePassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordChangeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "비밀번호 변경",
+        "tags" : [ "Member" ]
+      }
+    },
+    "/api/v1/members/me/password/verification-code" : {
+      "post" : {
+        "description" : "가입 이메일로 6자리 인증 코드를 보낸다.",
+        "operationId" : "sendPasswordChangeCode",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "비밀번호 변경 인증 코드 발송",
+        "tags" : [ "Member" ]
+      }
+    },
+    "/api/v1/members/me/password/verify" : {
+      "post" : {
+        "description" : "메일로 받은 6자리 코드가 맞는지 확인한다.",
+        "operationId" : "verifyPasswordChangeCode",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PasswordVerifyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "비밀번호 변경 인증 코드 확인",
+        "tags" : [ "Member" ]
+      }
+    },
+    "/api/v1/members/me/posts" : {
+      "get" : {
+        "description" : "행사 제보·후기·커뮤니티 글을 삭제 여부와 관계없이 조회합니다.",
+        "operationId" : "posts",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "내가 작성한 글",
+        "tags" : [ "my-content-controller" ]
+      }
+    },
+    "/api/v1/members/me/submissions" : {
+      "get" : {
+        "description" : "로그인한 사용자가 제보한 행사 목록을 조회합니다.",
+        "operationId" : "findAllMine",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFestivalSubmissionListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 행사 목록 조회",
+        "tags" : [ "festival-submission-controller" ]
+      }
+    },
+    "/api/v1/members/me/submissions/{submissionId}" : {
+      "delete" : {
+        "description" : "로그인한 사용자가 본인이 등록한 행사 제보를 삭제합니다.",
+        "operationId" : "delete_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "submissionId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 행사 제보 삭제",
+        "tags" : [ "festival-submission-controller" ]
+      },
+      "get" : {
+        "description" : "로그인한 사용자가 자신이 제보한 행사 정보를 상세 조회합니다.",
+        "operationId" : "findMine",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "submissionId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalSubmissionDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 행사 상세 조회",
+        "tags" : [ "festival-submission-controller" ]
+      },
+      "patch" : {
+        "description" : "로그인한 사용자가 본인이 등록한 행사 정보와 제보 내용을 수정합니다.",
+        "operationId" : "update",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "submissionId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FestivalSubmissionUpsertRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFestivalSubmissionDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "[ME] 내 행사 제보 수정",
+        "tags" : [ "festival-submission-controller" ]
+      }
+    },
+    "/api/v1/posts" : {
+      "get" : {
+        "description" : "후기를 검색합니다. sort=likeCount,desc 로 좋아요순 정렬할 수 있습니다.",
+        "operationId" : "searchPosts",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "type",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "TITLE", "MEMBER_NICKNAME", "FESTIVAL_TITLE" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "keyword",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePagePostListItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 검색",
+        "tags" : [ "Post" ]
+      }
+    },
+    "/api/v1/posts/{id}" : {
+      "delete" : {
+        "description" : "작성자 본인이 삭제합니다. 관리자의 타인 후기 삭제는 공통 관리자 조치 API를 사용합니다.",
+        "operationId" : "deletePost",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 삭제",
+        "tags" : [ "Post" ]
+      },
+      "get" : {
+        "description" : "후기 상세 정보를 조회합니다.",
+        "operationId" : "getPostDetail",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePostDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 단건 조회",
+        "tags" : [ "Post" ]
+      },
+      "patch" : {
+        "description" : "본인이 작성한 후기를 수정합니다.",
+        "operationId" : "updatePost",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePostDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 수정",
+        "tags" : [ "Post" ]
+      }
+    },
+    "/api/v1/posts/{id}/comments" : {
+      "get" : {
+        "description" : "특정 후기의 댓글을 오래된 순으로 조회합니다. 페이지는 일반 댓글 기준이고, 대댓글은 각 댓글의 replies에 담깁니다. 삭제된 댓글은 \"삭제된 댓글입니다\"로 내려갑니다.",
+        "operationId" : "getComments",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "댓글 목록",
+        "tags" : [ "comment-controller" ]
+      },
+      "post" : {
+        "description" : "특정 후기에 댓글을 작성합니다. parentId를 넣으면 그 댓글의 대댓글이 됩니다.",
+        "operationId" : "createComment",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CommentCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCommentInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "댓글 작성",
+        "tags" : [ "comment-controller" ]
+      }
+    },
+    "/api/v1/posts/{id}/likes/me" : {
+      "delete" : {
+        "description" : "특정 후기에 좋아요를 취소합니다.",
+        "operationId" : "deletePostLike",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLikeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 좋아요 취소",
+        "tags" : [ "like-controller" ]
+      },
+      "post" : {
+        "description" : "특정 후기에 좋아요를 등록합니다.",
+        "operationId" : "createPostLike",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLikeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "후기 좋아요 등록",
+        "tags" : [ "like-controller" ]
+      }
+    },
+    "/api/v1/weather" : {
+      "get" : {
+        "description" : "단기예보 제공 범위(오늘~2일 후) 밖이거나 조회에 실패하면 UNKNOWN을 반환합니다.",
+        "operationId" : "getWeather",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "region",
+          "required" : true,
+          "schema" : {
+            "enum" : [ "SEOUL", "BUSAN", "DAEGU", "INCHEON", "GWANGJU", "DAEJEON", "ULSAN", "SEJONG", "GANGWON", "CHUNGBUK", "CHUNGNAM", "JEONBUK", "JEONNAM", "GYEONGBUK", "GYEONGNAM", "JEJU", "GYEONGGI", "GYEONGGI_SUWON", "GYEONGGI_GOYANG", "GYEONGGI_YONGIN", "GYEONGGI_SEONGNAM", "GYEONGGI_BUCHEON", "GYEONGGI_HWASEONG", "GYEONGGI_ANSAN", "GYEONGGI_NAMYANGJU", "GYEONGGI_ANYANG", "GYEONGGI_PYEONGTAEK", "GYEONGGI_SIHEUNG", "GYEONGGI_PAJU", "GYEONGGI_UIJEONGBU", "GYEONGGI_GIMPO", "GYEONGGI_GWANGJU", "GYEONGGI_GWANGMYEONG", "GYEONGGI_GUNPO", "GYEONGGI_HANAM", "GYEONGGI_OSAN", "GYEONGGI_YANGJU", "GYEONGGI_ICHEON", "GYEONGGI_GURI", "GYEONGGI_ANSEONG", "GYEONGGI_POCHEON", "GYEONGGI_UIWANG", "GYEONGGI_YANGPYEONG", "GYEONGGI_YEOJU", "GYEONGGI_DONGDUCHEON", "GYEONGGI_GWACHEON", "GYEONGGI_GAPYEONG", "GYEONGGI_YEONCHEON" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "date",
+          "required" : true,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseWeatherResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "지역·날짜별 날씨 조회",
+        "tags" : [ "weather-controller" ]
+      }
+    }
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  } ],
+  "servers" : [ {
+    "description" : "Generated server url",
+    "url" : "http://localhost"
+  } ],
+  "tags" : [ {
+    "description" : "관리자 회원 관리 API",
+    "name" : "Admin Member"
+  }, {
+    "description" : "커뮤니티 게시글과 댓글 API",
+    "name" : "Community"
+  }, {
+    "description" : "회원가입, 로그인 및 토큰 관리",
+    "name" : "인증 API"
+  }, {
+    "description" : "문의·신고·제보 API",
+    "name" : "Inquiry"
+  }, {
+    "description" : "관리자 행사 관리 API",
+    "name" : "Admin Festival"
+  }, {
+    "description" : "이미지 업로드 API",
+    "name" : "Image"
+  }, {
+    "description" : "관리자 문의·신고·제보 API",
+    "name" : "Admin Inquiry"
+  }, {
+    "description" : "행사 후기 API",
+    "name" : "Post"
+  }, {
+    "description" : "회원 API",
+    "name" : "Member"
+  } ]
+}
+
