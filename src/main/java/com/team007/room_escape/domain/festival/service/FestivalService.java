@@ -6,14 +6,9 @@ import com.team007.room_escape.domain.festival.infra.client.FestivalPublicApiCli
 import com.team007.room_escape.domain.festival.infra.dto.CultureInfoDetailRow;
 import com.team007.room_escape.domain.festival.infra.dto.CultureInfoPeriodRow;
 import com.team007.room_escape.domain.festival.infra.dto.FestivalVoteCount;
-import com.team007.room_escape.domain.festival.infra.entity.Festival;
-import com.team007.room_escape.domain.festival.infra.entity.FestivalAccuracyVote;
-import com.team007.room_escape.domain.festival.infra.entity.FestivalAccuracyVoteType;
-import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus;
-import com.team007.room_escape.domain.festival.infra.entity.ProviderType;
-import com.team007.room_escape.domain.festival.infra.entity.PublicFestivalSource;
-import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository;
+import com.team007.room_escape.domain.festival.infra.entity.*;
 import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracyVoteRepository;
+import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository;
 import com.team007.room_escape.domain.festival.infra.repository.PublicFestivalSourceRepository;
 import com.team007.room_escape.domain.like.infra.dto.FestivalLikeCount;
 import com.team007.room_escape.domain.like.infra.repository.LikeRepository;
@@ -22,14 +17,6 @@ import com.team007.room_escape.global.config.R2Properties;
 import com.team007.room_escape.global.exception.BusinessException;
 import com.team007.room_escape.global.response.code.FestivalExceptionCode;
 import com.team007.room_escape.global.storage.ImageUrlResolver;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,7 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
-import java.util.Locale;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
