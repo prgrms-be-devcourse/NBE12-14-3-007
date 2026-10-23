@@ -49,3 +49,7 @@ out/
 
 ### Kotlin 마이그레이션 개인 메모 ###
 docs/kotlin-migration-pending.md
+
+### API 응답 스냅샷 (내가 찍은 결과, 임시 복사본) ###
+snapshots/runs/
+src/test/java/com/team007/room_escape/api/SnapshotRecorderTest.java
