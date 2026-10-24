@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.response
+package com.team007.room_escape.global.response
 
-import com.team007.room_escape.global.response.ApiResponse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

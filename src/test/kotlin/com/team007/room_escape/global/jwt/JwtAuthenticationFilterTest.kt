@@ -1,9 +1,6 @@
-package com.team007.room_escape.v2.global.jwt
+package com.team007.room_escape.global.jwt
 
 import com.team007.room_escape.global.exception.BusinessException
-import com.team007.room_escape.global.jwt.JwtAuthenticationFilter
-import com.team007.room_escape.global.jwt.JwtProperties
-import com.team007.room_escape.global.jwt.JwtProvider
 import com.team007.room_escape.global.response.code.AuthExceptionCode
 import com.team007.room_escape.global.security.CustomUserDetails
 import jakarta.servlet.http.HttpServletRequest

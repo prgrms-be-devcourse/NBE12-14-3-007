@@ -1,8 +1,5 @@
-package com.team007.room_escape.v2.global.exception
+package com.team007.room_escape.global.exception
 
-import com.team007.room_escape.global.exception.BusinessException
-import com.team007.room_escape.global.exception.ExceptionCode
-import com.team007.room_escape.global.exception.GlobalExceptionHandler
 import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.response.code.AuthExceptionCode
 import com.team007.room_escape.global.response.code.CommonExceptionCode

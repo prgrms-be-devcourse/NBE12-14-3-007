@@ -1,7 +1,6 @@
-package com.team007.room_escape.v2.global.mail
+package com.team007.room_escape.global.mail
 
 import com.team007.room_escape.global.config.AuthMailProperties
-import com.team007.room_escape.global.mail.MailSendService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test

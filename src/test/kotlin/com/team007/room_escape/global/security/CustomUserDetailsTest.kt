@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.security
+package com.team007.room_escape.global.security
 
-import com.team007.room_escape.global.security.CustomUserDetails
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

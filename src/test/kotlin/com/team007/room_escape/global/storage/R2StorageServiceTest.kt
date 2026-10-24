@@ -1,12 +1,13 @@
-package com.team007.room_escape.v2.global.storage
+package com.team007.room_escape.global.storage
 
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.StorageExceptionCode
-import com.team007.room_escape.global.storage.R2StorageService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -19,11 +20,15 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.mock.web.MockMultipartFile
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import java.io.IOException
 import java.util.UUID
 
 class R2StorageServiceTest {
@@ -137,10 +142,40 @@ class R2StorageServiceTest {
 
             assertThatThrownBy { service.upload(pngFile(), "posts", me) }.isBusiness(StorageExceptionCode.UPLOAD_FAILED)
         }
+
+        @Test
+        fun `파일 내용을 읽다가 실패해도 업로드 실패 예외로 바꾼다`() {
+            val broken = mock(MultipartFile::class.java)
+            `when`(broken.isEmpty).thenReturn(false)
+            `when`(broken.contentType).thenReturn("image/png")
+            `when`(broken.inputStream).thenThrow(IOException("읽기 실패"))
+
+            assertThatThrownBy { service.upload(broken, "posts", me) }.isBusiness(StorageExceptionCode.UPLOAD_FAILED)
+        }
     }
 
     @Nested
     inner class `바이트 업로드` {
+
+        @Test
+        fun `버킷 콘텐츠 타입 캐시 설정을 담아 S3에 올린다`() {
+            val key = service.upload(byteArrayOf(1, 2), "image/jpeg", "festivals")
+
+            val request = uploadedRequest()
+            assertThat(request.bucket()).isEqualTo("my-bucket")
+            assertThat(request.key()).isEqualTo(key)
+            assertThat(request.contentType()).isEqualTo("image/jpeg")
+            assertThat(request.cacheControl()).isEqualTo("public, max-age=31536000, immutable")
+        }
+
+        @Test
+        fun `S3 업로드가 실패하면 업로드 실패 예외로 바꾼다`() {
+            `when`(s3Client.putObject(any(PutObjectRequest::class.java), any(RequestBody::class.java)))
+                .thenThrow(SdkClientException.create("연결 실패"))
+
+            assertThatThrownBy { service.upload(byteArrayOf(1), "image/png", "festivals") }
+                .isBusiness(StorageExceptionCode.UPLOAD_FAILED)
+        }
 
         @Test
         fun `회원 ID 없이 폴더 무작위값 확장자 순서의 key를 돌려준다`() {
@@ -189,6 +224,59 @@ class R2StorageServiceTest {
             doThrow(SdkClientException.create("삭제 실패")).`when`(s3Client).deleteObject(any(DeleteObjectRequest::class.java))
 
             assertThatCode { service.delete("profiles/$me/a.png") }.doesNotThrowAnyException()
+        }
+
+        @Test
+        fun `삭제 요청에는 버킷과 key를 담는다`() {
+            service.delete("profiles/$me/a.png")
+
+            val captor = ArgumentCaptor.forClass(DeleteObjectRequest::class.java)
+            verify(s3Client).deleteObject(captor.capture())
+            assertThat(captor.value.bucket()).isEqualTo("my-bucket")
+            assertThat(captor.value.key()).isEqualTo("profiles/$me/a.png")
+        }
+    }
+
+    /** DB 트랜잭션 안에서 부르면, 롤백될 수도 있으니 커밋된 뒤에야 파일을 지운다 */
+    @Nested
+    inner class `트랜잭션 안에서 삭제` {
+
+        @BeforeEach
+        fun startTransaction() = TransactionSynchronizationManager.initSynchronization()
+
+        @AfterEach
+        fun endTransaction() = TransactionSynchronizationManager.clear()
+
+        private fun commit() = TransactionSynchronizationManager.getSynchronizations().forEach { it.afterCommit() }
+
+        @Test
+        fun `커밋되기 전에는 지우지 않고 커밋된 뒤에 지운다`() {
+            service.deleteOwnedBy("profiles/$me/a.png", me)
+
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+
+            commit()
+
+            verify(s3Client).deleteObject(any(DeleteObjectRequest::class.java))
+        }
+
+        @Test
+        fun `롤백되면 지우지 않는다`() {
+            service.deleteOwnedBy("profiles/$me/a.png", me)
+
+            TransactionSynchronizationManager.getSynchronizations()
+                .forEach { it.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK) }
+
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+        }
+
+        @Test
+        fun `남의 파일은 커밋 뒤에도 지우지 않는다`() {
+            service.deleteOwnedBy("profiles/$other/a.png", me)
+
+            commit()
+
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
         }
     }
 
