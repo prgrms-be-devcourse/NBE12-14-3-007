@@ -1,9 +1,7 @@
-package com.team007.room_escape.v2.global.security
+package com.team007.room_escape.global.security
 
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.AuthExceptionCode
-import com.team007.room_escape.global.security.JwtAccessDeniedHandler
-import com.team007.room_escape.global.security.JwtAuthenticationEntryPoint
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.assertj.core.api.Assertions.assertThat

@@ -1,7 +1,5 @@
-package com.team007.room_escape.v2.global.jwt
+package com.team007.room_escape.global.jwt
 
-import com.team007.room_escape.global.jwt.JwtProperties
-import com.team007.room_escape.global.jwt.JwtProvider
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.security.WeakKeyException

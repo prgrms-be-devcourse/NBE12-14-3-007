@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.validation
+package com.team007.room_escape.global.validation
 
-import com.team007.room_escape.global.validation.ValidPhone
 import jakarta.validation.Validation
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.entity
+package com.team007.room_escape.global.entity
 
-import com.team007.room_escape.global.entity.SoftDeletableEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime

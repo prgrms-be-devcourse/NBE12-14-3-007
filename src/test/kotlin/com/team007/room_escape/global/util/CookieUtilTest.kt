@@ -1,8 +1,7 @@
-package com.team007.room_escape.v2.global.util
+package com.team007.room_escape.global.util
 
 import com.team007.room_escape.global.jwt.JwtProperties
 import com.team007.room_escape.global.security.AuthCookieProperties
-import com.team007.room_escape.global.util.CookieUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders

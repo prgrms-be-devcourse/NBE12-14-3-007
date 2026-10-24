@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.response
+package com.team007.room_escape.global.response
 
-import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.response.code.CommonExceptionCode
 import com.team007.room_escape.global.response.code.MemberExceptionCode
 import org.assertj.core.api.Assertions.assertThat

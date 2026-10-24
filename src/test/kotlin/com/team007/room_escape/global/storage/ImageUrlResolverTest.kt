@@ -1,7 +1,6 @@
-package com.team007.room_escape.v2.global.storage
+package com.team007.room_escape.global.storage
 
 import com.team007.room_escape.global.config.R2Properties
-import com.team007.room_escape.global.storage.ImageUrlResolver
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

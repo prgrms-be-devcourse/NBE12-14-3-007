@@ -1,7 +1,6 @@
-package com.team007.room_escape.v2.global.util
+package com.team007.room_escape.global.util
 
 import com.team007.room_escape.global.config.R2Properties
-import com.team007.room_escape.global.util.RichTextSanitizer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

@@ -1,6 +1,5 @@
-package com.team007.room_escape.v2.global.exception
+package com.team007.room_escape.global.exception
 
-import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.MemberExceptionCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
