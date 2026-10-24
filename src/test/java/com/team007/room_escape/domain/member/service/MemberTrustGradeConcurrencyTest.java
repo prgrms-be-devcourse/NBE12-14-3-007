@@ -150,7 +150,7 @@ class MemberTrustGradeConcurrencyTest {
 				Member voter = members.save(Member.builder().email(UUID.randomUUID() + "@example.com")
 					.password("test").nickname("평가자").role(MemberRole.ROLE_UNVERIFIED).build());
 				if (index < likeCount) {
-					likes.save(Like.builder().festival(festival).member(voter).build());
+					likes.save(Like.of(festival, voter));
 				}
 				if (index < accurateCount) {
 					votes.save(FestivalAccuracyVote.builder().festival(festival).member(voter)
