@@ -1,5 +1,7 @@
 package com.team007.room_escape.global.response
 
+import com.team007.room_escape.global.exception.ExceptionCode
+
 /**
  * API 공통 응답 래퍼.
  * 성공/실패 모두 success, code, message, data 형태로 내려 프론트 계약을 맞춘다.
@@ -8,61 +10,46 @@ class ApiResponse<T> private constructor(
     val success: Boolean,
     val code: String?,
     val message: String?,
-    val data: T?
+    val data: T?,
 ) {
-
-    class ApiResponseBuilder<T> internal constructor() {
-        private var success: Boolean = false
-        private var code: String? = null
-        private var message: String? = null
-        private var data: T? = null
-
-        fun success(success: Boolean): ApiResponseBuilder<T> = apply { this.success = success }
-
-        fun code(code: String?): ApiResponseBuilder<T> = apply { this.code = code }
-
-        fun message(message: String?): ApiResponseBuilder<T> = apply { this.message = message }
-
-        fun data(data: T?): ApiResponseBuilder<T> = apply { this.data = data }
-
-        fun build(): ApiResponse<T> = ApiResponse(success, code, message, data)
-    }
 
     companion object {
 
-        private const val DEFAULT_CODE = "0000"
+        private const val SUCCESS_CODE = "0000"
 
-        @JvmStatic
-        fun <T> builder(): ApiResponseBuilder<T> = ApiResponseBuilder()
+        fun <T> ok(data: T, message: String = ""): ApiResponse<T> =
+            ApiResponse(true, SUCCESS_CODE, message, data)
 
-        @JvmStatic
-        fun <T> success(data: T): ApiResponse<T> {
-            return builder<T>().success(true).code(DEFAULT_CODE).message("").data(data).build()
-        }
+        fun noContent(message: String = ""): ApiResponse<Void?> =
+            ApiResponse(true, SUCCESS_CODE, message, null)
 
-        @JvmStatic
-        fun <T> success(data: T, message: String?): ApiResponse<T> {
-            return builder<T>().success(true).code(DEFAULT_CODE).message(message).data(data).build()
-        }
+        fun fail(code: ExceptionCode, message: String? = code.message): ApiResponse<Void?> =
+            ApiResponse(false, code.code, message, null)
 
-        @JvmStatic
-        fun noContentSuccess(): ApiResponse<Void?> {
-            return builder<Void?>().success(true).code(DEFAULT_CODE).message("").data(null).build()
-        }
+        // ---- 아직 Java 코드가 부르는 옛 모양. Kotlin 코드는 위의 새 모양만 쓴다. ----
 
+        @Deprecated("ok()를 쓰세요", ReplaceWith("ok(data)"), DeprecationLevel.ERROR)
         @JvmStatic
-        fun noContentSuccess(message: String?): ApiResponse<Void?> {
-            return builder<Void?>().success(true).code(DEFAULT_CODE).message(message).data(null).build()
-        }
+        fun <T> success(data: T): ApiResponse<T> = ok(data)
 
+        @Deprecated("ok()를 쓰세요", ReplaceWith("ok(data, message)"), DeprecationLevel.ERROR)
         @JvmStatic
-        fun <T> error(message: String?, code: String?, data: T): ApiResponse<T> {
-            return builder<T>().success(false).code(code).message(message).data(data).build()
-        }
+        fun <T> success(data: T, message: String?): ApiResponse<T> = ApiResponse(true, SUCCESS_CODE, message, data)
 
+        @Deprecated("noContent()를 쓰세요", ReplaceWith("noContent()"), DeprecationLevel.ERROR)
         @JvmStatic
-        fun error(message: String?, code: String?): ApiResponse<Void?> {
-            return builder<Void?>().success(false).code(code).message(message).data(null).build()
-        }
+        fun noContentSuccess(): ApiResponse<Void?> = noContent()
+
+        @Deprecated("noContent()를 쓰세요", ReplaceWith("noContent(message)"), DeprecationLevel.ERROR)
+        @JvmStatic
+        fun noContentSuccess(message: String?): ApiResponse<Void?> = ApiResponse(true, SUCCESS_CODE, message, null)
+
+        @Deprecated("fail()을 쓰세요", level = DeprecationLevel.ERROR)
+        @JvmStatic
+        fun <T> error(message: String?, code: String?, data: T): ApiResponse<T> = ApiResponse(false, code, message, data)
+
+        @Deprecated("fail()을 쓰세요", level = DeprecationLevel.ERROR)
+        @JvmStatic
+        fun error(message: String?, code: String?): ApiResponse<Void?> = ApiResponse(false, code, message, null)
     }
 }
