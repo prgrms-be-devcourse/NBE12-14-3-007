@@ -156,6 +156,15 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    fun `원인이 자기 자신을 가리키는 예외도 무한히 따라가지 않고 서버 오류로 응답한다`() {
+        val selfCaused = object : InvalidDataAccessApiUsageException("순환") {
+            override val cause: Throwable get() = this
+        }
+
+        handler.handleInvalidDataAccess(selfCaused).shouldBe(CommonExceptionCode.INTERNAL_ERROR)
+    }
+
+    @Test
     fun `서버 오류 응답에는 예외의 원문 메시지를 담지 않는다`() {
         val response = handler.handleUnknown(IllegalStateException("DB 비밀번호가 틀렸습니다"))
 
