@@ -37,7 +37,7 @@ class CommentController(
         @AuthenticationPrincipal user: CustomUserDetails,
         @PageableDefault(size = 20) page: Pageable,
     ): ResponseEntity<ApiResponse<Page<CommentResponse.AdminInfo>>> =
-        ResponseEntity.ok(ApiResponse.success(commentService.getCommentsForAdmin(id, user.id, page)))
+        ResponseEntity.ok(ApiResponse.ok(commentService.getCommentsForAdmin(id, user.id, page)))
 
     @Operation(summary = "댓글 작성", description = "특정 후기에 댓글을 작성합니다. parentId를 넣으면 그 댓글의 대댓글이 됩니다.")
     @PostMapping("/posts/{id}/comments")
@@ -47,7 +47,7 @@ class CommentController(
         @Valid @RequestBody request: CommentRequest.Create,
         @AuthenticationPrincipal user: CustomUserDetails,
     ): ResponseEntity<ApiResponse<CommentResponse.Info>> =
-        ResponseEntity.ok(ApiResponse.success(commentService.createComment(id, request, user.id)))
+        ResponseEntity.ok(ApiResponse.ok(commentService.createComment(id, request, user.id)))
 
     @Operation(
         summary = "댓글 목록",
@@ -59,7 +59,7 @@ class CommentController(
         @PathVariable id: UUID,
         @PageableDefault(size = 20) page: Pageable,
     ): ResponseEntity<ApiResponse<Page<CommentResponse.Info>>> =
-        ResponseEntity.ok(ApiResponse.success(commentService.getComments(id, page)))
+        ResponseEntity.ok(ApiResponse.ok(commentService.getComments(id, page)))
 
     @Operation(summary = "댓글 수정", description = "본인이 작성한 댓글을 수정합니다.")
     @PatchMapping("/comments/{id}")
@@ -69,7 +69,7 @@ class CommentController(
         @Valid @RequestBody request: CommentRequest.Upsert,
         @AuthenticationPrincipal user: CustomUserDetails,
     ): ResponseEntity<ApiResponse<CommentResponse.Info>> =
-        ResponseEntity.ok(ApiResponse.success(commentService.updateComment(id, request, user.id)))
+        ResponseEntity.ok(ApiResponse.ok(commentService.updateComment(id, request, user.id)))
 
     @Operation(summary = "댓글 삭제", description = "작성자 본인이 삭제합니다. 관리자의 타인 댓글 삭제는 공통 관리자 조치 API를 사용합니다.")
     @DeleteMapping("/comments/{id}")
@@ -79,6 +79,6 @@ class CommentController(
     ): ResponseEntity<ApiResponse<Void?>> {
         commentService.deleteComment(id, user.id)
 
-        return ResponseEntity.ok(ApiResponse.noContentSuccess())
+        return ResponseEntity.ok(ApiResponse.noContent())
     }
 }
