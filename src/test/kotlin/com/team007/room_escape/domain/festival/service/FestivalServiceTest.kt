@@ -1,0 +1,726 @@
+package com.team007.room_escape.domain.festival.service
+
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.groups.Tuple.tuple
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyList
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.eq
+import org.mockito.Mockito.lenient
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+
+import com.team007.room_escape.domain.festival.dto.FestivalResponse
+import com.team007.room_escape.domain.festival.dto.FestivalSearchRequest
+import com.team007.room_escape.domain.festival.infra.client.FestivalPublicApiClientV2
+import com.team007.room_escape.domain.festival.infra.dto.CultureInfoDetailRow
+import com.team007.room_escape.domain.festival.infra.dto.CultureInfoPeriodRow
+import com.team007.room_escape.domain.festival.infra.entity.Festival
+import com.team007.room_escape.domain.festival.infra.entity.FestivalAccuracyVote
+import com.team007.room_escape.domain.festival.infra.entity.FestivalAccuracyVoteType
+import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
+import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus
+import com.team007.room_escape.domain.festival.infra.entity.ProviderType
+import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
+import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracyVoteRepository
+import com.team007.room_escape.domain.festival.infra.repository.PublicFestivalSourceRepository
+import com.team007.room_escape.domain.like.infra.dto.FestivalLikeCount
+import com.team007.room_escape.domain.like.infra.repository.LikeRepository
+import com.team007.room_escape.global.exception.BusinessException
+import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Optional
+import java.util.UUID
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentCaptor
+import org.mockito.InOrder
+import org.mockito.InjectMocks
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Spy
+import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
+import tools.jackson.databind.ObjectMapper
+
+/**
+ * FestivalService.syncPublicFestivals()의 배치 동기화 로직을 검증
+ * 외부 API(FestivalPublicApiClientV2)와 DB(FestivalRepository 등)는 Mockito로 목 처리해서
+ * 실제 네트워크 호출/DB 접근 없이 순수 로직만 확인
+ */
+@ExtendWith(MockitoExtension::class)
+class FestivalServiceTest {
+
+	private val CURRENT_YEAR = LocalDate.now().year
+	private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd")
+	/** FestivalService.CULTURE_INFO_PAGE_SIZE와 같은 값. private라 여기 따로 맞춰둔다. */
+	private val PAGE_SIZE = 9999
+
+	@field:Mock
+	private lateinit var festivalRepository: FestivalRepository
+
+	@field:Mock
+	private lateinit var accuracyVoteRepository: FestivalAccuracyVoteRepository
+
+	@field:Mock
+	private lateinit var likeRepository: LikeRepository
+
+	@field:Mock
+	private lateinit var publicFestivalSourceRepository: PublicFestivalSourceRepository
+
+	@field:Mock
+	private lateinit var festivalPublicApiClientV2: FestivalPublicApiClientV2
+
+	@field:Mock
+	private lateinit var objectMapper: ObjectMapper
+
+	@field:Mock
+	private lateinit var festivalImageProcessor: FestivalImageProcessor
+
+	/** 실제 DB 없이 콜백만 그대로 실행되도록 가짜 트랜잭션 매니저를 끼운다. */
+	@field:Spy
+	private var transactionTemplate =
+		TransactionTemplate(Mockito.mock(PlatformTransactionManager::class.java))
+
+	@field:InjectMocks
+	private lateinit var festivalService: FestivalService
+
+	/** 이미지 이관은 이 테스트의 관심사가 아니라서 원본 URL을 그대로 돌려준다. 신규 판별 기본값은 "전부 신규". */
+	@BeforeEach
+	fun setUpDefaultStubs() {
+		lenient().`when`(festivalImageProcessor.process(any())).thenAnswer { it.getArgument<String?>(0) }
+		lenient().`when`(accuracyVoteRepository.countByFestivalIds(anyList())).thenReturn(listOf())
+		lenient().`when`(festivalRepository.findExistingExternalIds(any(), any())).thenReturn(listOf())
+	}
+
+	/** /period2 응답 1건. 신규 판별에만 쓰이므로 seq/title만 있으면 충분하다. */
+	private fun periodRow(seq: String): CultureInfoPeriodRow {
+		return CultureInfoPeriodRow(seq, "남한산성문화제")
+	}
+
+	/** 같은 seq를 가진 period 응답을 count개 반복해서 만든다 (페이지네이션 테스트용). */
+	private fun dummyPeriodRows(count: Int, seq: String): List<CultureInfoPeriodRow> {
+		return List(count) { periodRow(seq) }
+	}
+
+	/** /detail2 응답 1건. 날짜 2개만 테스트별로 바꿔가며 나머지 필드는 고정값을 쓴다. */
+	private fun detailRow(seq: String, startDate: String, endDate: String): CultureInfoDetailRow {
+		return CultureInfoDetailRow(
+				seq, "남한산성문화제", startDate, endDate,
+				"광주시 문화센터", "행사", "경기", "광주시",
+				"무료", "상세 설명", "https://example.com/1", "031-000-0000",
+				"https://example.com/img.jpg", "경기도 광주시 문화센터로 1"
+		)
+	}
+
+	@Test
+	@DisplayName("신규 seq가 없으면 상세조회 없이 아무것도 저장하지 않는다")
+	fun doesNotSaveWhenNoNewFestivals() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+				.thenReturn(listOf("seq-1")) // 이미 저장돼 있음
+
+		festivalService.syncPublicFestivals()
+
+		verify(festivalPublicApiClientV2, never()).fetchDetail(anyString())
+		verify(festivalRepository, never()).saveAll(any<List<Festival>>())
+	}
+
+	/** 받은 개수가 요청한 페이지 크기(PAGE_SIZE)만큼 꽉 차면, fetchAllRows()가 다음 페이지까지 이어서 호출해야 한다. */
+	@Test
+	@DisplayName("받은 개수가 페이지 크기만큼 꽉 차면 다음 페이지까지 이어서 가져온다")
+	fun fetchesNextPageWhenFirstPageIsFull() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(dummyPeriodRows(PAGE_SIZE, "seq-full"))
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(2), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-last")))
+		// 전부 이미 저장된 것으로 처리해서, 상세조회 루프(호출 간 대기 포함)는 안 타게 하고 페이지네이션만 확인한다.
+		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+				.thenReturn(listOf("seq-full", "seq-last"))
+
+		festivalService.syncPublicFestivals()
+
+		verify(festivalPublicApiClientV2).fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString())
+		verify(festivalPublicApiClientV2).fetchPeriod(eq(2), eq(PAGE_SIZE), anyString(), anyString())
+	}
+
+	/** 올해 범위(yyyyMMdd)로 from/to를 넘기는지 확인한다. 연도 필터링은 이제 API 쪽(from/to)에서 서버가 처리한다. */
+	@Test
+	@DisplayName("올해 1월 1일부터 12월 31일까지의 범위로 목록을 요청한다")
+	fun requestsPeriodWithCurrentYearRange() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(1, PAGE_SIZE, "${CURRENT_YEAR}0101", "${CURRENT_YEAR}1231"))
+				.thenReturn(listOf())
+
+		festivalService.syncPublicFestivals()
+
+		verify(festivalPublicApiClientV2)
+				.fetchPeriod(1, PAGE_SIZE, "${CURRENT_YEAR}0101", "${CURRENT_YEAR}1231")
+	}
+
+	/**
+	 * 상황: /period2에서 seq-1이 신규로 조회되고, /detail2가 제목·날짜·장소·가격·전화번호·주소 등
+	 * 상세정보를 채워서 돌려준다고 가정한다.
+	 * 확인: syncPublicFestivals()가 그 상세정보를 Festival 엔티티로 변환할 때 각 필드
+	 * (externalId, title, category, url, place, placeAddress, region, regionDetail 등)가
+	 * 올바르게 매핑되는지, 저장하려고 넘긴 리스트의 첫 번째 객체를 꺼내서 확인한다.
+	 */
+	@Test
+	@DisplayName("상세조회 응답 필드가 Festival 엔티티 필드로 올바르게 매핑된다")
+	fun mapsDetailRowFieldsToFestivalEntity() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0918", "29991231"))
+
+		festivalService.syncPublicFestivals()
+
+		val festival = captureSaved().get(0)
+		assertThat(festival.providerType).isEqualTo(ProviderType.PUBLIC)
+		assertThat(festival.externalId).isEqualTo("seq-1")
+		assertThat(festival.title).isEqualTo("남한산성문화제")
+		assertThat(festival.category).isEqualTo("행사")
+		assertThat(festival.url).isEqualTo("https://example.com/1")
+		assertThat(festival.imgUrl).isEqualTo("https://example.com/img.jpg")
+		assertThat(festival.partcptExpnInfo).isEqualTo("무료")
+		assertThat(festival.telnoInfo).isEqualTo("031-000-0000")
+		assertThat(festival.place).isEqualTo("광주시 문화센터")
+		assertThat(festival.placeAddress).isEqualTo("경기도 광주시 문화센터로 1")
+		assertThat(festival.region).isEqualTo(FestivalRegion.GYEONGGI)
+		assertThat(festival.regionDetail).isEqualTo("광주시")
+		assertThat(festival.beginDe).isEqualTo(LocalDateTime.of(CURRENT_YEAR, 9, 18, 0, 0))
+		// endDe는 그날 자정(0시)이 아니라 하루의 끝(23:59:59.999999999)으로 저장된다 (parseEndDate() 참고).
+		assertThat(festival.endDe).isEqualTo(LocalDate.of(2999, 12, 31).atTime(LocalTime.MAX))
+	}
+
+	/**
+	 * 상황: 상세조회 응답의 종료일(endDate)을 "어제" 날짜로 준다
+	 * (테스트를 언제 실행하든 항상 과거가 되도록 동적으로 계산).
+	 * 확인: 저장된 Festival의 status가 FestivalStatus.from(endDe) 로직에 의해
+	 * CLOSED로 계산되는지.
+	 */
+	@Test
+	@DisplayName("종료일이 지난 행사는 CLOSED 상태로 저장된다")
+	fun resolvesClosedStatusWhenEndDeIsInThePast() {
+		val yesterday = LocalDate.now().minusDays(1).format(DATE_FORMAT)
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", yesterday))
+
+		festivalService.syncPublicFestivals()
+
+		assertThat(captureSaved().get(0).status).isEqualTo(FestivalStatus.CLOSED)
+	}
+
+	/**
+	 * 상황: 실제 API 응답에서도 종료일이 빈 문자열("")로 오는 경우가 있었다.
+	 * 상세조회 응답의 endDate를 ""로 준다.
+	 * 확인: parseDate()가 예외 없이 null을 반환하고, endDe가 null이면
+	 * status가 기본값 OPEN으로 저장되는지.
+	 */
+	@Test
+	@DisplayName("종료일이 비어 있으면 날짜는 null이고 상태는 OPEN으로 저장된다")
+	fun handlesBlankDateAsNullAndDefaultsToOpen() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0918", ""))
+
+		festivalService.syncPublicFestivals()
+
+		val festival = captureSaved().get(0)
+		assertThat(festival.endDe).isNull()
+		assertThat(festival.status).isEqualTo(FestivalStatus.OPEN)
+	}
+
+	/** 원본 스냅샷은 누적하지 않고 기존 것을 지운 뒤 새로 저장해야 한다 (순서까지 확인). */
+	@Test
+	@DisplayName("원본 데이터는 기존 것을 삭제하고 최신 것만 저장한다")
+	fun savesLatestRawSourceOnly() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+				.thenReturn(listOf("seq-1")) // 신규 없음, 원본 저장 순서만 확인
+		`when`(objectMapper.writeValueAsString(Mockito.any<List<CultureInfoPeriodRow>>())).thenReturn("[]")
+
+		festivalService.syncPublicFestivals()
+
+		val inOrder = Mockito.inOrder(publicFestivalSourceRepository)
+		inOrder.verify(publicFestivalSourceRepository).deleteAll()
+		inOrder.verify(publicFestivalSourceRepository).save(any())
+	}
+
+	/** 종료 처리 대상으로 조회될 (종료일이 지났는데 아직 OPEN인) 행사를 만드는 헬퍼. */
+	private fun expiredOpenFestival(id: Long, title: String): Festival {
+		return Festival.builder()
+			.id(id)
+			.providerType(ProviderType.PUBLIC)
+			.title(title)
+			.endDe(LocalDate.now().minusDays(1).atStartOfDay())
+			.status(FestivalStatus.OPEN)
+			.build()
+	}
+
+	/** 수동 동기화 버튼에 돌려줄 결과: 종료 처리한 행사 목록과 새로 저장한 행사 목록(행사명 포함)이 담기는지 확인한다. */
+	@Test
+	@DisplayName("동기화 결과에 종료 처리된 행사 목록과 새로 저장한 행사 목록이 담긴다")
+	fun returnsClosedAndSavedFestivals() {
+		`when`(festivalRepository.findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), any(LocalDateTime::class.java)))
+			.thenReturn(listOf(expiredOpenFestival(3L, "지난 음악회"), expiredOpenFestival(4L, "지난 전시회")))
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1"), periodRow("seq-2")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", "29991231"))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-2"))
+				.thenReturn(detailRow("seq-2", "${CURRENT_YEAR}0102", "29991231"))
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(result.closedFestivals())
+			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String> { it.title() })
+			.containsExactly("지난 음악회", "지난 전시회")
+		assertThat(result.savedFestivals())
+			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String> { it.title() })
+			.containsExactly("남한산성문화제", "남한산성문화제")
+	}
+
+	/** 종료 처리 목록을 뽑은 뒤, 같은 시각(now)으로 일괄 갱신까지 호출되는지 확인한다. */
+	@Test
+	@DisplayName("종료 대상 목록을 조회한 뒤 같은 시각으로 CLOSED 일괄 갱신을 호출한다")
+	fun closesExpiredFestivalsWithSameNowAsLookup() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+				.thenReturn(listOf("seq-1"))
+
+		festivalService.syncPublicFestivals()
+
+		val lookupNow = ArgumentCaptor.forClass(LocalDateTime::class.java)
+		val updateNow = ArgumentCaptor.forClass(LocalDateTime::class.java)
+		val inOrder = Mockito.inOrder(festivalRepository)
+		inOrder.verify(festivalRepository).findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), lookupNow.capture())
+		inOrder.verify(festivalRepository).closeExpiredFestivals(updateNow.capture())
+		assertThat(updateNow.value).isEqualTo(lookupNow.value)
+	}
+
+	/** 새 행사가 없으면 저장 목록은 비어 있지만, 종료 처리한 행사 목록은 그대로 응답해야 한다. */
+	@Test
+	@DisplayName("새 행사가 없으면 저장 목록은 비고 종료 처리 목록만 담긴다")
+	fun returnsEmptySavedWhenNoNewFestivals() {
+		`when`(festivalRepository.findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), any(LocalDateTime::class.java)))
+			.thenReturn(listOf(expiredOpenFestival(3L, "지난 음악회")))
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+				.thenReturn(listOf("seq-1"))
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(result.closedFestivals()).hasSize(1)
+		assertThat(result.savedFestivals()).isEmpty()
+	}
+
+	/** saveAll(List)에 실제로 넘어간 Festival 목록을 잡아내는 공통 헬퍼. */
+	@Suppress("UNCHECKED_CAST")
+	/** 동기화 중 festivalRepository.saveAll()에 실제로 넘긴 Festival 리스트를 꺼내온다. */
+	private fun captureSaved(): List<Festival> {
+		val captor = ArgumentCaptor.forClass(List::class.java) as ArgumentCaptor<List<Festival>>
+		verify(festivalRepository).saveAll(captor.capture())
+		return captor.value
+	}
+
+	/** 행사 검색 테스트용 PUBLIC 행사 엔티티를 만든다. */
+	private fun publicFestival(region: FestivalRegion, beginDe: LocalDateTime, endDe: LocalDateTime, storedStatus: FestivalStatus): Festival {
+		return Festival.builder()
+				.providerType(ProviderType.PUBLIC)
+				.title("경기 행사")
+				.category("행사")
+				.beginDe(beginDe)
+				.endDe(endDe)
+				.region(region)
+				.status(storedStatus)
+				.build()
+	}
+
+	/** 테스트에서 공통으로 사용하는 검색 조건을 만든다. */
+	private fun searchRequest(date: LocalDate): FestivalSearchRequest {
+		return searchRequest(date, false)
+	}
+
+	private fun searchRequest(date: LocalDate, excludeClosed: Boolean): FestivalSearchRequest {
+		return FestivalSearchRequest(
+				"경기",
+				FestivalRegion.GYEONGGI,
+				null,
+				ProviderType.PUBLIC,
+				"행사",
+				date,
+				excludeClosed
+		)
+	}
+
+	/** 실제 서비스와 동일한 9개 단위 페이징 조건을 만든다. */
+	private fun searchPageable(): Pageable {
+		return PageRequest.of(
+				0,
+				9,
+				Sort.by(Sort.Direction.ASC, "beginDe")
+		)
+	}
+
+	@Test
+	@DisplayName("검색 조건과 날짜 범위를 Repository에 전달한다")
+	fun delegatesSearchConditionsToRepository() {
+		val date = LocalDate.of(CURRENT_YEAR, 9, 20)
+		val request = searchRequest(date, true)
+		val pageable = searchPageable()
+
+		val festival = publicFestival(
+				FestivalRegion.GYEONGGI,
+				date.minusDays(1).atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				FestivalStatus.OPEN
+		)
+
+		val festivalPage =
+				PageImpl(listOf(festival), pageable, 1)
+
+		`when`(festivalRepository.searchFestivals(
+				true,
+				"경기",
+				true,
+				FestivalRegion.GYEONGGI,
+				false,
+				null,
+				true,
+				ProviderType.PUBLIC,
+				true,
+				"행사",
+				true,
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				true,
+				pageable
+		)).thenReturn(festivalPage)
+
+		val result =
+				festivalService.searchFestivals(request, pageable)
+
+		assertThat(result.totalElements).isEqualTo(1)
+
+		verify(festivalRepository).searchFestivals(
+				true,
+				"경기",
+
+				true,
+				FestivalRegion.GYEONGGI,
+
+				false,
+				null,
+
+				true,
+				ProviderType.PUBLIC,
+
+				true,
+				"행사",
+
+				true,
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				true,
+
+				pageable
+		)
+	}
+
+	@Test
+	@DisplayName("응답의 상태는 종료일을 기준으로 다시 계산한다")
+	fun computesStatusFromEndDeNotStoredValue() {
+		val date = LocalDate.now()
+		val request = searchRequest(date)
+		val pageable = searchPageable()
+
+		val pastEndDe = date.minusDays(1).atStartOfDay()
+
+		val staleOpenFestival = publicFestival(
+				FestivalRegion.GYEONGGI,
+				pastEndDe.minusDays(5),
+				pastEndDe,
+				FestivalStatus.OPEN
+		)
+
+		val festivalPage =
+				PageImpl(listOf(staleOpenFestival), pageable, 1)
+
+		`when`(festivalRepository.searchFestivals(
+				true,
+				"경기",
+				true,
+				FestivalRegion.GYEONGGI,
+				false,
+				null,
+				true,
+				ProviderType.PUBLIC,
+				true,
+				"행사",
+				true,
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				false,
+				pageable
+		)).thenReturn(festivalPage)
+
+		val result =
+				festivalService.searchFestivals(request, pageable)
+
+		assertThat(result.content.get(0).status())
+				.isEqualTo(FestivalStatus.CLOSED)
+	}
+
+	@Test
+	@DisplayName("검색 결과에 제목과 지역 등 주요 필드가 매핑된다")
+	fun mapsFestivalFieldsToListItem() {
+		val date = LocalDate.now()
+		val request = searchRequest(date)
+		val pageable = searchPageable()
+
+		val festival = publicFestival(
+				FestivalRegion.GYEONGGI,
+				date.minusDays(1).atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				FestivalStatus.OPEN
+		)
+
+		val festivalPage =
+				PageImpl(listOf(festival), pageable, 1)
+
+		`when`(festivalRepository.searchFestivals(
+				true,
+				"경기",
+				true,
+				FestivalRegion.GYEONGGI,
+				false,
+				null,
+				true,
+				ProviderType.PUBLIC,
+				true,
+				"행사",
+				true,
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay(),
+				false,
+				pageable
+		)).thenReturn(festivalPage)
+
+		val response =
+				festivalService.searchFestivals(request, pageable)
+						.content
+						.get(0)
+
+		assertThat(response.title()).isEqualTo("경기 행사")
+		assertThat(response.region()).isEqualTo(FestivalRegion.GYEONGGI)
+		assertThat(response.providerType()).isEqualTo(ProviderType.PUBLIC)
+	}
+
+	/** 상세 조회 시 출처와 상세 화면용 필드가 그대로 담기는지 확인한다. */
+	@Test
+	@DisplayName("행사 상세 조회 시 출처와 상세 필드를 응답에 담는다")
+	fun getFestivalReturnsDetail() {
+		val today = LocalDate.now()
+		val festival = Festival.builder()
+			.id(7L)
+			.providerType(ProviderType.PUBLIC)
+			.title("남한산성문화제")
+			.category("행사")
+			.partcptExpnInfo("무료")
+			.telnoInfo("031-000-0000")
+			.url("https://example.com/1")
+			.imgUrl("https://example.com/img.jpg")
+			.beginDe(today.minusDays(1).atStartOfDay())
+			.endDe(today.plusDays(1).atStartOfDay())
+			.region(FestivalRegion.GYEONGGI)
+			.build()
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(java.util.Optional.of(festival))
+
+		val detail = festivalService.getFestival(7L, null)
+
+		assertThat(detail.festivalId()).isEqualTo(7L)
+		assertThat(detail.providerType()).isEqualTo(ProviderType.PUBLIC)
+		assertThat(detail.title()).isEqualTo("남한산성문화제")
+		assertThat(detail.partcptExpnInfo()).isEqualTo("무료")
+		assertThat(detail.telnoInfo()).isEqualTo("031-000-0000")
+		assertThat(detail.region()).isEqualTo(FestivalRegion.GYEONGGI)
+		assertThat(detail.status()).isEqualTo(FestivalStatus.OPEN)
+	}
+
+	@Test
+	@DisplayName("회원 제보 행사도 제보 시 입력한 상세 정보를 조회한다")
+	fun getMemberFestivalReturnsSubmissionDetails() {
+		val festival = Festival.builder()
+			.id(8L)
+			.providerType(ProviderType.MEMBER)
+			.title("동네 플리마켓")
+			.category("플리마켓")
+			.content("이웃과 함께하는 주말 장터")
+			.url("https://example.com/market")
+			.region(FestivalRegion.GYEONGGI)
+			.regionDetail("수원시 중앙공원")
+			.beginDe(LocalDate.now().atStartOfDay())
+			.endDe(LocalDate.now().plusDays(1).atStartOfDay())
+			.partcptExpnInfo("무료")
+			.build()
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(8L))
+			.thenReturn(java.util.Optional.of(festival))
+
+		val detail = festivalService.getFestival(8L, null)
+
+		assertThat(detail.providerType()).isEqualTo(ProviderType.MEMBER)
+		assertThat(detail.festivalContent()).isEqualTo("이웃과 함께하는 주말 장터")
+		assertThat(detail.referenceUrl()).isEqualTo("https://example.com/market")
+		assertThat(detail.regionDetail()).isEqualTo("수원시 중앙공원")
+		assertThat(detail.partcptExpnInfo()).isEqualTo("무료")
+	}
+
+	@Test
+	@DisplayName("회원 제보 상세 조회 시 정확도 평가와 좋아요 정보를 함께 응답한다")
+	fun getMemberFestivalReturnsVoteAndLikeSummary() {
+		val memberId = UUID.randomUUID()
+		val festival = Festival.builder()
+			.id(8L)
+			.providerType(ProviderType.MEMBER)
+			.title("동네 플리마켓")
+			.region(FestivalRegion.GYEONGGI)
+			.beginDe(LocalDate.now().atStartOfDay())
+			.endDe(LocalDate.now().plusDays(1).atStartOfDay())
+			.build()
+		val vote = Mockito.mock(FestivalAccuracyVote::class.java)
+
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(8L)).thenReturn(Optional.of(festival))
+		`when`(accuracyVoteRepository.countByFestivalAndVoteType(
+			festival,
+			FestivalAccuracyVoteType.ACCURATE
+		)).thenReturn(3L)
+		`when`(accuracyVoteRepository.countByFestivalAndVoteType(
+			festival,
+			FestivalAccuracyVoteType.INACCURATE
+		)).thenReturn(1L)
+		`when`(accuracyVoteRepository.findByFestivalIdAndMemberId(8L, memberId))
+			.thenReturn(Optional.of(vote))
+		`when`(vote.voteType).thenReturn(FestivalAccuracyVoteType.ACCURATE)
+		`when`(likeRepository.countByFestivalId(8L)).thenReturn(5L)
+		`when`(likeRepository.existsByFestivalIdAndMemberId(8L, memberId)).thenReturn(true)
+
+		val detail = festivalService.getFestival(8L, memberId)
+
+		assertThat(detail.accurateCount()).isEqualTo(3)
+		assertThat(detail.inaccurateCount()).isEqualTo(1)
+		assertThat(detail.myVote()).isEqualTo(FestivalAccuracyVoteType.ACCURATE)
+		assertThat(detail.likeCount()).isEqualTo(5)
+		assertThat(detail.likedByMe()).isTrue()
+	}
+
+	/** 존재하지 않거나 삭제됐거나 공공 행사가 아니면 리포지토리가 빈 값을 주고, 서비스는 FESTIVAL_NOT_FOUND를 던진다. */
+	@Test
+	@DisplayName("행사를 찾을 수 없으면 FESTIVAL_NOT_FOUND 예외가 발생한다")
+	fun getPublicFestivalThrowsWhenNotFound() {
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(999L)).thenReturn(java.util.Optional.empty())
+
+		assertThatThrownBy { festivalService.getFestival(999L, null) }
+			.isInstanceOf(BusinessException::class.java)
+			.extracting { (it as BusinessException).exceptionCode }
+			.isEqualTo(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
+	}
+
+	/** 저장된 status가 낡아도(OPEN) 응답은 종료일 기준으로 다시 계산해서 CLOSED로 내려야 한다. */
+	@Test
+	@DisplayName("상세 응답의 status도 저장된 값이 아니라 endDe 기준으로 계산된다")
+	fun getPublicFestivalComputesStatusFromEndDe() {
+		val pastEndDe = LocalDate.now().minusDays(1).atStartOfDay()
+		val stale = publicFestival(FestivalRegion.GYEONGGI, pastEndDe.minusDays(5), pastEndDe, FestivalStatus.OPEN)
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(java.util.Optional.of(stale))
+
+		assertThat(festivalService.getFestival(1L, null).status()).isEqualTo(FestivalStatus.CLOSED)
+	}
+
+	@Test
+	@DisplayName("정렬을 지정하지 않으면 오늘 기준 가까운 시작일순 전용 쿼리를 쓴다")
+	fun usesNearestStartQueryWhenUnsorted() {
+		val date = LocalDate.of(CURRENT_YEAR, 9, 20)
+		val request = searchRequest(date)
+		val unsorted = PageRequest.of(0, 9)
+
+		val festival = Festival.builder().id(10L).providerType(ProviderType.PUBLIC).title("곧 시작").build()
+
+		`when`(festivalRepository.searchFestivalsOrderByNearestStart(
+				true, "경기",
+				true, FestivalRegion.GYEONGGI,
+				false, null,
+				true, ProviderType.PUBLIC,
+				true, "행사",
+				true, date.atStartOfDay(), date.plusDays(1).atStartOfDay(),
+				false,
+				LocalDate.now().atStartOfDay(),
+				unsorted
+		)).thenReturn(PageImpl(listOf(festival), unsorted, 1))
+
+		val result = festivalService.searchFestivals(request, unsorted)
+
+		assertThat(result.content)
+				.extracting(java.util.function.Function<FestivalResponse.ListItem, Long> { it.festivalId() })
+				.containsExactly(10L)
+		verify(festivalRepository, never()).searchFestivals(
+				anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(),
+				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), any())
+	}
+
+	@Test
+	@DisplayName("좋아요순이면 정렬을 뗀 페이지로 좋아요순 전용 쿼리를 쓰고, 목록에 좋아요 수를 붙인다")
+	fun usesLikeSortQueryAndAttachesLikeCounts() {
+		val date = LocalDate.of(CURRENT_YEAR, 9, 20)
+		val request = searchRequest(date)
+		val pageable = PageRequest.of(1, 9, Sort.by(Sort.Direction.DESC, "likeCount"))
+		val unsorted = PageRequest.of(1, 9)
+
+		val liked = Festival.builder().id(10L).providerType(ProviderType.PUBLIC).title("인기").build()
+		val notLiked = Festival.builder().id(11L).providerType(ProviderType.PUBLIC).title("조용").build()
+
+		`when`(festivalRepository.searchFestivalsOrderByLikeCount(
+				true, "경기",
+				true, FestivalRegion.GYEONGGI,
+				false, null,
+				true, ProviderType.PUBLIC,
+				true, "행사",
+				true, date.atStartOfDay(), date.plusDays(1).atStartOfDay(),
+				false,
+				unsorted
+		)).thenReturn(PageImpl(listOf(liked, notLiked), unsorted, 11))
+		`when`(likeRepository.countByFestivalIds(listOf(10L, 11L)))
+				.thenReturn(listOf(FestivalLikeCount(10L, 7L)))
+
+		val result = festivalService.searchFestivals(request, pageable)
+
+		// 좋아요가 하나도 없는 행사는 집계 결과에 없으므로 0으로 채운다
+		assertThat(result.content)
+				.extracting(java.util.function.Function<FestivalResponse.ListItem, Any> { it.festivalId() }, java.util.function.Function<FestivalResponse.ListItem, Any> { it.likeCount() })
+				.containsExactly(tuple(10L, 7L), tuple(11L, 0L))
+		assertThat(result.totalElements).isEqualTo(11)
+		verify(festivalRepository, never()).searchFestivals(
+				anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(),
+				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), any())
+	}
+}
