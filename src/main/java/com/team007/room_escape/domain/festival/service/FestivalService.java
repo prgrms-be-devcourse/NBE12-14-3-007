@@ -242,7 +242,7 @@ public class FestivalService {
 	/** 좋아요와 정확도 투표를 행사 번호 하나로 모은다. 없는 값은 0이다. */
 	private Map<Long, ListCounts> listCounts(List<Long> festivalIds) {
 		Map<Long, Long> likeCounts = likeRepository.countByFestivalIds(festivalIds).stream()
-			.collect(Collectors.toMap(FestivalLikeCount::festivalId, FestivalLikeCount::likeCount));
+			.collect(Collectors.toMap(FestivalLikeCount::getFestivalId, FestivalLikeCount::getLikeCount));
 		Map<Long, ListCounts> voteCounts = accuracyVoteRepository.countByFestivalIds(festivalIds).stream()
 			.collect(Collectors.toMap(
 				FestivalVoteCount::festivalId,

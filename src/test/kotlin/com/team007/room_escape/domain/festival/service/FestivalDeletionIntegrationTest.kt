@@ -136,7 +136,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
                 Member.builder().email("${UUID.randomUUID()}@example.com")
                     .password("test").nickname("평가자").role(MemberRole.ROLE_UNVERIFIED).build(),
             )
-            likes.save(Like.builder().member(voter).festival(history.festival).build())
+            likes.save(Like.of(history.festival, voter))
             votes.save(FestivalAccuracyVote.builder().member(voter).festival(history.festival)
                 .voteType(FestivalAccuracyVoteType.ACCURATE).build())
         }
