@@ -39,7 +39,7 @@ class FestivalAccuracyVoteController(
             request
         )
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @DeleteMapping("/me")
@@ -57,6 +57,6 @@ class FestivalAccuracyVoteController(
             festivalId
         )
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 }

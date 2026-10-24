@@ -41,7 +41,7 @@ class AdminInquiryController(
     ): ResponseEntity<ApiResponse<Page<AdminInquiryResponse.ListItem>>> {
         val response = adminInquiryService.search(request, pageable)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @Operation(summary = "[ADMIN] 문의·신고·제보 상세 조회", description = "본문, 첨부, 작성자, 답변까지 함께 조회한다")
@@ -52,7 +52,7 @@ class AdminInquiryController(
     ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> {
         val response = adminInquiryService.findById(inquiryId)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @Operation(
@@ -67,6 +67,6 @@ class AdminInquiryController(
     ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> {
         val response = adminInquiryService.answer(inquiryId, request)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 }

@@ -38,7 +38,7 @@ class InquiryController(
     ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
         val response = inquiryService.create(principal.id, request)
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response))
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response))
     }
 
     @Operation(summary = "[ME] 내 문의 목록 조회", description = "로그인한 사용자가 등록한 문의를 최신순으로 조회한다. 남의 문의는 조회할 수 없다.")
@@ -49,7 +49,7 @@ class InquiryController(
     ): ResponseEntity<ApiResponse<List<InquiryResponse.ListItem>>> {
         val response = inquiryService.findMine(principal.id)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @Operation(
@@ -64,7 +64,7 @@ class InquiryController(
     ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
         val response = inquiryService.findMineById(inquiryId, principal.id)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @Operation(summary = "문의 수정", description = "본인이 작성한 문의를 수정한다. 보낸 필드만 반영된다. ")
@@ -77,7 +77,7 @@ class InquiryController(
     ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
         val response = inquiryService.update(inquiryId, principal.id, request)
 
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
     @Operation(summary = "문의 삭제", description = "본인이 작성한 문의를 삭제한다. 관리자는 모든 문의를 삭제할 수 있다. ")
@@ -89,6 +89,6 @@ class InquiryController(
     ): ResponseEntity<ApiResponse<Void?>> {
         inquiryService.delete(inquiryId, principal.id, principal.isAdmin())
 
-        return ResponseEntity.ok(ApiResponse.noContentSuccess())
+        return ResponseEntity.ok(ApiResponse.noContent())
     }
 }

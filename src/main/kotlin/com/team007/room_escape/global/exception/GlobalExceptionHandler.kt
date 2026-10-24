@@ -34,7 +34,7 @@ class GlobalExceptionHandler {
         val ec = e.exceptionCode
         logByStatus(ec, e)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(e.message, ec.code))
+            .body(ApiResponse.fail(ec, e.message))
     }
 
     /** @Valid 요청 본문 검증 실패 (필드 제약 위반) */
@@ -45,7 +45,7 @@ class GlobalExceptionHandler {
         val ec = CommonExceptionCode.INVALID_INPUT
         log.warn("[{}] {}", ec.code, message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(message, ec.code))
+            .body(ApiResponse.fail(ec, message))
     }
 
     /** Refresh 등에서 JWT 만료. 필터의 만료 토큰은 BusinessException으로 먼저 처리된다 */
@@ -54,7 +54,7 @@ class GlobalExceptionHandler {
         val ec = AuthExceptionCode.TOKEN_EXPIRED
         log.warn("[{}] {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** JWT 서명 불일치·형식 오류 등 만료 이외의 토큰 문제 */
@@ -63,7 +63,7 @@ class GlobalExceptionHandler {
         val ec = AuthExceptionCode.TOKEN_INVALID
         log.warn("[{}] {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** 시큐리티 인증 실패. 주로 @PreAuthorize 등 컨트롤러 구간. 필터 401은 EntryPoint가 처리 */
@@ -72,7 +72,7 @@ class GlobalExceptionHandler {
         val ec = AuthExceptionCode.AUTHENTICATION_FAILED
         log.warn("[{}] AuthenticationException: {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** 인증은 됐으나 권한 부족. 주로 @PreAuthorize(hasRole) 실패. 필터 403은 AccessDeniedHandler */
@@ -81,7 +81,7 @@ class GlobalExceptionHandler {
         val ec = AuthExceptionCode.ACCESS_DENIED
         log.warn("[{}] AccessDeniedException: {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** 업로드 파일이 max-file-size를 넘은 경우. 안 잡으면 500이 나간다. */
@@ -90,7 +90,7 @@ class GlobalExceptionHandler {
         val ec = CommonExceptionCode.FILE_TOO_LARGE
         log.warn("[{}] 업로드 크기 초과: {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** 요청 본문을 읽지 못한 경우(깨진 JSON, 잘못된 enum 등). 원문 메시지는 노출하지 않는다. */
@@ -99,7 +99,7 @@ class GlobalExceptionHandler {
         val ec = CommonExceptionCode.INVALID_INPUT
         log.warn("[{}] 본문을 읽지 못함: {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error("요청 형식이 올바르지 않습니다.", ec.code))
+            .body(ApiResponse.fail(ec, "요청 형식이 올바르지 않습니다."))
     }
 
     /** 경로 변수·쿼리 파라미터 타입이 맞지 않는 경우. (예: UUID 자리에 문자열) */
@@ -109,9 +109,7 @@ class GlobalExceptionHandler {
         log.warn("[{}] 파라미터 타입 불일치: {}={}", ec.code, e.name, e.value)
         return ResponseEntity.status(ec.status)
             .body(
-                ApiResponse.error(
-                    "'${e.name}' 값이 올바르지 않습니다.", ec.code
-                )
+                ApiResponse.fail(ec, "'${e.name}' 값이 올바르지 않습니다.")
             )
     }
 
@@ -122,9 +120,7 @@ class GlobalExceptionHandler {
         log.warn("[{}] 필수 파라미터 누락: {}", ec.code, e.parameterName)
         return ResponseEntity.status(ec.status)
             .body(
-                ApiResponse.error(
-                    "'${e.parameterName}' 값이 필요합니다.", ec.code
-                )
+                ApiResponse.fail(ec, "'${e.parameterName}' 값이 필요합니다.")
             )
     }
 
@@ -135,9 +131,7 @@ class GlobalExceptionHandler {
         log.warn("[{}] 잘못된 정렬 필드: {}", ec.code, e.propertyName)
         return ResponseEntity.status(ec.status)
             .body(
-                ApiResponse.error(
-                    "'${e.propertyName}' 으로는 정렬할 수 없습니다.", ec.code
-                )
+                ApiResponse.fail(ec, "'${e.propertyName}' 으로는 정렬할 수 없습니다.")
             )
     }
 
@@ -146,7 +140,7 @@ class GlobalExceptionHandler {
     fun handleMethodNotAllowed(e: HttpRequestMethodNotSupportedException): ResponseEntity<ApiResponse<Void?>> {
         val ec = CommonExceptionCode.METHOD_NOT_ALLOWED
         log.warn("[{}] 지원하지 않는 메서드: {}", ec.code, e.method)
-        return ResponseEntity.status(ec.status).body(ApiResponse.error(ec.message, ec.code))
+        return ResponseEntity.status(ec.status).body(ApiResponse.fail(ec))
     }
 
     /** 매핑되지 않은 경로. 안 잡으면 500이라 여기서 404로 바꾼다. */
@@ -154,7 +148,7 @@ class GlobalExceptionHandler {
     fun handleNoResource(e: NoResourceFoundException): ResponseEntity<ApiResponse<Void?>> {
         val ec = CommonExceptionCode.ENDPOINT_NOT_FOUND
         log.warn("[{}] 없는 경로: {}", ec.code, e.resourcePath)
-        return ResponseEntity.status(ec.status).body(ApiResponse.error(ec.message, ec.code))
+        return ResponseEntity.status(ec.status).body(ApiResponse.fail(ec))
     }
 
     /**
@@ -173,7 +167,7 @@ class GlobalExceptionHandler {
         val ec = CommonExceptionCode.INVALID_INPUT
         log.warn("[{}] 잘못된 정렬 필드: {}", ec.code, e.message)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error("정렬할 수 없는 필드입니다.", ec.code))
+            .body(ApiResponse.fail(ec, "정렬할 수 없는 필드입니다."))
     }
 
     private fun hasUnknownPathCause(e: Throwable): Boolean {
@@ -196,7 +190,7 @@ class GlobalExceptionHandler {
         val ec = CommonExceptionCode.INTERNAL_ERROR
         log.error("[UNHANDLED] 처리되지 않은 예외", e)
         return ResponseEntity.status(ec.status)
-            .body(ApiResponse.error(ec.message, ec.code))
+            .body(ApiResponse.fail(ec))
     }
 
     /** 5xx는 스택트레이스까지, 4xx는 메시지만 남긴다 */

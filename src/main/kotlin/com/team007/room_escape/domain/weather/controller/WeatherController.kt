@@ -29,6 +29,6 @@ class WeatherController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<ApiResponse<WeatherResponse>> {
         val response = weatherService.getWeather(region, date)
-        return ResponseEntity.ok(ApiResponse.success(response))
+        return ResponseEntity.ok(ApiResponse.ok(response))
     }
 }

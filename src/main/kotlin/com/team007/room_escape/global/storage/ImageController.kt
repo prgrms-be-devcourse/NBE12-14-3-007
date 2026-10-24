@@ -50,7 +50,7 @@ class ImageController(
         val key = r2StorageService.upload(file, type.directory, principal.id)
 
         return ResponseEntity.ok(
-            ApiResponse.success(
+            ApiResponse.ok(
                 UploadInfo(key, imageUrlResolver.resolve(key))
             )
         )
