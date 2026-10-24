@@ -34,12 +34,10 @@ import java.util.UUID
 /**
  * 커뮤니티 댓글의 정렬, 대댓글, soft delete를 실제 DB로 확인한다.
  * 같은 회원은 5초 안에 댓글을 다시 쓸 수 없어서 댓글마다 새 회원으로 쓴다.
- *
- * Java `CommunityCommentTest`와 1:1로 짝을 이룬다. 메서드 이름, 준비 데이터, 기대값이 같다.
  */
 @SpringBootTest
 @Transactional
-class CommunityCommentKtTest @Autowired constructor(
+class CommunityCommentTest @Autowired constructor(
     private val communityService: CommunityService,
     private val inquiryTargetValidator: InquiryTargetValidator,
     private val memberRepository: MemberRepository,
