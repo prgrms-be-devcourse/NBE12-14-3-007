@@ -153,12 +153,12 @@ public class CommunityService {
 		CommunityPost post = getPostEntity(postId);
 		String content = request.content().trim();
 		checkCommentCreationAllowed(memberId, content);
-		CommunityComment comment = CommunityComment.builder()
-			.post(post)
-			.member(member)
-			.parent(findParent(request.parentId(), postId))
-			.content(content)
-			.build();
+		CommunityComment comment = new CommunityComment(
+			post,
+			member,
+			findParent(request.parentId(), postId),
+			content
+		);
 		commentRepository.save(comment);
 		return CommunityResponse.CommentInfo.from(comment, imageUrlResolver);
 	}

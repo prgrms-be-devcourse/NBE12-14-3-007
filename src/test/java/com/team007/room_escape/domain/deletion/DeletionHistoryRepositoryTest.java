@@ -171,7 +171,7 @@ class DeletionHistoryRepositoryTest {
 		entityManager.persist(post); entityManager.persist(community);
 		entityManager.persist(com.team007.room_escape.domain.post.infra.entity.Post.builder().member(other).title("타인의 후기").content("내용").build());
 		var comment = com.team007.room_escape.domain.comment.infra.entity.Comment.builder().member(author).post(post).content("내 댓글").build();
-		var communityComment = com.team007.room_escape.domain.community.infra.entity.CommunityComment.builder().member(author).post(community).content("내 커뮤니티 댓글").build();
+		var communityComment = new com.team007.room_escape.domain.community.infra.entity.CommunityComment(community, author, null, "내 커뮤니티 댓글");
 		entityManager.persist(comment); entityManager.persist(communityComment);
 		var festival = festivals.saveAndFlush(com.team007.room_escape.domain.festival.infra.entity.Festival.builder().member(author)
 			.providerType(com.team007.room_escape.domain.festival.infra.entity.ProviderType.MEMBER).title("내 제보").build());
@@ -518,8 +518,8 @@ class DeletionHistoryRepositoryTest {
 		entityManager.persist(communityPost);
 		var comment = com.team007.room_escape.domain.comment.infra.entity.Comment.builder()
 			.post(post).member(author).content("후기 댓글").build();
-		var communityComment = com.team007.room_escape.domain.community.infra.entity.CommunityComment.builder()
-			.post(communityPost).member(author).content("커뮤니티 댓글").build();
+		var communityComment = new com.team007.room_escape.domain.community.infra.entity.CommunityComment(
+			communityPost, author, null, "커뮤니티 댓글");
 		entityManager.persist(comment);
 		entityManager.persist(communityComment);
 		entityManager.flush();

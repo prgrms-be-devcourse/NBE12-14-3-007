@@ -53,37 +53,4 @@ class CommunityComment(
     }
 
     fun isReply(): Boolean = parent != null
-
-    /**
-     * Java 호출부(CommunityService, DeletionHistoryRepositoryTest)가 쓰던 Lombok 빌더 호환용.
-     * Kotlin에서는 생성자를 쓴다. Java 호출부가 모두 Kotlin으로 바뀌면 지운다.
-     */
-    class CommunityCommentBuilder internal constructor() {
-        private var post: CommunityPost? = null
-        private var member: Member? = null
-        private var parent: CommunityComment? = null
-        private var content: String? = null
-
-        fun post(post: CommunityPost?): CommunityCommentBuilder = apply { this.post = post }
-
-        fun member(member: Member?): CommunityCommentBuilder = apply { this.member = member }
-
-        fun parent(parent: CommunityComment?): CommunityCommentBuilder = apply { this.parent = parent }
-
-        fun content(content: String?): CommunityCommentBuilder = apply { this.content = content }
-
-        fun build(): CommunityComment = CommunityComment(
-            post = requireNotNull(post) { "post는 필수입니다." },
-            member = requireNotNull(member) { "member는 필수입니다." },
-            parent = parent,
-            content = requireNotNull(content) { "content는 필수입니다." },
-        )
-    }
-
-    companion object {
-
-        @Deprecated("Kotlin에서는 생성자를 쓴다. Java 호출부 호환용으로만 남긴다.")
-        @JvmStatic
-        fun builder(): CommunityCommentBuilder = CommunityCommentBuilder()
-    }
 }
