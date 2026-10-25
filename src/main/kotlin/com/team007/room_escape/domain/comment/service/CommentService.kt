@@ -61,7 +61,7 @@ class CommentService(
         val member = memberReader.getUnrestrictedMember(memberId)
 
         val post = postRepository.findByIdAndDeletedAtIsNull(postId)
-            .orElseThrow { BusinessException(PostExceptionCode.POST_NOT_FOUND) }
+            ?: throw BusinessException(PostExceptionCode.POST_NOT_FOUND)
 
         val comment = Comment(
             post = post,
