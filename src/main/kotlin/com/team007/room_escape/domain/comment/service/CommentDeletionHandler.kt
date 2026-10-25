@@ -24,8 +24,8 @@ class CommentDeletionHandler(
             throw notFound()
         }
         histories.requireAdministratorDeletion(supports(), history.targetId)
-        val parent = parents.findForRestoration(target.post.id)
-            .orElseThrow { notFound() }
+        val postId = target.post.id ?: throw notFound()
+        val parent = parents.findForRestoration(postId) ?: throw notFound()
         if (parent.isDeleted()) {
             throw notFound()
         }

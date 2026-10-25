@@ -35,7 +35,7 @@ class CommentResponse private constructor() {
                 replies: List<AdminInfo>,
             ): AdminInfo = AdminInfo(
                 id = savedId(comment),
-                postId = comment.post.id,
+                postId = savedPostId(comment),
                 parentId = comment.parent?.id,
                 member = MemberResponse.MemberInfo.from(comment.member, imageUrlResolver),
                 content = comment.content,
@@ -86,7 +86,7 @@ class CommentResponse private constructor() {
                 val deleted = comment.isDeleted()
                 return Info(
                     id = savedId(comment),
-                    postId = comment.post.id,
+                    postId = savedPostId(comment),
                     parentId = comment.parent?.id,
                     deleted = deleted,
                     // 삭제된 댓글은 누가 무엇을 썼는지 내려주지 않는다.
@@ -106,5 +106,8 @@ class CommentResponse private constructor() {
         /** 응답은 저장된 댓글로만 만든다. 저장 전이면 id가 없으니 바로 알린다. */
         private fun savedId(comment: Comment): Long =
             requireNotNull(comment.id) { "저장되지 않은 댓글은 응답으로 만들 수 없습니다." }
+
+        private fun savedPostId(comment: Comment): UUID =
+            requireNotNull(comment.post.id) { "저장되지 않은 후기의 댓글은 응답으로 만들 수 없습니다." }
     }
 }

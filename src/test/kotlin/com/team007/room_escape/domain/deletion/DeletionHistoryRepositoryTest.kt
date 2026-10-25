@@ -128,7 +128,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     fun administratorCommentListKeepsOriginalAndHistoryWhilePublicListRedactsDeletedComments() {
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
-        val post = Post.builder().member(author).title("댓글 관리 후기").content("내용").build()
+        val post = Post(member = author, title = "댓글 관리 후기", content = "내용")
         entityManager.persist(post)
         val comment = Comment(post = post, member = author, content = "삭제 후에도 관리자가 확인할 댓글")
         entityManager.persist(comment)
@@ -139,28 +139,28 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 20)
-        val removed = commentService.getCommentsForAdmin(post.id, admin.id, page).content.first()
+        val removed = commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first()
         assertThat(removed.content).isEqualTo("삭제 후에도 관리자가 확인할 댓글")
         assertThat(removed.deletedAt).isNotNull()
         assertThat(removed.deletion?.actorType()).isEqualTo(DeletionActorType.ADMIN)
         assertThat(removed.deletion?.reasonDetail()).isEqualTo("반복 게시 확인")
         assertThat(removed.parentDeleted).isFalse()
-        val publicComment = commentService.getComments(post.id, page).content.first()
+        val publicComment = commentService.getComments(post.id!!, page).content.first()
         assertThat(publicComment.deleted).isTrue()
         assertThat(publicComment.content).isEqualTo("삭제된 댓글입니다")
         assertThat(publicComment.member).isNull()
         facade.restore(admin.id, DeletionTargetType.COMMENT, comment.id.toString())
         entityManager.flush()
         entityManager.clear()
-        assertThat(commentService.getCommentsForAdmin(post.id, admin.id, page).content.first().deletedAt).isNull()
-        assertThat(commentService.getComments(post.id, page)).hasSize(1)
+        assertThat(commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first().deletedAt).isNull()
+        assertThat(commentService.getComments(post.id!!, page)).hasSize(1)
     }
 
     @Test
     fun administratorCommentListRetainsAuthorDeletionAndDeletedParentButRejectsOrdinaryMembers() {
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
-        val post = Post.builder().member(author).title("삭제된 부모 후기").content("내용").build()
+        val post = Post(member = author, title = "삭제된 부모 후기", content = "내용")
         entityManager.persist(post)
         val comment = Comment(post = post, member = author, content = "작성자가 삭제한 댓글")
         entityManager.persist(comment)
@@ -170,18 +170,18 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 20)
-        val removed = commentService.getCommentsForAdmin(post.id, admin.id, page).content.first()
+        val removed = commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first()
         assertThat(removed.parentDeleted).isTrue()
         assertThat(removed.deletion?.actorType()).isEqualTo(DeletionActorType.AUTHOR)
-        assertThat(commentService.getCommentsForAdmin(post.id, admin.id, PageRequest.of(1, 20))).isEmpty()
-        assertThrows<AccessDeniedException> { commentService.getCommentsForAdmin(post.id, author.id, page) }
+        assertThat(commentService.getCommentsForAdmin(post.id!!, admin.id, PageRequest.of(1, 20))).isEmpty()
+        assertThrows<AccessDeniedException> { commentService.getCommentsForAdmin(post.id!!, author.id, page) }
     }
 
     @Test
     fun adminReplyRestorationPreservesThreadAndIndependentDeletionAfterParentPostRestoration() {
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
-        val post = Post.builder().member(author).title("대댓글 복구 검증").content("본문").build()
+        val post = Post(member = author, title = "대댓글 복구 검증", content = "본문")
         entityManager.persist(post)
         val root = Comment(post = post, member = author, content = "부모 댓글")
         entityManager.persist(root)
@@ -198,20 +198,20 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 1)
-        val adminPage = commentService.getCommentsForAdmin(post.id, admin.id, page)
+        val adminPage = commentService.getCommentsForAdmin(post.id!!, admin.id, page)
         assertThat(adminPage.totalElements).isEqualTo(1)
         val replyInfo = adminPage.content.first().replies.first()
         assertThat(replyInfo.parentId).isEqualTo(root.id)
         assertThat(replyInfo.deletedAt).isNotNull()
         assertThat(replyInfo.content).isEqualTo("관리자가 삭제할 답글")
         assertThat(replyInfo.deletion?.reasonDetail()).isEqualTo("답글 삭제 사유")
-        val publicReply = commentService.getComments(post.id, page).content.first().replies.first()
+        val publicReply = commentService.getComments(post.id!!, page).content.first().replies.first()
         assertThat(publicReply.content).isEqualTo("삭제된 댓글입니다")
         assertThat(publicReply.member).isNull()
         facade.restore(admin.id, DeletionTargetType.COMMENT, reply.id.toString())
         entityManager.flush()
         entityManager.clear()
-        assertThat(commentService.getComments(post.id, page).content.first().replies.first().content)
+        assertThat(commentService.getComments(post.id!!, page).content.first().replies.first().content)
             .isEqualTo("관리자가 삭제할 답글")
     }
 
@@ -219,12 +219,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     fun myContentCombinesTypesAndPreservesDeletionWithoutExposingOtherMembers() {
         val author = member("작성자", MemberRole.ROLE_ADMIN)
         val other = member("타인", MemberRole.ROLE_UNVERIFIED)
-        val post = Post.builder().member(author).title("내 후기").content("내용").build()
+        val post = Post(member = author, title = "내 후기", content = "내용")
         val community = CommunityPost.builder().member(author).category(CommunityCategory.FREE)
             .title("내 글").content("내용").build()
         entityManager.persist(post)
         entityManager.persist(community)
-        entityManager.persist(Post.builder().member(other).title("타인의 후기").content("내용").build())
+        entityManager.persist(Post(member = other, title = "타인의 후기", content = "내용"))
         val comment = Comment(post = post, member = author, content = "내 댓글")
         val communityComment = CommunityComment(post = community, member = author, content = "내 커뮤니티 댓글")
         entityManager.persist(comment)
@@ -518,7 +518,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     ) {
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
-        val post = Post.builder().member(author).title("후기").content("본문").build()
+        val post = Post(member = author, title = "후기", content = "본문")
         val communityPost = CommunityPost.builder().member(author).title("커뮤니티").content("본문")
             .category(CommunityCategory.FREE).build()
         entityManager.persist(post)
@@ -538,7 +538,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val authorDelete: () -> Unit = {
             val actorId = if (unauthorized) admin.id else author.id
             when (type) {
-                DeletionTargetType.POST -> postService.deletePost(post.id, actorId)
+                DeletionTargetType.POST -> postService.deletePost(post.id!!, actorId)
                 DeletionTargetType.COMMENT -> commentService.deleteComment(checkNotNull(comment.id), actorId)
                 DeletionTargetType.COMMUNITY_POST -> communityService.deletePost(communityPost.id, actorId)
                 DeletionTargetType.COMMUNITY_COMMENT -> communityService.deleteComment(communityComment.id, actorId)

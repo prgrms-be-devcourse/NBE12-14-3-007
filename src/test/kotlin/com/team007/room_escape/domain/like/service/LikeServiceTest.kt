@@ -87,9 +87,9 @@ class LikeServiceTest {
     @DisplayName("후기 좋아요를 등록하면 후기의 좋아요 수를 올리고 올라간 값을 돌려준다")
     fun createPostLikeIncreasesLikeCount() {
         `when`(memberReader.getUnrestrictedMember(memberId)).thenReturn(member)
-        `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post()))
+        `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(post())
         `when`(likeRepository.existsByPostIdAndMemberId(postId, memberId)).thenReturn(false)
-        `when`(postRepository.findLikeCountById(postId)).thenReturn(Optional.of(3L))
+        `when`(postRepository.findLikeCountById(postId)).thenReturn(3L)
 
         val response = likeService.createPostLike(postId, memberId)
 
@@ -103,12 +103,12 @@ class LikeServiceTest {
     @DisplayName("이미 좋아요한 후기면 좋아요 수를 바꾸지 않는다")
     fun duplicatePostLikeDoesNotChangeLikeCount() {
         `when`(memberReader.getUnrestrictedMember(memberId)).thenReturn(member)
-        `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post()))
+        `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(post())
         `when`(likeRepository.existsByPostIdAndMemberId(postId, memberId)).thenReturn(true)
 
         assertThrows<BusinessException> { likeService.createPostLike(postId, memberId) }
 
-        verify(postRepository, never()).increaseLikeCount(any())
+        verify(postRepository, never()).increaseLikeCount(anyValue())
     }
 
     @Test
@@ -117,7 +117,7 @@ class LikeServiceTest {
         val like = Like.of(post(), member)
         `when`(postRepository.existsById(postId)).thenReturn(true)
         `when`(likeRepository.findByPostIdAndMemberId(postId, memberId)).thenReturn(like)
-        `when`(postRepository.findLikeCountById(postId)).thenReturn(Optional.of(2L))
+        `when`(postRepository.findLikeCountById(postId)).thenReturn(2L)
 
         val response = likeService.deletePostLike(postId, memberId)
 
@@ -127,10 +127,17 @@ class LikeServiceTest {
         order.verify(postRepository).decreaseLikeCount(postId)
     }
 
-    private fun post(): Post = Post.builder().id(postId).member(member).build()
+    private fun post(): Post = Post(member = member, title = "후기", content = "내용")
 
     private fun assertExceptionCode(expected: ExceptionCode, action: () -> Unit) {
         val e = assertThrows<BusinessException> { action() }
         assertThat(e.exceptionCode).isEqualTo(expected)
+    }
+
+    /** Mockito any()는 null을 돌려줘서 Kotlin의 non-null 매개변수에 그대로 넣으면 NPE가 난다. 매처만 등록하고 타입을 맞춘다. */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> anyValue(): T {
+        any<T>()
+        return null as T
     }
 }
