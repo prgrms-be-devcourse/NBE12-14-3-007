@@ -20,7 +20,7 @@ class JwtProviderTest {
         refreshSeconds: Long = 7_200,
         access: String = accessSecret,
         refresh: String = refreshSecret,
-    ) = JwtProvider(JwtProperties(access, issuer, accessSeconds, refresh, refreshSeconds)).apply { init() }
+    ) = JwtProvider(JwtProperties(access, issuer, accessSeconds, refresh, refreshSeconds))
 
     private val provider = providerOf()
     private val memberId = UUID.randomUUID()
