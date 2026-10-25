@@ -3,9 +3,7 @@ package com.team007.room_escape.global.jwt
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Component
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -17,25 +15,21 @@ import javax.crypto.SecretKey
  */
 @Component
 class JwtProvider(
-    private val properties: JwtProperties
+    private val properties: JwtProperties,
 ) {
 
-    private lateinit var accessKey: SecretKey
-    private lateinit var refreshKey: SecretKey
+    private val accessKey = keyOf(properties.secret())
+    private val refreshKey = keyOf(properties.refreshSecret())
 
-    @PostConstruct
-    fun init() {
-        this.accessKey = Keys.hmacShaKeyFor(properties.secret().toByteArray(StandardCharsets.UTF_8))
-        this.refreshKey = Keys.hmacShaKeyFor(properties.refreshSecret().toByteArray(StandardCharsets.UTF_8))
-    }
+    fun createAccessToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String =
+        build(memberId, nickname, role, profileImg, properties.accessTokenValiditySeconds(), accessKey)
 
-    fun createAccessToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String {
-        return build(memberId, nickname, role, profileImg, properties.accessTokenValiditySeconds(), accessKey)
-    }
+    fun createRefreshToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String =
+        build(memberId, nickname, role, profileImg, properties.refreshTokenValiditySeconds(), refreshKey)
 
-    fun createRefreshToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String {
-        return build(memberId, nickname, role, profileImg, properties.refreshTokenValiditySeconds(), refreshKey)
-    }
+    fun parse(token: String): Claims = parseWith(token, accessKey)
+
+    fun parseRefresh(token: String): Claims = parseWith(token, refreshKey)
 
     private fun build(
         memberId: UUID,
@@ -43,37 +37,28 @@ class JwtProvider(
         role: String,
         profileImg: String?,
         validitySeconds: Long,
-        key: SecretKey
+        key: SecretKey,
     ): String {
         val now = Instant.now()
-        val builder = Jwts.builder()
+        return Jwts.builder()
             .issuer(properties.issuer())
             .subject(memberId.toString())
             .claim("nickname", nickname)
             .claim("role", role)
+            .apply { profileImg?.let { claim("profileImg", it) } }
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusSeconds(validitySeconds)))
             .signWith(key)
-        if (profileImg != null) {
-            builder.claim("profileImg", profileImg)
-        }
-        return builder.compact()
+            .compact()
     }
 
-    fun parse(token: String): Claims {
-        return parseWith(token, accessKey)
-    }
-
-    fun parseRefresh(token: String): Claims {
-        return parseWith(token, refreshKey)
-    }
-
-    private fun parseWith(token: String, key: SecretKey): Claims {
-        return Jwts.parser()
+    private fun parseWith(token: String, key: SecretKey): Claims =
+        Jwts.parser()
             .verifyWith(key)
             .requireIssuer(properties.issuer())
             .build()
             .parseSignedClaims(token)
             .payload
-    }
+
+    private fun keyOf(secret: String): SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
 }

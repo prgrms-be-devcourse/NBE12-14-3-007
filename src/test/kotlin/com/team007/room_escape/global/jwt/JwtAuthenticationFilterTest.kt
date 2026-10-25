@@ -30,7 +30,7 @@ class JwtAuthenticationFilterTest {
             "access-secret-access-secret-access-secret", "roomescape", accessSeconds,
             "refresh-secret-refresh-secret-refresh-secret", 7_200,
         )
-    ).apply { init() }
+    )
 
     private val provider = providerOf()
     private val resolver = mock(HandlerExceptionResolver::class.java)
@@ -97,6 +97,26 @@ class JwtAuthenticationFilterTest {
     @ValueSource(strings = ["Bearer ", "Bearer null", "Bearer undefined", "Basic abc", "토큰만"])
     fun `비어 있거나 Bearer 형식이 아닌 헤더는 토큰이 없는 것으로 본다`(header: String) {
         val result = run(authorization = header)
+
+        assertThat(result.passedOn).isTrue()
+        assertThat(SecurityContextHolder.getContext().authentication).isNull()
+        neverRejected()
+    }
+
+    @Test
+    fun `토큰 앞뒤 공백은 무시하고 인증한다`() {
+        val token = provider.createAccessToken(memberId, "닉네임", "ROLE_TRUSTED", null)
+
+        val result = run(authorization = "Bearer   $token  ")
+
+        assertThat(result.passedOn).isTrue()
+        assertThat(SecurityContextHolder.getContext().authentication).isNotNull()
+        neverRejected()
+    }
+
+    @Test
+    fun `Bearer 뒤가 공백뿐이면 토큰이 없는 것으로 본다`() {
+        val result = run(authorization = "Bearer    ")
 
         assertThat(result.passedOn).isTrue()
         assertThat(SecurityContextHolder.getContext().authentication).isNull()
