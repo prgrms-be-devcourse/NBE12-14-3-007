@@ -3,6 +3,7 @@ package com.team007.room_escape.global.storage
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.StorageExceptionCode
+import com.team007.room_escape.global.util.isBlankLikeJava
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionSynchronization
@@ -49,7 +50,7 @@ class R2StorageService(
 
     /** 새로 저장할 key가 본인 것인지 확인한다. 비우거나 지금 값 그대로면 통과시킨다. */
     fun requireOwnedBy(newKey: String?, currentKey: String?, memberId: UUID?) {
-        if (newKey == null || isBlank(newKey) || newKey == currentKey) return
+        if (newKey == null || newKey.isBlankLikeJava() || newKey == currentKey) return
         if (!isOwnedBy(newKey, memberId)) throw BusinessException(StorageExceptionCode.IMAGE_NOT_OWNED)
     }
 
@@ -67,7 +68,7 @@ class R2StorageService(
 
     /** 삭제 실패는 로그만 남긴다. 파일이 남는 것보다 비즈니스 흐름이 끊기는 게 더 나쁘다. */
     fun delete(key: String?) {
-        if (key == null || isBlank(key)) return
+        if (key == null || key.isBlankLikeJava()) return
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(properties.bucket()).key(key).build())
         } catch (e: SdkException) {
@@ -104,9 +105,6 @@ class R2StorageService(
         log.error("R2 업로드 실패 key={}", key, e)
         return BusinessException(StorageExceptionCode.UPLOAD_FAILED)
     }
-
-    // Kotlin의 isBlank()는 NBSP도 공백으로 봐서, Java String.isBlank()와 같은 기준으로 맞춘다.
-    private fun isBlank(value: String): Boolean = value.all { Character.isWhitespace(it) }
 
     companion object {
 
