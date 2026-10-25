@@ -56,7 +56,6 @@ constructor(r2Properties: R2Properties) {
             .replace("&nbsp;", "")
             .replace("&#160;", "")
 
-        // Kotlin isBlank()는 NBSP도 공백으로 봐서, Java String.isBlank()와 같은 기준으로 맞춘다.
-        return !textOnly.all { Character.isWhitespace(it) }
+        return !textOnly.isBlankLikeJava()
     }
 }
