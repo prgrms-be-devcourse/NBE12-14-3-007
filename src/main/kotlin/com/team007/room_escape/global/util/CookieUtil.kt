@@ -14,28 +14,24 @@ import org.springframework.stereotype.Component
 @Component
 class CookieUtil(
     private val properties: AuthCookieProperties,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
 ) {
 
-    fun addRefreshCookie(response: HttpServletResponse, token: String) {
-        val cookie = base(token)
-            .maxAge(jwtProperties.refreshTokenValiditySeconds())
-            .build()
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
-    }
+    fun addRefreshCookie(response: HttpServletResponse, token: String) =
+        addCookie(response, base(token).maxAge(jwtProperties.refreshTokenValiditySeconds()))
 
-    fun clearRefreshCookie(response: HttpServletResponse) {
-        val cookie = base("").maxAge(0).build()
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
-    }
+    fun clearRefreshCookie(response: HttpServletResponse) =
+        addCookie(response, base("").maxAge(0))
 
-    private fun base(value: String): ResponseCookie.ResponseCookieBuilder {
-        return ResponseCookie.from(REFRESH_TOKEN_COOKIE, value)
+    private fun addCookie(response: HttpServletResponse, cookie: ResponseCookie.ResponseCookieBuilder) =
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.build().toString())
+
+    private fun base(value: String): ResponseCookie.ResponseCookieBuilder =
+        ResponseCookie.from(REFRESH_TOKEN_COOKIE, value)
             .httpOnly(true)
             .secure(properties.secure())
             .sameSite(properties.sameSite())
             .path(properties.path())
-    }
 
     companion object {
         const val REFRESH_TOKEN_COOKIE = "refreshToken"

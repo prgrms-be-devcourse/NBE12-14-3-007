@@ -38,19 +38,20 @@ class AdminFestivalApiContractTest : ApiContractSupport() {
 
     @Test
     fun 허용되지_않은_정렬_필드는_거부한다() {
-        mvc.perform(`as`(get("/api/v1/admin/festivals?sort=deletedAt,desc"),
-            tokenOf(MemberRole.ROLE_ADMIN)))
-            .andExpect(status().isBadRequest)
+        mvc.perform(
+            `as`(get("/api/v1/admin/festivals?sort=deletedAt,desc"), tokenOf(MemberRole.ROLE_ADMIN))
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun 관리자는_행사를_수정한다() {
         val festival = saveFestival()
 
-        mvc.perform(`as`(patch("/api/v1/admin/festivals/${festival.id}"),
-            tokenOf(MemberRole.ROLE_ADMIN))
-            .contentType("application/json")
-            .content(updateBody("수정된 행사", "2026-11-01T10:00:00", "2026-11-02T18:00:00")))
+        mvc.perform(
+            `as`(patch("/api/v1/admin/festivals/${festival.id}"), tokenOf(MemberRole.ROLE_ADMIN))
+                .contentType("application/json")
+                .content(updateBody("수정된 행사", "2026-11-01T10:00:00", "2026-11-02T18:00:00"))
+        )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.data.title").value("수정된 행사"))
     }
@@ -59,22 +60,22 @@ class AdminFestivalApiContractTest : ApiContractSupport() {
     fun 종료일이_시작일보다_앞서면_거부한다() {
         val festival = saveFestival()
 
-        mvc.perform(`as`(patch("/api/v1/admin/festivals/${festival.id}"),
-            tokenOf(MemberRole.ROLE_ADMIN))
-            .contentType("application/json")
-            .content(updateBody("기간 역전", "2026-11-05T10:00:00", "2026-11-01T18:00:00")))
-            .andExpect(status().isBadRequest)
+        mvc.perform(
+            `as`(patch("/api/v1/admin/festivals/${festival.id}"), tokenOf(MemberRole.ROLE_ADMIN))
+                .contentType("application/json")
+                .content(updateBody("기간 역전", "2026-11-05T10:00:00", "2026-11-01T18:00:00"))
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun 일반_회원은_행사를_수정할_수_없다() {
         val festival = saveFestival()
 
-        mvc.perform(`as`(patch("/api/v1/admin/festivals/${festival.id}"),
-            tokenOf(MemberRole.ROLE_UNVERIFIED))
-            .contentType("application/json")
-            .content(updateBody("수정 시도", "2026-11-01T10:00:00", "2026-11-02T18:00:00")))
-            .andExpect(status().isForbidden)
+        mvc.perform(
+            `as`(patch("/api/v1/admin/festivals/${festival.id}"), tokenOf(MemberRole.ROLE_UNVERIFIED))
+                .contentType("application/json")
+                .content(updateBody("수정 시도", "2026-11-01T10:00:00", "2026-11-02T18:00:00"))
+        ).andExpect(status().isForbidden)
     }
 
     /** 삭제·복구는 /admin/deletions 로 옮겼다. 옛 경로가 되살아나면 이력 없이 지워진다. */
@@ -89,16 +90,20 @@ class AdminFestivalApiContractTest : ApiContractSupport() {
             .andExpect(status().isNotFound)
     }
 
-    private fun saveFestival(): Festival = festivalRepository.saveAndFlush(Festival.builder()
-        .providerType(ProviderType.PUBLIC)
-        .title("계약테스트 행사 ${UUID.randomUUID().toString().substring(0, 8)}")
-        .region(FestivalRegion.SEOUL)
-        .beginDe(LocalDateTime.of(2026, 10, 1, 10, 0))
-        .endDe(LocalDateTime.of(2026, 10, 5, 18, 0))
-        .build())
+    private fun saveFestival(): Festival =
+        festivalRepository.saveAndFlush(
+            Festival.builder()
+                .providerType(ProviderType.PUBLIC)
+                .title("계약테스트 행사 ${UUID.randomUUID().toString().substring(0, 8)}")
+                .region(FestivalRegion.SEOUL)
+                .beginDe(LocalDateTime.of(2026, 10, 1, 10, 0))
+                .endDe(LocalDateTime.of(2026, 10, 5, 18, 0))
+                .build()
+        )
 
-    private fun updateBody(title: String, beginDe: String, endDe: String): String = """
-        {"title":"%s","category":"축제","region":"SEOUL",
-         "beginDe":"%s","endDe":"%s"}
-        """.trimIndent().format(title, beginDe, endDe)
+    private fun updateBody(title: String, beginDe: String, endDe: String): String =
+        """
+        {"title":"$title","category":"축제","region":"SEOUL",
+         "beginDe":"$beginDe","endDe":"$endDe"}
+        """.trimIndent()
 }

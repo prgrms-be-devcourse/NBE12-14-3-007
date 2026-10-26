@@ -183,6 +183,22 @@ class LikeSortRepositoryTest @Autowired constructor(
             assertThat(page.totalElements).isEqualTo(1)
         }
 
+        @Test
+        @DisplayName("행사별 좋아요순 목록도 삭제된 후기는 좋아요가 많아도 목록과 전체 개수에서 뺀다")
+        fun festivalListExcludesDeletedPosts() {
+            val deleted = post("deleted")
+            val alive = post("alive")
+            likePost(deleted, 5)
+            likePost(alive, 1)
+            deleted.delete()
+            flushAndClear()
+
+            val page = postRepository.findAllByFestivalIdOrderByLikeCount(festival.id, PageRequest.of(0, 10))
+
+            assertThat(titles(page)).containsExactly(title("alive"))
+            assertThat(page.totalElements).isEqualTo(1)
+        }
+
         private fun searchByToken(pageable: PageRequest): Page<Post> =
             postRepository.searchPostsOrderByLikeCount("TITLE", token, pageable)
 
@@ -194,51 +210,56 @@ class LikeSortRepositoryTest @Autowired constructor(
     inner class PostLikeCountUpdate {
 
         private lateinit var post: Post
+        private lateinit var festival: Festival
+
+        /** 저장한 뒤에 쓰므로 id가 있다. */
+        private val postId: UUID get() = checkNotNull(post.id)
 
         @BeforeEach
         fun setUp() {
-            post = savePost("post", festival("좋아요 수 행사", BASE_TIME, FestivalRegion.entries.first()))
+            festival = festival("좋아요 수 행사", BASE_TIME, FestivalRegion.entries.first())
+            post = savePost("post", festival)
             em.flush()
         }
 
         @Test
         @DisplayName("증가·감소가 DB에 바로 반영되고 0 아래로는 내려가지 않는다")
         fun increasesAndDecreasesWithoutGoingNegative() {
-            postRepository.increaseLikeCount(post.id)
-            postRepository.increaseLikeCount(post.id)
-            postRepository.decreaseLikeCount(post.id)
+            postRepository.increaseLikeCount(postId)
+            postRepository.increaseLikeCount(postId)
+            postRepository.decreaseLikeCount(postId)
 
-            assertThat(postRepository.findLikeCountById(post.id)).contains(1L)
+            assertThat(postRepository.findLikeCountById(postId)).isEqualTo(1L)
 
-            postRepository.decreaseLikeCount(post.id)
-            val updated = postRepository.decreaseLikeCount(post.id)
+            postRepository.decreaseLikeCount(postId)
+            val updated = postRepository.decreaseLikeCount(postId)
 
             assertThat(updated).isZero()
-            assertThat(postRepository.findLikeCountById(post.id)).contains(0L)
+            assertThat(postRepository.findLikeCountById(postId)).isEqualTo(0L)
         }
 
         @Test
         @DisplayName("후기를 수정·삭제해 저장해도 그 사이 늘어난 좋아요 수를 덮어쓰지 않는다")
         fun entitySaveDoesNotOverwriteLikeCount() {
             // post 엔티티는 like_count = 0 으로 읽힌 상태에서, 다른 요청이 좋아요를 누른 상황
-            postRepository.increaseLikeCount(post.id)
-            postRepository.increaseLikeCount(post.id)
+            postRepository.increaseLikeCount(postId)
+            postRepository.increaseLikeCount(postId)
 
             post.update("수정한 제목", "c", null)
             post.delete()
             em.flush()
 
-            assertThat(postRepository.findLikeCountById(post.id)).contains(2L)
+            assertThat(postRepository.findLikeCountById(postId)).isEqualTo(2L)
         }
 
         @Test
         @DisplayName("행사에 누른 좋아요는 후기 좋아요 수에 섞이지 않는다")
         fun ignoresFestivalLikes() {
             likePost(post, 1)
-            likeFestival(post.festival, 4)
+            likeFestival(festival, 4)
             flushAndClear()
 
-            assertThat(postRepository.findLikeCountById(post.id)).contains(1L)
+            assertThat(postRepository.findLikeCountById(postId)).isEqualTo(1L)
         }
     }
 
@@ -332,19 +353,14 @@ class LikeSortRepositoryTest @Autowired constructor(
 
     private fun savePost(name: String, festival: Festival, content: String = "c"): Post =
         persist(
-            Post.builder()
-                .member(likers.first())
-                .festival(festival)
-                .title(title(name))
-                .content(content)
-                .build()
+            Post(member = likers.first(), festival = festival, title = title(name), content = content)
         )
 
     /** LikeService 와 같은 순서로 좋아요를 저장하고 post.like_count 를 올린다. */
     private fun likePost(post: Post, count: Int) {
         repeat(count) { i ->
             persist(Like.of(post, likers[i]))
-            postRepository.increaseLikeCount(post.id)
+            postRepository.increaseLikeCount(checkNotNull(post.id))
         }
     }
 

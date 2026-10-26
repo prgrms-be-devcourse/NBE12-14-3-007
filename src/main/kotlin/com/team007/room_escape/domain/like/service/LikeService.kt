@@ -29,7 +29,7 @@ class LikeService(
     fun createPostLike(postId: UUID, memberId: UUID): LikeResponse {
         val member = memberReader.getUnrestrictedMember(memberId)
         val post = postRepository.findByIdAndDeletedAtIsNull(postId)
-            .orElseThrow { BusinessException(PostExceptionCode.POST_NOT_FOUND) }
+            ?: throw BusinessException(PostExceptionCode.POST_NOT_FOUND)
 
         if (likeRepository.existsByPostIdAndMemberId(postId, memberId)) {
             throw BusinessException(LikeExceptionCode.LIKE_ALREADY_EXISTS)
@@ -59,7 +59,7 @@ class LikeService(
     /** 좋아요를 누르거나 취소한 뒤 바뀐 개수를 돌려주려고 다시 읽는다 */
     private fun getPostLikeCount(postId: UUID): Long =
         postRepository.findLikeCountById(postId)
-            .orElseThrow { BusinessException(PostExceptionCode.POST_NOT_FOUND) }
+            ?: throw BusinessException(PostExceptionCode.POST_NOT_FOUND)
 
     /** 행사 */
     @Transactional

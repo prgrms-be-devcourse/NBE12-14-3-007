@@ -53,7 +53,7 @@ class CommentServiceTest @Autowired constructor(
     fun setUp() {
         writer = memberRepository.save(member())
         other = memberRepository.save(member())
-        postId = postRepository.save(post(writer)).id
+        postId = checkNotNull(postRepository.save(post(writer)).id)
     }
 
     @Test
@@ -212,7 +212,7 @@ class CommentServiceTest @Autowired constructor(
 
     @Test
     fun 다른_후기의_댓글에는_답글을_달_수_없다() {
-        val otherPostId = postRepository.save(post(writer)).id
+        val otherPostId = checkNotNull(postRepository.save(post(writer)).id)
         val otherPostComment = commentService.createComment(
             otherPostId, CommentRequest.Create("다른 후기 댓글", null), writer.id
         ).id
@@ -269,9 +269,5 @@ class CommentServiceTest @Autowired constructor(
     }
 
     private fun post(member: Member): Post =
-        Post.builder()
-            .member(member)
-            .title("댓글 테스트 후기")
-            .content("본문")
-            .build()
+        Post(member = member, title = "댓글 테스트 후기", content = "본문")
 }
