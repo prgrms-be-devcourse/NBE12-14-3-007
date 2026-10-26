@@ -65,6 +65,16 @@ class RichTextSanitizerTest {
     }
 
     @Test
+    fun `정리한 결과의 앞뒤 공백은 잘라낸다`() {
+        assertThat(sanitizer.sanitize("  <p>본문</p>\n ")).isEqualTo("<p>본문</p>")
+    }
+
+    @Test
+    fun `앞뒤 공백은 U+0020 이하만 자르고 NBSP는 남긴다`() {
+        assertThat(sanitizer.sanitize("<p>본문</p> ")).endsWith(" ")
+    }
+
+    @Test
     fun `태그만 남은 본문은 내용이 없는 것으로 판단한다`() {
         assertThat(sanitizer.hasVisibleText("<p><br></p>")).isFalse()
         assertThat(sanitizer.hasVisibleText("<h2>소제목</h2>")).isTrue()
