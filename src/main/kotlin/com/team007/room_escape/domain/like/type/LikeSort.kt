@@ -8,11 +8,8 @@ object LikeSort {
 
     const val PROPERTY = "likeCount"
 
-    // @JvmStatic: 아직 Java인 PostService·FestivalService가 LikeSort.isRequested(...)로 부른다.
-    @JvmStatic
     fun isRequested(pageable: Pageable): Boolean = pageable.sort.getOrderFor(PROPERTY) != null
 
     /** 페이지 번호와 크기만 남긴다. 순서는 전용 쿼리의 ORDER BY 가 정한다. */
-    @JvmStatic
     fun withoutSort(pageable: Pageable): Pageable = PageRequest.of(pageable.pageNumber, pageable.pageSize)
 }

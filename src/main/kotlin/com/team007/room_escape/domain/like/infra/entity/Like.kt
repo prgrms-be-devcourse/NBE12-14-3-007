@@ -53,11 +53,9 @@ class Like private constructor(
 
     companion object {
         /** 후기 좋아요 */
-        @JvmStatic
         fun of(post: Post, member: Member): Like = Like(post = post, festival = null, member = member)
 
         /** 행사 좋아요 */
-        @JvmStatic
         fun of(festival: Festival, member: Member): Like = Like(post = null, festival = festival, member = member)
     }
 }

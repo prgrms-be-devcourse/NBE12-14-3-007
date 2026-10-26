@@ -5,7 +5,6 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
-import com.team007.room_escape.support.requiredId
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

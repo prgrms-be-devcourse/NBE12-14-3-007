@@ -47,7 +47,6 @@ import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.support.TestDatabase
-import com.team007.room_escape.support.requiredId
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -118,8 +117,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     private lateinit var storageService: R2StorageService
 
     private fun member(nickname: String, role: MemberRole): Member =
-        Member.builder().email("${UUID.randomUUID()}@example.com").password("test")
-            .nickname(nickname).role(role).build().also(entityManager::persist)
+        Member(
+            email = "${UUID.randomUUID()}@example.com",
+            password = "test",
+            role = role,
+            nickname = nickname,
+        ).also(entityManager::persist)
 
     private fun publicFestival(title: String): Festival = festivals.saveAndFlush(
         Festival.builder().providerType(ProviderType.PUBLIC).title(title).build(),
@@ -140,21 +143,21 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 20)
-        val removed = commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first()
+        val removed = commentService.getCommentsForAdmin(checkNotNull(post.id), admin.id, page).content.first()
         assertThat(removed.content).isEqualTo("삭제 후에도 관리자가 확인할 댓글")
         assertThat(removed.deletedAt).isNotNull()
         assertThat(removed.deletion?.actorType()).isEqualTo(DeletionActorType.ADMIN)
         assertThat(removed.deletion?.reasonDetail()).isEqualTo("반복 게시 확인")
         assertThat(removed.parentDeleted).isFalse()
-        val publicComment = commentService.getComments(post.id!!, page).content.first()
+        val publicComment = commentService.getComments(checkNotNull(post.id), page).content.first()
         assertThat(publicComment.deleted).isTrue()
         assertThat(publicComment.content).isEqualTo("삭제된 댓글입니다")
         assertThat(publicComment.member).isNull()
         facade.restore(admin.id, DeletionTargetType.COMMENT, comment.id.toString())
         entityManager.flush()
         entityManager.clear()
-        assertThat(commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first().deletedAt).isNull()
-        assertThat(commentService.getComments(post.id!!, page)).hasSize(1)
+        assertThat(commentService.getCommentsForAdmin(checkNotNull(post.id), admin.id, page).content.first().deletedAt).isNull()
+        assertThat(commentService.getComments(checkNotNull(post.id), page)).hasSize(1)
     }
 
     @Test
@@ -171,11 +174,11 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 20)
-        val removed = commentService.getCommentsForAdmin(post.id!!, admin.id, page).content.first()
+        val removed = commentService.getCommentsForAdmin(checkNotNull(post.id), admin.id, page).content.first()
         assertThat(removed.parentDeleted).isTrue()
         assertThat(removed.deletion?.actorType()).isEqualTo(DeletionActorType.AUTHOR)
-        assertThat(commentService.getCommentsForAdmin(post.id!!, admin.id, PageRequest.of(1, 20))).isEmpty()
-        assertThrows<AccessDeniedException> { commentService.getCommentsForAdmin(post.id!!, author.id, page) }
+        assertThat(commentService.getCommentsForAdmin(checkNotNull(post.id), admin.id, PageRequest.of(1, 20))).isEmpty()
+        assertThrows<AccessDeniedException> { commentService.getCommentsForAdmin(checkNotNull(post.id), author.id, page) }
     }
 
     @Test
@@ -199,20 +202,20 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         val page = PageRequest.of(0, 1)
-        val adminPage = commentService.getCommentsForAdmin(post.id!!, admin.id, page)
+        val adminPage = commentService.getCommentsForAdmin(checkNotNull(post.id), admin.id, page)
         assertThat(adminPage.totalElements).isEqualTo(1)
         val replyInfo = adminPage.content.first().replies.first()
         assertThat(replyInfo.parentId).isEqualTo(root.id)
         assertThat(replyInfo.deletedAt).isNotNull()
         assertThat(replyInfo.content).isEqualTo("관리자가 삭제할 답글")
         assertThat(replyInfo.deletion?.reasonDetail()).isEqualTo("답글 삭제 사유")
-        val publicReply = commentService.getComments(post.id!!, page).content.first().replies.first()
+        val publicReply = commentService.getComments(checkNotNull(post.id), page).content.first().replies.first()
         assertThat(publicReply.content).isEqualTo("삭제된 댓글입니다")
         assertThat(publicReply.member).isNull()
         facade.restore(admin.id, DeletionTargetType.COMMENT, reply.id.toString())
         entityManager.flush()
         entityManager.clear()
-        assertThat(commentService.getComments(post.id!!, page).content.first().replies.first().content)
+        assertThat(commentService.getComments(checkNotNull(post.id), page).content.first().replies.first().content)
             .isEqualTo("관리자가 삭제할 답글")
     }
 
@@ -240,18 +243,18 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.clear()
         val posts = myContents.findMine(author.id, false, PageRequest.of(0, 20))
         assertThat(posts.totalElements).isEqualTo(3)
-        assertThat(posts.content.map { it.type() }).containsExactlyInAnyOrder(
+        assertThat(posts.content.map { it.type }).containsExactlyInAnyOrder(
             DeletionTargetType.FESTIVAL, DeletionTargetType.POST, DeletionTargetType.COMMUNITY_POST,
         )
-        val removed = posts.content.first { it.type() == DeletionTargetType.POST }
-        assertThat(removed.deletedAt()).isNotNull()
-        assertThat(removed.originalPath()).isNull()
-        assertThat(removed.deletion().reasonDetail()).isEqualTo("마이페이지 사유")
+        val removed = posts.content.first { it.type == DeletionTargetType.POST }
+        assertThat(removed.deletedAt).isNotNull()
+        assertThat(removed.originalPath).isNull()
+        assertThat(removed.deletion?.reasonDetail).isEqualTo("마이페이지 사유")
         val comments = myContents.findMine(author.id, true, PageRequest.of(0, 20))
         assertThat(comments.totalElements).isEqualTo(2)
-        val orphan = comments.content.first { it.type() == DeletionTargetType.COMMENT }
-        assertThat(orphan.parentDeleted()).isTrue()
-        assertThat(orphan.originalPath()).isNull()
+        val orphan = comments.content.first { it.type == DeletionTargetType.COMMENT }
+        assertThat(orphan.parentDeleted).isTrue()
+        assertThat(orphan.originalPath).isNull()
         assertThat(myContents.findMine(author.id, false, PageRequest.of(1, 2)).content).hasSize(1)
     }
 
@@ -271,7 +274,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.clear()
         assertThat(submissions.findAllByMemberId(author.id).first().deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
-        assertThat(submissions.findById(author.id, submission.id!!).submission?.festival?.deletion?.reason)
+        assertThat(submissions.findById(author.id, checkNotNull(submission.id)).submission?.festival?.deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
     }
 
@@ -541,7 +544,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val authorDelete: () -> Unit = {
             val actorId = if (unauthorized) admin.id else author.id
             when (type) {
-                DeletionTargetType.POST -> postService.deletePost(post.id!!, actorId)
+                DeletionTargetType.POST -> postService.deletePost(checkNotNull(post.id), actorId)
                 DeletionTargetType.COMMENT -> commentService.deleteComment(checkNotNull(comment.id), actorId)
                 DeletionTargetType.COMMUNITY_POST -> communityService.deletePost(checkNotNull(communityPost.id), actorId)
                 DeletionTargetType.COMMUNITY_COMMENT -> communityService.deleteComment(checkNotNull(communityComment.id), actorId)

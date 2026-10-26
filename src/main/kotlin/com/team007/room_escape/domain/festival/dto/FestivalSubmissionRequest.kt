@@ -66,7 +66,6 @@ class FestivalSubmissionRequest private constructor() {
         fun isValidPeriod(): Boolean = beginDe == null || endDe == null || !endDe.isBefore(beginDe)
 
         companion object {
-            @JvmStatic
             fun builder(): UpsertBuilder = UpsertBuilder()
         }
 

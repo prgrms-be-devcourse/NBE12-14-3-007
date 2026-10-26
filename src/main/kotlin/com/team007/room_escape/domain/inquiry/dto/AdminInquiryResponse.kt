@@ -45,9 +45,8 @@ class AdminInquiryResponse private constructor() {
 
         companion object {
 
-            @JvmStatic
-            fun from(inquiry: Inquiry, writerProfileImgUrl: String?): ListItem {
-                return ListItem(
+            fun from(inquiry: Inquiry, writerProfileImgUrl: String?): ListItem =
+                ListItem(
                     id = inquiry.id,
                     category = inquiry.category,
                     targetType = inquiry.targetType,
@@ -58,7 +57,6 @@ class AdminInquiryResponse private constructor() {
                     createdAt = inquiry.createdAt,
                     deletedAt = inquiry.deletedAt
                 )
-            }
         }
     }
 
@@ -111,7 +109,6 @@ class AdminInquiryResponse private constructor() {
 
         companion object {
 
-            @JvmStatic
             fun from(
                 inquiry: Inquiry,
                 imgUrl: String?,

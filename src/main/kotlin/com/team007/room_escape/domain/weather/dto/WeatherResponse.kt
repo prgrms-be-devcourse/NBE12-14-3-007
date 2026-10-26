@@ -18,9 +18,7 @@ data class WeatherResponse(
 
     companion object {
 
-        @JvmStatic
-        fun unknown(date: LocalDate): WeatherResponse {
-            return WeatherResponse(WeatherCondition.UNKNOWN, null, date)
-        }
+        fun unknown(date: LocalDate): WeatherResponse =
+            WeatherResponse(WeatherCondition.UNKNOWN, null, date)
     }
 }

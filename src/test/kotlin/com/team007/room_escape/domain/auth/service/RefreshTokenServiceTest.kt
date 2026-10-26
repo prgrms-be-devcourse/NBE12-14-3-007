@@ -28,8 +28,12 @@ class RefreshTokenServiceTest {
     private val service = RefreshTokenService(repository)
 
     private val memberId = UUID.randomUUID()
-    private val member: Member = Member.builder()
-        .email("a@example.com").password("pw").nickname("닉네임").role(MemberRole.ROLE_UNVERIFIED).build()
+    private val member: Member = Member(
+        email = "a@example.com",
+        password = "pw",
+        role = MemberRole.ROLE_UNVERIFIED,
+        nickname = "닉네임",
+    )
         .also { ReflectionTestUtils.setField(it, "id", memberId) }
 
     private fun sha256(raw: String) =

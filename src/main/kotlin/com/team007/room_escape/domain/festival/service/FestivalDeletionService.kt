@@ -30,7 +30,7 @@ class FestivalDeletionService(
     fun deleteByAuthor(festival: Festival, actorId: UUID) {
         delete(festival)
         deletionHistoryService.recordAuthorDeletion(
-            DeletionTargetType.FESTIVAL, festival.id!!.toString(), actorId
+            DeletionTargetType.FESTIVAL, festival.requiredId.toString(), actorId
         )
     }
 

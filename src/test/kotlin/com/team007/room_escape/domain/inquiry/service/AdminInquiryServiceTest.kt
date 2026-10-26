@@ -43,9 +43,13 @@ class AdminInquiryServiceTest {
         AdminInquiryService(inquiryRepository, commentRepository, communityCommentRepository, imageUrlResolver)
 
     private val inquiryId = UUID.randomUUID()
-    private val member: Member = Member.builder()
-        .email("a@example.com").password("pw").nickname("작성자").role(MemberRole.ROLE_UNVERIFIED)
-        .profileImg("profiles/a.png").build()
+    private val member: Member = Member(
+        email = "a@example.com",
+        password = "pw",
+        role = MemberRole.ROLE_UNVERIFIED,
+        nickname = "작성자",
+        profileImg = "profiles/a.png",
+    )
         .also { ReflectionTestUtils.setField(it, "id", UUID.randomUUID()) }
 
     private fun stored(

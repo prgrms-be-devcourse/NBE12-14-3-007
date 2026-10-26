@@ -231,12 +231,12 @@ class CommentServiceTest @Autowired constructor(
         }
 
         val admin = memberRepository.save(
-            Member.builder()
-                .email("${UUID.randomUUID()}@test.com")
-                .password("encoded")
-                .nickname("관리자")
-                .role(MemberRole.ROLE_ADMIN)
-                .build()
+            Member(
+                email = "${UUID.randomUUID()}@test.com",
+                password = "encoded",
+                role = MemberRole.ROLE_ADMIN,
+                nickname = "관리자",
+            )
         )
         adminDeletions.delete(
             admin.id,
@@ -260,12 +260,12 @@ class CommentServiceTest @Autowired constructor(
 
     private fun member(): Member {
         val nickname = "댓글" + UUID.randomUUID().toString().substring(0, 8)
-        return Member.builder()
-            .email("$nickname@test.com")
-            .password("encoded")
-            .role(MemberRole.ROLE_UNVERIFIED)
-            .nickname(nickname)
-            .build()
+        return Member(
+            email = "$nickname@test.com",
+            password = "encoded",
+            role = MemberRole.ROLE_UNVERIFIED,
+            nickname = nickname,
+        )
     }
 
     private fun post(member: Member): Post =

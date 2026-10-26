@@ -144,7 +144,7 @@ class CommunityService(
     }
 
     private fun getActiveMember(memberId: UUID): Member {
-        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId).orElse(null)
+        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             ?: throw BusinessException(MemberExceptionCode.MEMBER_NOT_FOUND)
         if (member.isRestricted) {
             throw BusinessException(MemberExceptionCode.MEMBER_RESTRICTED)

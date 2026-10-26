@@ -130,7 +130,7 @@ class PostServiceTest {
     @DisplayName("상세 응답에 후기에 저장된 좋아요 수와 내가 눌렀는지를 함께 담는다")
     fun detailIncludesLikeCount() {
         val post = post(likeCount = 7)
-        val postId = post.id!!
+        val postId = checkNotNull(post.id)
         val memberId = UUID.randomUUID()
         `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(post)
         `when`(likeRepository.existsByPostIdAndMemberId(postId, memberId)).thenReturn(true)
@@ -145,7 +145,7 @@ class PostServiceTest {
     @DisplayName("비회원 상세 조회도 좋아요 수는 보이고, 누른 여부는 묻지 않는다")
     fun guestDetailIncludesLikeCount() {
         val post = post(likeCount = 3)
-        val postId = post.id!!
+        val postId = checkNotNull(post.id)
         `when`(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(post)
 
         val result = postService.getPostDetail(postId, null)
@@ -157,13 +157,13 @@ class PostServiceTest {
 
     /** DB에서 읽어 온 후기처럼 id와 좋아요 수를 채운다. 둘 다 DB가 정하는 값이라 생성자로 받지 않는다. */
     private fun post(likeCount: Long): Post {
-        val member = Member.builder()
-            .id(UUID.randomUUID())
-            .email("a@test.local")
-            .password("x")
-            .role(MemberRole.ROLE_UNVERIFIED)
-            .nickname("닉네임")
-            .build()
+        val member = Member(
+            email = "a@test.local",
+            password = "x",
+            role = MemberRole.ROLE_UNVERIFIED,
+            nickname = "닉네임",
+            id = UUID.randomUUID(),
+        )
         val festival = Festival.builder().id(3L).providerType(ProviderType.PUBLIC).title("행사").build()
         return Post(member = member, festival = festival, title = "후기", content = "내용").apply {
             ReflectionTestUtils.setField(this, "id", UUID.randomUUID())

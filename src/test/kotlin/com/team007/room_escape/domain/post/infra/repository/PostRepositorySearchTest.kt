@@ -141,10 +141,10 @@ class PostRepositorySearchTest @Autowired constructor(
     }
 
     private fun member(nickname: String): Member =
-        Member.builder()
-            .email("$nickname@test.com")
-            .password("encoded")
-            .role(MemberRole.ROLE_UNVERIFIED)
-            .nickname(nickname)
-            .build()
+        Member(
+            email = "$nickname@test.com",
+            password = "encoded",
+            role = MemberRole.ROLE_UNVERIFIED,
+            nickname = nickname,
+        )
 }

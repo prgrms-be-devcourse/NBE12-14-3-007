@@ -27,8 +27,6 @@ class WeatherController(
     fun getWeather(
         @RequestParam region: FestivalRegion,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): ResponseEntity<ApiResponse<WeatherResponse>> {
-        val response = weatherService.getWeather(region, date)
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+    ): ResponseEntity<ApiResponse<WeatherResponse>> =
+        ResponseEntity.ok(ApiResponse.ok(weatherService.getWeather(region, date)))
 }

@@ -25,8 +25,9 @@ DIRTY=""
 export SNAPSHOT_OUT="$OUT_DIR/$NAME.txt"
 export SNAPSHOT_LABEL="$SHORT $BRANCH$DIRTY ($NAME)"
 
+mkdir -p "$(dirname "$DEST")"
 cp "$HERE/SnapshotRecorderTest.java" "$DEST"
-trap 'rm -f "$DEST"' EXIT
+trap 'rm -f "$DEST"; rmdir -p "$(dirname "$DEST")" 2>/dev/null || true' EXIT
 
 cd "$ROOT"
 # cleanTest: 코드가 그대로여도 매번 새로 실행한다. (Gradle 이 UP-TO-DATE 로 건너뛰면 새 파일이 안 만들어진다)

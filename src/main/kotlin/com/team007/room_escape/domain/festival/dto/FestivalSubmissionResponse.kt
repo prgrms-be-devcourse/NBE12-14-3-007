@@ -23,17 +23,14 @@ class FestivalSubmissionResponse private constructor() {
         val status: FestivalStatus?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): CreateBuilder = CreateBuilder()
 
-            @JvmStatic
-            fun from(festival: Festival, festivalSubmission: FestivalSubmission): Create {
-                return Create.builder()
+            fun from(festival: Festival, festivalSubmission: FestivalSubmission): Create =
+                Create.builder()
                     .festivalId(festival.id)
                     .festivalSubmissionId(festivalSubmission.id)
                     .status(FestivalStatus.from(festival.endDe))
                     .build()
-            }
         }
 
         class CreateBuilder {
@@ -87,12 +84,10 @@ class FestivalSubmissionResponse private constructor() {
         val district: String? = null
     ) {
         companion object {
-            @JvmStatic
             fun builder(): ListItemBuilder = ListItemBuilder()
 
-            @JvmStatic
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): ListItem {
-                val festival = festivalSubmission.festival!!
+                val festival = festivalSubmission.requiredFestival
 
                 return ListItem.builder()
                     .festivalSubmissionId(festivalSubmission.id)
@@ -155,15 +150,12 @@ class FestivalSubmissionResponse private constructor() {
         val submission: SubmissionInfo?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): DetailBuilder = DetailBuilder()
 
-            @JvmStatic
-            fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): Detail {
-                return Detail.builder()
+            fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): Detail =
+                Detail.builder()
                     .submission(SubmissionInfo.from(festivalSubmission, latest))
                     .build()
-            }
         }
 
         class DetailBuilder {
@@ -194,10 +186,8 @@ class FestivalSubmissionResponse private constructor() {
         val version: Long = 0
     ) {
         companion object {
-            @JvmStatic
             fun builder(): SubmissionInfoBuilder = SubmissionInfoBuilder()
 
-            @JvmStatic
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): SubmissionInfo {
                 val festival = checkNotNull(festivalSubmission.festival)
                 return SubmissionInfo(
@@ -278,12 +268,10 @@ class FestivalSubmissionResponse private constructor() {
         val district: String? = null
     ) {
         companion object {
-            @JvmStatic
             fun builder(): FestivalInfoBuilder = FestivalInfoBuilder()
 
-            @JvmStatic
-            fun from(festival: Festival, latest: DeletionHistory?): FestivalInfo {
-                return FestivalInfo.builder()
+            fun from(festival: Festival, latest: DeletionHistory?): FestivalInfo =
+                FestivalInfo.builder()
                     .festivalId(festival.id)
                     .district(festival.district)
                     .category(festival.category)
@@ -300,7 +288,6 @@ class FestivalSubmissionResponse private constructor() {
                     .deletion(FestivalResponse.DeletionInfo.from(festival, latest))
                     .status(FestivalStatus.from(festival.endDe))
                     .build()
-            }
         }
 
         class FestivalInfoBuilder {

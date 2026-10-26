@@ -30,6 +30,7 @@ $dirty = if ("$(git -C $root status --porcelain)".Trim().Length -gt 0) { " + unc
 $env:SNAPSHOT_LABEL = "$short $branch$dirty ($Name)"
 $env:SNAPSHOT_OUT = $out
 
+New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
 Copy-Item $recorder $dest -Force
 try {
     Push-Location $root

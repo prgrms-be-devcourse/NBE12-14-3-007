@@ -8,6 +8,7 @@ import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracyVoteRepository
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
 import com.team007.room_escape.domain.member.infra.entity.Member
+import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.service.MemberReader
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
@@ -49,7 +50,7 @@ class FestivalAccuracyVoteServiceTest {
     @Test
     fun repeatedVoteUpdatesExistingVoteAfterLockingFestival() {
         val memberId = UUID.randomUUID()
-        val member = Member.builder().id(memberId).build()
+        val member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = memberId)
         val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
         val vote = FestivalAccuracyVote.create(festival, member, FestivalAccuracyVoteType.ACCURATE)
         `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
@@ -70,7 +71,7 @@ class FestivalAccuracyVoteServiceTest {
     @Test
     fun deletedFestivalRejectsVotingAfterLocking() {
         val memberId = UUID.randomUUID()
-        val member = Member.builder().id(memberId).build()
+        val member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = memberId)
         val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
         festival.delete()
         `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
@@ -88,7 +89,7 @@ class FestivalAccuracyVoteServiceTest {
     @Test
     fun legacyBuilderRejectsMissingRequiredValues() {
         val festival = Festival.create(id = 1L)
-        val member = Member.builder().id(UUID.randomUUID()).build()
+        val member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = UUID.randomUUID())
         assertThatThrownBy { FestivalAccuracyVote.builder().build() }
             .isInstanceOf(IllegalArgumentException::class.java)
         assertThatThrownBy { FestivalAccuracyVote.builder().festival(festival).build() }
@@ -101,7 +102,7 @@ class FestivalAccuracyVoteServiceTest {
     @Test
     fun cancelVoteLocksFestivalBeforeReadingVote() {
         val memberId = UUID.randomUUID()
-        val member = Member.builder().id(memberId).build()
+        val member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = memberId)
         val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
         val vote = FestivalAccuracyVote.create(festival, member, FestivalAccuracyVoteType.ACCURATE)
         `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
@@ -121,7 +122,7 @@ class FestivalAccuracyVoteServiceTest {
     @DisplayName("본인이 제보한 행사의 정확도는 평가할 수 없다")
     fun rejectSelfAccuracyVote() {
         val memberId = UUID.randomUUID()
-        val member = Member.builder().id(memberId).build()
+        val member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = memberId)
         val festival = Festival.builder()
             .id(1L)
             .member(member)

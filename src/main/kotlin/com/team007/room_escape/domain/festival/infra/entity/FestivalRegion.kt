@@ -92,7 +92,6 @@ enum class FestivalRegion(val displayName: String) {
          * "강원특별자치도"처럼 접미사가 풀로 오든 "강원"처럼 줄여서 오든 둘 다 받아들인다.
          * 시군구는 여기서 다루지 않고 Festival.regionDetail에 별도로 저장한다.
          */
-        @JvmStatic
         fun fromDisplayName(area: String?): FestivalRegion? {
             if (area == null || area.isBlank()) {
                 return null

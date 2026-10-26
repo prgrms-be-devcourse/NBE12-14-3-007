@@ -17,18 +17,12 @@ class ApiResponse<T> private constructor(
 
         private const val SUCCESS_CODE = "0000"
 
-        @JvmStatic
-        @JvmOverloads
         fun <T> ok(data: T, message: String = ""): ApiResponse<T> =
             ApiResponse(true, SUCCESS_CODE, message, data)
 
-        @JvmStatic
-        @JvmOverloads
         fun noContent(message: String = ""): ApiResponse<Void?> =
             ApiResponse(true, SUCCESS_CODE, message, null)
 
-        @JvmStatic
-        @JvmOverloads
         fun fail(code: ExceptionCode, message: String? = code.message): ApiResponse<Void?> =
             ApiResponse(false, code.code, message, null)
 
