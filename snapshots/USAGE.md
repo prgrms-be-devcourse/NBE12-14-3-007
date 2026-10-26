@@ -57,6 +57,7 @@ python snapshots/tools/compare_snapshots.py snapshots/baseline/java-era_324ef5e.
 |---|---|
 | `baseline/java-era_324ef5e.txt` | **"Java 시절과 같은가?"** 를 확인할 때. 마이그레이션 전체의 기준 |
 | `baseline/kotlin-mid_a41e11f.txt` | **"내가 바꾸기 전의 dev와 같은가?"** 를 확인할 때 |
+| `baseline/auth-java_ad66cee.txt` | **auth 도메인을 바꾼 뒤** 로그인·회원가입·재발급·로그아웃 응답이 그대로인지 확인할 때 (이 파일이 auth의 기준). OpenAPI 문서 항목은 그 뒤 다른 팀원 변경으로 달라질 수 있어 요청 응답 위주로 본다 |
 | 내가 변환 전에 찍어 둔 파일 | **"내 변경 하나가 응답을 바꿨나?"** 를 확인할 때 (가장 정확함) |
 
 ## 3. 결과 읽는 법
@@ -105,6 +106,7 @@ content-type: application/json       ← 응답 종류
 
 - 맨 첫 줄 `# label:`에는 어느 커밋에서 찍었는지가 적혀 있습니다. 작업 중이던 변경이 있으면 `uncommitted-changes`가 붙습니다.
 - `<uuid>`, `<ts>`는 실행할 때마다 달라지는 값(ID, 시각)을 같은 글자로 바꿔 둔 것입니다.
+- 날씨 응답의 `<today>`, `<today+1y>`는 요청한 날짜(오늘, 1년 뒤)를 바꿔 둔 것입니다. 날짜가 지나도 기준선과 비교할 수 있습니다.
 - 파일이 길어서(약 6,500줄) 처음부터 끝까지 읽을 필요는 없습니다. 비교 스크립트가 달라진 곳만 알려 줍니다.
 
 ## 5. 도메인 하나를 변환할 때 권장 순서

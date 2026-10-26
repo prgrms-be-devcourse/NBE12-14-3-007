@@ -1106,7 +1106,7 @@ content-type: application/json
   "code" : "0000",
   "data" : {
     "condition" : "UNKNOWN",
-    "date" : "2026-10-23",
+    "date" : "<today>",
     "precipitationProbability" : null
   },
   "message" : "",
@@ -1120,7 +1120,7 @@ content-type: application/json
   "code" : "0000",
   "data" : {
     "condition" : "UNKNOWN",
-    "date" : "2027-10-23",
+    "date" : "<today+1y>",
     "precipitationProbability" : null
   },
   "message" : "",
