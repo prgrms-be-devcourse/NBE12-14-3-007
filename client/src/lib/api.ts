@@ -992,6 +992,19 @@ export function createApi(mode: Mode) {
         `/members/me/${comments ? "comments" : "posts"}?page=${page}&size=20`,
       );
     },
+    /** 내가 좋아요한 행사. 최근에 누른 순서로 오고 삭제된 행사는 빠진다. */
+    async myLikedFestivals(page = 0): Promise<Page<EventView>> {
+      const result = await transport<Page<FestivalSearchItem>>(
+        `/members/me/likes/festivals?page=${page}&size=20`,
+      );
+      return { ...result, content: result.content.map(toEventView) };
+    },
+    /** 내가 좋아요한 후기. 최근에 누른 순서로 오고 삭제된 후기는 빠진다. */
+    async myLikedPosts(page = 0) {
+      return transport<Page<PostSummary>>(
+        `/members/me/likes/posts?page=${page}&size=20`,
+      );
+    },
     async adminRestoreContent(
       targetType: DeletionTarget,
       targetId: string | number,

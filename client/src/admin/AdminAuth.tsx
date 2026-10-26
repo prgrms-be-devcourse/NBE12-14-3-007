@@ -30,6 +30,7 @@ import {
 import { AppProvider, useApp } from "../lib/context";
 import { errorText } from "../lib/format";
 import "./admin.css";
+import "./admin-theme.css";
 
 /**
  * /admin 전체의 뿌리.

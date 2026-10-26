@@ -22,15 +22,20 @@ export function MyContents({ comments }: { comments: boolean }) {
     [api, comments, page],
   );
   return (
-    <section aria-label={comments ? "내가 작성한 댓글" : "내가 작성한 글"}>
-      <h2>{comments ? "내가 작성한 댓글" : "내가 작성한 글"}</h2>
-      {!comments && (
-        <p>
-          <Link className="btn secondary" to="/submissions/new">
-            행사 제보하기
-          </Link>
-        </p>
-      )}
+    <section
+      className="my-contents"
+      aria-label={comments ? "내가 작성한 댓글" : "내가 작성한 글"}
+    >
+      <div className="section-heading">
+        <div>
+          <h2>{comments ? "내가 작성한 댓글" : "내가 작성한 글"}</h2>
+          <p className="muted">
+            {comments
+              ? "후기와 커뮤니티에 남긴 댓글이에요."
+              : "제보한 행사, 후기, 커뮤니티 글을 모아 봤어요."}
+          </p>
+        </div>
+      </div>
       {result.loading ? (
         <Loading />
       ) : result.error ? (

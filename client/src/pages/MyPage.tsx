@@ -5,6 +5,7 @@ import {
   Check,
   ChevronRight,
   ClipboardList,
+  Heart,
   LogOut,
   Mail,
   MessageCircle,
@@ -31,6 +32,8 @@ import {
   Upload,
 } from "../components/ui";
 import { MyContents } from "./MyContents";
+import { MyLikes } from "./MyLikes";
+import { TrustGradeBadge } from "../components/TrustGradeBadge";
 
 export function MyPage() {
   const { member, authLoading, api, setMember, toast } = useApp();
@@ -66,7 +69,7 @@ export function MyPage() {
               )}
               <h2>{member.nickname}</h2>
               <p>{member.email}</p>
-              <Badge tone="green">{roleNames[member.role]}</Badge>
+              <TrustGradeBadge member={member} />
             </div>
             <nav aria-label="마이페이지 메뉴">
               {[
@@ -80,6 +83,11 @@ export function MyPage() {
                   key: "comments",
                   label: "내가 작성한 댓글",
                   Icon: MessageCircle,
+                },
+                {
+                  key: "likes",
+                  label: "좋아요한 목록",
+                  Icon: Heart,
                 },
                 {
                   key: "inquiries",
@@ -125,6 +133,8 @@ export function MyPage() {
               <MyContents key="posts" comments={false} />
             ) : tab === "comments" ? (
               <MyContents key="comments" comments />
+            ) : tab === "likes" ? (
+              <MyLikes />
             ) : tab === "inquiries" ? (
               <Inquiries />
             ) : (
