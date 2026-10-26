@@ -7,6 +7,8 @@ import com.team007.room_escape.domain.like.infra.repository.LikeRepository
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
+import com.team007.room_escape.support.anyDateTime
+import com.team007.room_escape.support.eqOf
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -52,7 +54,7 @@ class MemberTrustGradeServiceTest {
         memberTrustGradeService.refreshForFestival(festival)
 
         verify(memberRepository).updateTrustGrade(
-            eq(author.id), eq(MemberRole.ROLE_RECOGNIZED), any(LocalDateTime::class.java)
+            eqOf(author.id), eqOf(MemberRole.ROLE_RECOGNIZED), anyDateTime()
         )
     }
 
@@ -67,7 +69,7 @@ class MemberTrustGradeServiceTest {
         memberTrustGradeService.refreshForFestival(festival)
 
         verify(memberRepository).updateTrustGrade(
-            eq(author.id), eq(MemberRole.ROLE_TRUSTED), any(LocalDateTime::class.java)
+            eqOf(author.id), eqOf(MemberRole.ROLE_TRUSTED), anyDateTime()
         )
     }
 
@@ -84,10 +86,13 @@ class MemberTrustGradeServiceTest {
         verifyNoInteractions(likeRepository, accuracyVoteRepository, memberRepository, entityManager)
     }
 
-    private fun author(role: MemberRole): Member = Member.builder()
-        .id(UUID.randomUUID())
-        .role(role)
-        .build()
+    private fun author(role: MemberRole): Member = Member(
+        email = "member@test.com",
+        password = "pw",
+        role = role,
+        nickname = "닉네임",
+        id = UUID.randomUUID(),
+    )
 
     private fun festivalBy(author: Member): Festival = Festival.builder()
         .member(author)

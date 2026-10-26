@@ -91,12 +91,12 @@ class CommunityPostRepositoryTest @Autowired constructor(
     private fun newMember(): Member {
         val nickname = "검색" + UUID.randomUUID().toString().substring(0, 8)
         return memberRepository.save(
-            Member.builder()
-                .email("$nickname@test.com")
-                .password("encoded")
-                .role(MemberRole.ROLE_UNVERIFIED)
-                .nickname(nickname)
-                .build()
+            Member(
+                email = "$nickname@test.com",
+                password = "encoded",
+                role = MemberRole.ROLE_UNVERIFIED,
+                nickname = nickname,
+            )
         )
     }
 }

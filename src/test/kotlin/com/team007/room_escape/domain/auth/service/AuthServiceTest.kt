@@ -51,7 +51,7 @@ class AuthServiceTest {
     private fun anyText(): String = anyString() ?: ""
 
     private fun member(role: MemberRole = MemberRole.ROLE_UNVERIFIED, nickname: String = "닉네임"): Member =
-        Member.builder().email("user@example.com").password("ENCODED").nickname(nickname).role(role).build()
+        Member(email = "user@example.com", password = "ENCODED", role = role, nickname = nickname)
             .also { ReflectionTestUtils.setField(it, "id", memberId) }
 
     private fun signup(email: String = "user@example.com", phone: String? = null) =
@@ -73,7 +73,10 @@ class AuthServiceTest {
         }
 
         private fun stubSave() {
-            `when`(memberRepository.save(any(Member::class.java))).thenAnswer { it.arguments[0] }
+            // 실제 저장소는 저장하면서 ID를 채워 준다.
+            `when`(memberRepository.save(any(Member::class.java))).thenAnswer {
+                it.arguments[0].also { saved -> ReflectionTestUtils.setField(saved, "id", UUID.randomUUID()) }
+            }
             `when`(passwordEncoder.encode("Password1!")).thenReturn("ENCODED")
         }
 
@@ -133,7 +136,7 @@ class AuthServiceTest {
         @Test
         fun `맞는 비밀번호면 액세스와 리프레시 토큰을 만들고 리프레시를 저장한다`() {
             val member = member(MemberRole.ROLE_TRUSTED)
-            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(Optional.of(member))
+            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(member)
             `when`(passwordEncoder.matches("Password1!", "ENCODED")).thenReturn(true)
             val before = LocalDateTime.now()
 
@@ -153,7 +156,7 @@ class AuthServiceTest {
 
         @Test
         fun `비밀번호가 틀리면 아이디 또는 비밀번호 오류다`() {
-            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(Optional.of(member()))
+            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(member())
             `when`(passwordEncoder.matches("wrong", "ENCODED")).thenReturn(false)
 
             assertThatThrownBy { service.login("user@example.com", "wrong") }
@@ -163,7 +166,7 @@ class AuthServiceTest {
 
         @Test
         fun `이메일이나 비밀번호가 없으면 일치하는 회원이 없는 것과 같은 오류다`() {
-            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(Optional.of(member()))
+            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(member())
 
             assertThatThrownBy { service.login("user@example.com", null) }.isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
             assertThatThrownBy { service.login(null, "Password1!") }.isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
@@ -171,7 +174,7 @@ class AuthServiceTest {
 
         @Test
         fun `없는 이메일도 같은 오류로 알려서 존재 여부를 드러내지 않는다`() {
-            `when`(memberRepository.findByEmailAndDeletedAtIsNull("none@example.com")).thenReturn(Optional.empty())
+            `when`(memberRepository.findByEmailAndDeletedAtIsNull("none@example.com")).thenReturn(null)
 
             assertThatThrownBy { service.login("none@example.com", "Password1!") }
                 .isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
@@ -199,7 +202,7 @@ class AuthServiceTest {
         fun `저장된 토큰과 맞으면 현재 DB의 등급과 닉네임으로 새 액세스 토큰을 만든다`() {
             // 토큰에는 TRUSTED로 들어 있지만 DB는 WARNING으로 강등된 상태
             `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-                .thenReturn(Optional.of(member(MemberRole.ROLE_WARNING, "새닉네임")))
+                .thenReturn(member(MemberRole.ROLE_WARNING, "새닉네임"))
 
             val access = jwtProvider.parse(service.refresh(refreshToken))
 
@@ -217,7 +220,7 @@ class AuthServiceTest {
 
         @Test
         fun `탈퇴했거나 없는 회원이면 유효하지 않은 토큰이다`() {
-            `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId)).thenReturn(Optional.empty())
+            `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId)).thenReturn(null)
 
             assertThatThrownBy { service.refresh(refreshToken) }.isBusiness(AuthExceptionCode.TOKEN_INVALID)
         }

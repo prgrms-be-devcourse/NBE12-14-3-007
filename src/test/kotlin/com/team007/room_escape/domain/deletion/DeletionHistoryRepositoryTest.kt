@@ -118,8 +118,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     private lateinit var storageService: R2StorageService
 
     private fun member(nickname: String, role: MemberRole): Member =
-        Member.builder().email("${UUID.randomUUID()}@example.com").password("test")
-            .nickname(nickname).role(role).build().also(entityManager::persist)
+        Member(
+            email = "${UUID.randomUUID()}@example.com",
+            password = "test",
+            role = role,
+            nickname = nickname,
+        ).also(entityManager::persist)
 
     private fun publicFestival(title: String): Festival = festivals.saveAndFlush(
         Festival.builder().providerType(ProviderType.PUBLIC).title(title).build(),
@@ -240,18 +244,18 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.clear()
         val posts = myContents.findMine(author.id, false, PageRequest.of(0, 20))
         assertThat(posts.totalElements).isEqualTo(3)
-        assertThat(posts.content.map { it.type() }).containsExactlyInAnyOrder(
+        assertThat(posts.content.map { it.type }).containsExactlyInAnyOrder(
             DeletionTargetType.FESTIVAL, DeletionTargetType.POST, DeletionTargetType.COMMUNITY_POST,
         )
-        val removed = posts.content.first { it.type() == DeletionTargetType.POST }
-        assertThat(removed.deletedAt()).isNotNull()
-        assertThat(removed.originalPath()).isNull()
-        assertThat(removed.deletion().reasonDetail()).isEqualTo("마이페이지 사유")
+        val removed = posts.content.first { it.type == DeletionTargetType.POST }
+        assertThat(removed.deletedAt).isNotNull()
+        assertThat(removed.originalPath).isNull()
+        assertThat(removed.deletion?.reasonDetail).isEqualTo("마이페이지 사유")
         val comments = myContents.findMine(author.id, true, PageRequest.of(0, 20))
         assertThat(comments.totalElements).isEqualTo(2)
-        val orphan = comments.content.first { it.type() == DeletionTargetType.COMMENT }
-        assertThat(orphan.parentDeleted()).isTrue()
-        assertThat(orphan.originalPath()).isNull()
+        val orphan = comments.content.first { it.type == DeletionTargetType.COMMENT }
+        assertThat(orphan.parentDeleted).isTrue()
+        assertThat(orphan.originalPath).isNull()
         assertThat(myContents.findMine(author.id, false, PageRequest.of(1, 2)).content).hasSize(1)
     }
 

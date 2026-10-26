@@ -24,7 +24,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.test.util.ReflectionTestUtils
-import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -188,14 +187,16 @@ class CommunityServiceTest {
     }
 
     private fun givenActiveMember(id: UUID) {
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(member(id)))
+        `when`(memberRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(member(id))
     }
 
-    private fun member(id: UUID): Member = Member.builder()
-        .id(id)
-        .role(MemberRole.ROLE_UNVERIFIED)
-        .nickname("이웃")
-        .build()
+    private fun member(id: UUID): Member = Member(
+        email = "member@test.com",
+        password = "pw",
+        role = MemberRole.ROLE_UNVERIFIED,
+        nickname = "이웃",
+        id = id,
+    )
 
     private fun post(author: Member): CommunityPost =
         CommunityPost(member = author, category = CommunityCategory.FREE, title = "기존 제목", content = "<p>기존 내용</p>")

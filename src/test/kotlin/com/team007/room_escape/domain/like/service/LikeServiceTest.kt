@@ -6,6 +6,7 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalReposito
 import com.team007.room_escape.domain.like.infra.entity.Like
 import com.team007.room_escape.domain.like.infra.repository.LikeRepository
 import com.team007.room_escape.domain.member.infra.entity.Member
+import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.service.MemberReader
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.domain.post.infra.entity.Post
@@ -44,7 +45,7 @@ class LikeServiceTest {
     }
 
     private val memberId: UUID = UUID.randomUUID()
-    private val member: Member = Member.builder().id(memberId).build()
+    private val member: Member = Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_UNVERIFIED, nickname = "닉네임", id = memberId)
     private val postId: UUID = UUID.randomUUID()
 
     @Test

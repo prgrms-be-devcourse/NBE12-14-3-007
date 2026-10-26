@@ -72,12 +72,12 @@ class MemberTrustGradeConcurrencyTest @Autowired constructor(
     fun setUp() {
         transactions = TransactionTemplate(transactionManager)
         transactions.executeWithoutResult {
-            val author = members.save(Member.builder()
-                .email("${UUID.randomUUID()}@example.com")
-                .password("test")
-                .nickname("작성자")
-                .role(MemberRole.ROLE_TRUSTED)
-                .build())
+            val author = members.save(Member(
+                email = "${UUID.randomUUID()}@example.com",
+                password = "test",
+                role = MemberRole.ROLE_TRUSTED,
+                nickname = "작성자",
+            ))
             authorId = author.id
             festivalId = festivals.save(Festival.builder()
                 .member(author)
@@ -167,12 +167,12 @@ class MemberTrustGradeConcurrencyTest @Autowired constructor(
         transactions.executeWithoutResult {
             val festival = festivals.findById(festivalId).orElseThrow()
             repeat(maxOf(likeCount, accurateCount)) { index ->
-                val voter = members.save(Member.builder()
-                    .email("${UUID.randomUUID()}@example.com")
-                    .password("test")
-                    .nickname("평가자")
-                    .role(MemberRole.ROLE_UNVERIFIED)
-                    .build())
+                val voter = members.save(Member(
+                    email = "${UUID.randomUUID()}@example.com",
+                    password = "test",
+                    role = MemberRole.ROLE_UNVERIFIED,
+                    nickname = "평가자",
+                ))
                 if (index < likeCount) {
                     likes.save(Like.of(festival, voter))
                 }

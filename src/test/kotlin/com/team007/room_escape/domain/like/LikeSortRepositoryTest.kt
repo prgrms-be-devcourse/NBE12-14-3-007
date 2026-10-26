@@ -48,12 +48,12 @@ class LikeSortRepositoryTest @Autowired constructor(
     fun setUp() {
         likers = List(5) { i ->
             persist(
-                Member.builder()
-                    .email("$token$i@test.local")
-                    .password("x")
-                    .role(MemberRole.ROLE_UNVERIFIED)
-                    .nickname("$token-member$i")
-                    .build()
+                Member(
+                    email = "$token$i@test.local",
+                    password = "x",
+                    role = MemberRole.ROLE_UNVERIFIED,
+                    nickname = "$token-member$i",
+                )
             )
         }
     }
