@@ -660,16 +660,19 @@ for (const targetType of [
             }),
           }),
     );
-    await page.route("**/api/v1/community/posts/42", (route) =>
-      answered && !restored
+    // 관리자 확인은 글을 읽은 게 아니라서 조회수를 올리지 않게 countView=false로 부른다.
+    const communityPostQueries: string[] = [];
+    await page.route("**/api/v1/community/posts/42*", (route) => {
+      communityPostQueries.push(new URL(route.request().url()).search);
+      return answered && !restored
         ? route.fulfill({
             status: 404,
             json: { success: false, message: "삭제된 커뮤니티 글", data: null },
           })
         : route.fulfill({
             json: ok({ id: "42", title: "대상 글", content: "본문" }),
-          }),
-    );
+          });
+    });
     await page.route("**/api/v1/admin/deletions", (route) => {
       expect(route.request().method()).toBe("POST");
       sent = route.request().postDataJSON();
@@ -750,6 +753,12 @@ for (const targetType of [
     await expect(restore).toHaveCount(0);
     await expect(dialog).toContainText("콘텐츠를 삭제했습니다. 도배·스팸");
     expect(restored).toBe(true);
+    if (targetType === "COMMUNITY_POST") {
+      expect(communityPostQueries.length).toBeGreaterThan(0);
+      expect(new Set(communityPostQueries)).toEqual(
+        new Set(["?countView=false"]),
+      );
+    }
   });
 }
 

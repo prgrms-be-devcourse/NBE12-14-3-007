@@ -50,8 +50,8 @@ class CommunityPost(
     var content: String = content
         protected set
 
-    /** 조회수. 상세 조회 때 increaseViewCount로 DB에서 바로 더한다. */
-    @Column(name = "view_count", nullable = false)
+    /** 조회수. increaseViewCount로만 바꾸고, 글을 수정할 때 처음 읽은 값으로 덮지 않게 updatable = false. */
+    @Column(name = "view_count", nullable = false, updatable = false)
     var viewCount: Long = 0
         protected set
 

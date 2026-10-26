@@ -1,6 +1,7 @@
 package com.team007.room_escape.api
 
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -78,6 +79,29 @@ class CommunityApiContractTest : ApiContractSupport() {
             status { isOk() }
             jsonPath("$.data.id") { value(postId.toString()) }
         }
+    }
+
+    /** 수정 화면이나 관리자 화면은 글을 읽은 게 아니라서 countView=false로 불러 조회수를 올리지 않는다. */
+    @Test
+    fun countView를_끄면_조회수를_올리지_않는다() {
+        val postId = createPost(tokenOf(MemberRole.ROLE_UNVERIFIED))
+
+        assertThat(viewCountAfterGet("/api/v1/community/posts/$postId")).isEqualTo(1)
+        assertThat(viewCountAfterGet("/api/v1/community/posts/$postId?countView=false")).isEqualTo(1)
+        assertThat(viewCountAfterGet("/api/v1/community/posts/$postId")).isEqualTo(2)
+    }
+
+    /** 테스트 전체가 한 트랜잭션이라, 앞 요청이 남긴 엔티티 대신 DB 값을 읽도록 매번 저장하고 비운다. */
+    private fun viewCountAfterGet(url: String): Int {
+        entityManager.flush()
+        entityManager.clear()
+        val body = mvc.get(url).andExpect { status { isOk() } }.andReturn().response.contentAsString
+        return objectMapper.readTree(body).path("data").path("viewCount").asInt()
+    }
+
+    @Test
+    fun countView를_꺼도_없는_글은_404다() {
+        mvc.get("/api/v1/community/posts/${UUID.randomUUID()}?countView=false").andExpect { status { isNotFound() } }
     }
 
     @Test

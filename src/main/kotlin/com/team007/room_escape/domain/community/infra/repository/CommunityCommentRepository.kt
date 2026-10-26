@@ -82,8 +82,12 @@ interface CommunityCommentRepository : JpaRepository<CommunityComment, Long> {
     )
     fun findRepliesByParentIds(@Param("parentIds") parentIds: Collection<Long>): List<CommunityComment>
 
-    /** 삭제 여부와 상관없이 찾는다. 관리자가 신고된 댓글의 글을 찾을 때 쓴다. */
-    @EntityGraph(attributePaths = ["member", "post"])
+    /**
+     * 삭제 여부와 상관없이 찾는다. 관리자가 신고된 댓글의 글을 찾을 때 쓴다.
+     * 글은 함께 join하지 않는다. 글의 @SQLRestriction 때문에 글이 삭제된 댓글이 통째로 빠진다.
+     * 글 ID는 댓글의 외래 키만으로 알 수 있다.
+     */
+    @EntityGraph(attributePaths = ["member"])
     override fun findById(id: Long): Optional<CommunityComment>
 
     /** 삭제되지 않은 댓글. 수정·삭제·답글 달기처럼 살아 있는 댓글만 다루는 곳에서 쓴다. */

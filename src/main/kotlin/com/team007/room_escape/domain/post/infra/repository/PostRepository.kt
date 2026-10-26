@@ -19,6 +19,7 @@ private const val COUNT_NOT_DELETED = """
     WHERE p.deletedAt IS NULL
     """
 
+// 검색어는 서비스에서 escapeLikePattern()으로 바꿔 넘기고, LIKE마다 ESCAPE '!'를 붙인다.
 interface PostRepository : JpaRepository<Post, UUID> {
 
     /** 복구 전용: 삭제 필터를 우회하고 대상 행을 잠근다. */
@@ -60,12 +61,12 @@ interface PostRepository : JpaRepository<Post, UUID> {
         WHERE p.deletedAt IS NULL
           AND (
                (:#{#type.name()} = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'MEMBER_NICKNAME'
                     AND m.deletedAt IS NULL
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
           )
         """,
         countQuery = """
@@ -76,12 +77,12 @@ interface PostRepository : JpaRepository<Post, UUID> {
         WHERE p.deletedAt IS NULL
           AND (
                (:#{#type.name()} = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'MEMBER_NICKNAME'
                     AND m.deletedAt IS NULL
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
           )
         """,
     )
@@ -113,11 +114,11 @@ interface PostRepository : JpaRepository<Post, UUID> {
         LEFT JOIN FETCH p.festival f
         WHERE (
                (:#{#type.name()} = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'MEMBER_NICKNAME'
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
         )
         """,
         countQuery = """
@@ -127,11 +128,11 @@ interface PostRepository : JpaRepository<Post, UUID> {
         LEFT JOIN p.festival f
         WHERE (
                (:#{#type.name()} = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'MEMBER_NICKNAME'
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:#{#type.name()} = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
         )
         """,
     )
@@ -176,12 +177,12 @@ interface PostRepository : JpaRepository<Post, UUID> {
         LEFT JOIN FETCH p.festival f
         WHERE p.deletedAt IS NULL
           AND ((:searchType = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:searchType = 'MEMBER_NICKNAME'
                     AND m.deletedAt IS NULL
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:searchType = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!'))
         ORDER BY p.likeCount DESC, p.createdAt DESC, p.id DESC
         """,
         countQuery = """
@@ -191,12 +192,12 @@ interface PostRepository : JpaRepository<Post, UUID> {
         LEFT JOIN p.festival f
         WHERE p.deletedAt IS NULL
           AND ((:searchType = 'TITLE'
-                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:searchType = 'MEMBER_NICKNAME'
                     AND m.deletedAt IS NULL
-                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND LOWER(m.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!')
             OR (:searchType = 'FESTIVAL_TITLE'
-                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%'))))
+                    AND LOWER(f.title) LIKE LOWER(CONCAT('%', :keyword, '%')) ESCAPE '!'))
         """,
     )
     fun searchPostsOrderByLikeCount(

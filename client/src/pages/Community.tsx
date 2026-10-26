@@ -604,7 +604,10 @@ export function CommunityFormPage() {
   const { api, member, authLoading, toast } = useApp();
   const navigate = useNavigate();
   const existing = useLoad<CommunityPostDetail | null>(
-    () => (postId ? api.communityPost(postId) : Promise.resolve(null)),
+    () =>
+      postId
+        ? api.communityPost(postId, { countView: false })
+        : Promise.resolve(null),
     [api, postId],
   );
   const [category, setCategory] = useState<CommunityCategory>("FREE");

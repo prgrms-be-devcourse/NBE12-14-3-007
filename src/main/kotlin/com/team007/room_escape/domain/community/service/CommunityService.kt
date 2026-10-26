@@ -17,6 +17,7 @@ import com.team007.room_escape.global.response.code.CommunityExceptionCode
 import com.team007.room_escape.global.response.code.MemberExceptionCode
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.util.RichTextSanitizer
+import com.team007.room_escape.global.util.escapeLikePattern
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -37,7 +38,7 @@ class CommunityService(
 
     @Transactional(readOnly = true)
     fun getPosts(category: CommunityCategory?, keyword: String?, pageable: Pageable): Page<CommunityResponse.PostListItem> {
-        val posts = postRepository.search(category, keyword?.trimLikeJava().orEmpty(), pageable)
+        val posts = postRepository.search(category, keyword?.trimLikeJava().orEmpty().escapeLikePattern(), pageable)
         val commentCounts: Map<UUID, Long> =
             if (posts.isEmpty) {
                 emptyMap()
@@ -50,9 +51,10 @@ class CommunityService(
         }
     }
 
+    /** countView가 false면 조회수를 올리지 않는다. 수정 화면처럼 글을 읽으려는 게 아닌 곳에서 쓴다. */
     @Transactional
-    fun getPost(postId: UUID): CommunityResponse.PostDetail {
-        if (postRepository.increaseViewCount(postId) == 0) {
+    fun getPost(postId: UUID, countView: Boolean = true): CommunityResponse.PostDetail {
+        if (countView && postRepository.increaseViewCount(postId) == 0) {
             throw BusinessException(CommunityExceptionCode.POST_NOT_FOUND)
         }
         val post = getPostEntity(postId)
