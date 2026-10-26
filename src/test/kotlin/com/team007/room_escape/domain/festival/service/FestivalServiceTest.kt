@@ -291,11 +291,11 @@ class FestivalServiceTest {
 
 		val result = festivalService.syncPublicFestivals()
 
-		assertThat(result.closedFestivals())
-			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String> { it.title() })
+		assertThat(result.closedFestivals)
+			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String?> { it.title })
 			.containsExactly("지난 음악회", "지난 전시회")
-		assertThat(result.savedFestivals())
-			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String> { it.title() })
+		assertThat(result.savedFestivals)
+			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String?> { it.title })
 			.containsExactly("남한산성문화제", "남한산성문화제")
 	}
 
@@ -331,8 +331,8 @@ class FestivalServiceTest {
 
 		val result = festivalService.syncPublicFestivals()
 
-		assertThat(result.closedFestivals()).hasSize(1)
-		assertThat(result.savedFestivals()).isEmpty()
+		assertThat(result.closedFestivals).hasSize(1)
+		assertThat(result.savedFestivals).isEmpty()
 	}
 
 	/** saveAll(List)에 실제로 넘어간 Festival 목록을 잡아내는 공통 헬퍼. */
@@ -488,7 +488,7 @@ class FestivalServiceTest {
 		val result =
 				festivalService.searchFestivals(request, pageable)
 
-		assertThat(result.content.get(0).status())
+		assertThat(result.content.get(0).status)
 				.isEqualTo(FestivalStatus.CLOSED)
 	}
 
@@ -532,9 +532,9 @@ class FestivalServiceTest {
 						.content
 						.get(0)
 
-		assertThat(response.title()).isEqualTo("경기 행사")
-		assertThat(response.region()).isEqualTo(FestivalRegion.GYEONGGI)
-		assertThat(response.providerType()).isEqualTo(ProviderType.PUBLIC)
+		assertThat(response.title).isEqualTo("경기 행사")
+		assertThat(response.region).isEqualTo(FestivalRegion.GYEONGGI)
+		assertThat(response.providerType).isEqualTo(ProviderType.PUBLIC)
 	}
 
 	/** 상세 조회 시 출처와 상세 화면용 필드가 그대로 담기는지 확인한다. */
@@ -559,13 +559,13 @@ class FestivalServiceTest {
 
 		val detail = festivalService.getFestival(7L, null)
 
-		assertThat(detail.festivalId()).isEqualTo(7L)
-		assertThat(detail.providerType()).isEqualTo(ProviderType.PUBLIC)
-		assertThat(detail.title()).isEqualTo("남한산성문화제")
-		assertThat(detail.partcptExpnInfo()).isEqualTo("무료")
-		assertThat(detail.telnoInfo()).isEqualTo("031-000-0000")
-		assertThat(detail.region()).isEqualTo(FestivalRegion.GYEONGGI)
-		assertThat(detail.status()).isEqualTo(FestivalStatus.OPEN)
+		assertThat(detail.festivalId).isEqualTo(7L)
+		assertThat(detail.providerType).isEqualTo(ProviderType.PUBLIC)
+		assertThat(detail.title).isEqualTo("남한산성문화제")
+		assertThat(detail.partcptExpnInfo).isEqualTo("무료")
+		assertThat(detail.telnoInfo).isEqualTo("031-000-0000")
+		assertThat(detail.region).isEqualTo(FestivalRegion.GYEONGGI)
+		assertThat(detail.status).isEqualTo(FestivalStatus.OPEN)
 	}
 
 	@Test
@@ -589,11 +589,11 @@ class FestivalServiceTest {
 
 		val detail = festivalService.getFestival(8L, null)
 
-		assertThat(detail.providerType()).isEqualTo(ProviderType.MEMBER)
-		assertThat(detail.festivalContent()).isEqualTo("이웃과 함께하는 주말 장터")
-		assertThat(detail.referenceUrl()).isEqualTo("https://example.com/market")
-		assertThat(detail.regionDetail()).isEqualTo("수원시 중앙공원")
-		assertThat(detail.partcptExpnInfo()).isEqualTo("무료")
+		assertThat(detail.providerType).isEqualTo(ProviderType.MEMBER)
+		assertThat(detail.festivalContent).isEqualTo("이웃과 함께하는 주말 장터")
+		assertThat(detail.referenceUrl).isEqualTo("https://example.com/market")
+		assertThat(detail.regionDetail).isEqualTo("수원시 중앙공원")
+		assertThat(detail.partcptExpnInfo).isEqualTo("무료")
 	}
 
 	@Test
@@ -627,11 +627,11 @@ class FestivalServiceTest {
 
 		val detail = festivalService.getFestival(8L, memberId)
 
-		assertThat(detail.accurateCount()).isEqualTo(3)
-		assertThat(detail.inaccurateCount()).isEqualTo(1)
-		assertThat(detail.myVote()).isEqualTo(FestivalAccuracyVoteType.ACCURATE)
-		assertThat(detail.likeCount()).isEqualTo(5)
-		assertThat(detail.likedByMe()).isTrue()
+		assertThat(detail.accurateCount).isEqualTo(3)
+		assertThat(detail.inaccurateCount).isEqualTo(1)
+		assertThat(detail.myVote).isEqualTo(FestivalAccuracyVoteType.ACCURATE)
+		assertThat(detail.likeCount).isEqualTo(5)
+		assertThat(detail.likedByMe).isTrue()
 	}
 
 	/** 존재하지 않거나 삭제됐거나 공공 행사가 아니면 리포지토리가 빈 값을 주고, 서비스는 FESTIVAL_NOT_FOUND를 던진다. */
@@ -654,7 +654,7 @@ class FestivalServiceTest {
 		val stale = publicFestival(FestivalRegion.GYEONGGI, pastEndDe.minusDays(5), pastEndDe, FestivalStatus.OPEN)
 		`when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(java.util.Optional.of(stale))
 
-		assertThat(festivalService.getFestival(1L, null).status()).isEqualTo(FestivalStatus.CLOSED)
+		assertThat(festivalService.getFestival(1L, null).status).isEqualTo(FestivalStatus.CLOSED)
 	}
 
 	@Test
@@ -681,7 +681,7 @@ class FestivalServiceTest {
 		val result = festivalService.searchFestivals(request, unsorted)
 
 		assertThat(result.content)
-				.extracting(java.util.function.Function<FestivalResponse.ListItem, Long> { it.festivalId() })
+				.extracting(java.util.function.Function<FestivalResponse.ListItem, Long?> { it.festivalId })
 				.containsExactly(10L)
 		verify(festivalRepository, never()).searchFestivals(
 				anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(),
@@ -716,7 +716,7 @@ class FestivalServiceTest {
 
 		// 좋아요가 하나도 없는 행사는 집계 결과에 없으므로 0으로 채운다
 		assertThat(result.content)
-				.extracting(java.util.function.Function<FestivalResponse.ListItem, Any> { it.festivalId() }, java.util.function.Function<FestivalResponse.ListItem, Any> { it.likeCount() })
+				.extracting(java.util.function.Function<FestivalResponse.ListItem, Any?> { it.festivalId }, java.util.function.Function<FestivalResponse.ListItem, Any> { it.likeCount })
 				.containsExactly(tuple(10L, 7L), tuple(11L, 0L))
 		assertThat(result.totalElements).isEqualTo(11)
 		verify(festivalRepository, never()).searchFestivals(

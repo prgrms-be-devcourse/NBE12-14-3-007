@@ -146,8 +146,8 @@ class FestivalSubmissionServiceTest {
             deletionHistories.findLatestForTargets(DeletionTargetType.FESTIVAL, listOf("7"))
         ).thenReturn(mapOf("7" to record))
         val history = service.findAllByMemberId(memberId).first()
-        assertThat(history.deletion().deletedAt()).isNotNull()
-        assertThat(history.deletion().reason()).isEqualTo("작성자 직접 삭제")
+        assertThat(history.deletion?.deletedAt).isNotNull()
+        assertThat(history.deletion?.reason).isEqualTo("작성자 직접 삭제")
     }
 
     @Test
