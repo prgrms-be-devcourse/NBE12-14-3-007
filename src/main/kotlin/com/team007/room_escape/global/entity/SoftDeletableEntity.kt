@@ -16,15 +16,13 @@ abstract class SoftDeletableEntity : BaseTimeEntity() {
         protected set
 
     fun delete() {
-        this.deletedAt = LocalDateTime.now()
+        deletedAt = LocalDateTime.now()
     }
 
     /** 삭제를 되돌린다. 누가 지웠는지 구분할 수 없으니 작성자가 지운 글인지는 호출하는 쪽이 판단한다. */
     fun restore() {
-        this.deletedAt = null
+        deletedAt = null
     }
 
-    fun isDeleted(): Boolean {
-        return deletedAt != null
-    }
+    fun isDeleted(): Boolean = deletedAt != null
 }

@@ -23,14 +23,13 @@ class OpenApiConfig {
             .bearerFormat("JWT")
             .`in`(SecurityScheme.In.HEADER)
             .name("Authorization")
+        val info = Info()
+            .title("roomescape API")
+            .version("v1")
+            .description("Access Token을 Authorize에 넣으면 됩니다. Bearer 접두사는 자동으로 붙습니다.")
 
         return OpenAPI()
-            .info(
-                Info()
-                    .title("roomescape API")
-                    .version("v1")
-                    .description("Access Token을 Authorize에 넣으면 됩니다. Bearer 접두사는 자동으로 붙습니다.")
-            )
+            .info(info)
             .components(Components().addSecuritySchemes(BEARER_SCHEME, bearer))
             .addSecurityItem(SecurityRequirement().addList(BEARER_SCHEME))
     }
