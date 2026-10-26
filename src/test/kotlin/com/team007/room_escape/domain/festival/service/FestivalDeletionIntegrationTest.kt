@@ -147,7 +147,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         assertThat(author.role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
 
         em.clear()
-        assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, id.toString()).actorType())
+        assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, id.toString())?.actorType())
             .isEqualTo(DeletionActorType.ADMIN)
         admin.restore(operator, DeletionTargetType.FESTIVAL, id.toString())
         em.flush()
@@ -212,7 +212,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         deleteAsAdmin(event.id, operator, "최초 사유")
 
         assertThrows<BusinessException> { deleteAsAdmin(event.id, operator, "다른 사유") }
-        assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, event.id.toString()).reasonDetail())
+        assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, event.id.toString())?.reasonDetail())
             .isEqualTo("최초 사유")
     }
 }
