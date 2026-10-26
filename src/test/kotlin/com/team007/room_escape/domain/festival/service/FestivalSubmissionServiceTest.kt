@@ -59,9 +59,18 @@ class FestivalSubmissionServiceTest {
     private val end = LocalDateTime.of(2026, 10, 3, 18, 0)
 
     private fun request(): FestivalSubmissionRequest.Upsert = FestivalSubmissionRequest.Upsert.builder()
-        .title("행사").category("축제").region(FestivalRegion.GYEONGGI)
+        .title("행사").category("축제").region(FestivalRegion.GYEONGGI).district("수원시")
         .referenceUrl(" https://example.com/event/// ")
         .beginDe(begin).endDe(end).version(0L).build()
+
+    private fun givenNoDuplicate(currentId: Long?) {
+        `when`(festivals.findSubmissionDuplicateId(
+            currentId,
+            begin.toLocalDate().atStartOfDay(), begin.toLocalDate().plusDays(1).atStartOfDay(),
+            end.toLocalDate().atStartOfDay(), end.toLocalDate().plusDays(1).atStartOfDay(),
+            FestivalRegion.GYEONGGI.name, "행사", "수원시"
+        )).thenReturn(null)
+    }
 
     @Test
     fun staleEditCannotOverwriteFestival() {
@@ -90,6 +99,7 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun concurrentUpdateFailureReturnsConflict() {
+        givenNoDuplicate(7L)
         val festival = Festival.create(id = 7L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
             .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
@@ -112,18 +122,18 @@ class FestivalSubmissionServiceTest {
     }
 
     @Test
-    fun duplicateCreateUsesDatesAndNormalizedUrlAndRejectsBeforeSaving() {
-        `when`(festivals.existsSubmissionDuplicate(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText()))
-            .thenReturn(true)
+    fun duplicateCreateUsesNameDistrictDatesAndRejectsBeforeSaving() {
+        `when`(festivals.findSubmissionDuplicateId(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText(), anyText()))
+            .thenReturn(99L)
         assertDuplicate { service.create(memberId, request()) }
-        verify(festivals).existsSubmissionDuplicate(
+        verify(festivals).findSubmissionDuplicateId(
             null, begin.toLocalDate().atStartOfDay(), begin.toLocalDate().plusDays(1).atStartOfDay(),
             end.toLocalDate().atStartOfDay(), end.toLocalDate().plusDays(1).atStartOfDay(),
-            FestivalRegion.GYEONGGI.name, "https://example.com/event",
+            FestivalRegion.GYEONGGI.name, "행사", "수원시",
         )
         val order = inOrder(festivals)
         order.verify(festivals).lockSubmissionDuplicateKey(anyLong())
-        order.verify(festivals).existsSubmissionDuplicate(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText())
+        order.verify(festivals).findSubmissionDuplicateId(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText(), anyText())
         verify(festivals, never()).saveAndFlush(any<Festival>())
         verify(submissions, never()).save(any<FestivalSubmission>())
     }
@@ -133,8 +143,8 @@ class FestivalSubmissionServiceTest {
         val festival = Festival.builder().id(7L).build()
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
             .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
-        `when`(festivals.existsSubmissionDuplicate(eq(7L), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText()))
-            .thenReturn(true)
+        `when`(festivals.findSubmissionDuplicateId(eq(7L), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText(), anyText()))
+            .thenReturn(99L)
         assertDuplicate { service.update(memberId, submissionId, request()) }
         assertThat(festival.title).isNull()
     }
@@ -153,6 +163,7 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun nonDuplicateCreateSavesNormalizedUrl() {
+        givenNoDuplicate(null)
         `when`(festivals.saveAndFlush(any<Festival>())).thenAnswer { it.getArgument<Festival>(0) }
         `when`(submissions.save(any<FestivalSubmission>())).thenAnswer { it.getArgument<FestivalSubmission>(0) }
         service.create(memberId, request())
@@ -164,6 +175,7 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun nonDuplicateUpdateStillAllowsEditingOwnEvent() {
+        givenNoDuplicate(7L)
         val festival = Festival.builder().id(7L).build()
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
             .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
@@ -182,6 +194,7 @@ class FestivalSubmissionServiceTest {
     private fun assertDuplicate(action: () -> Unit) {
         val exception = assertThrows<BusinessException> { action() }
         assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.DUPLICATE_FESTIVAL)
+        assertThat(exception.details).containsEntry("festivalId", 99L)
     }
 
     @Test

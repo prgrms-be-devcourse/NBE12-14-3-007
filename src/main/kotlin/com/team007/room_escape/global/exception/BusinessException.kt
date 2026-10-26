@@ -7,4 +7,5 @@ package com.team007.room_escape.global.exception
 class BusinessException constructor(
     val exceptionCode: ExceptionCode,
     message: String? = exceptionCode.message,
+    val details: Map<String, Any>? = null,
 ) : RuntimeException(message)

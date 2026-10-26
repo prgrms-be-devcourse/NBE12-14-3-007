@@ -96,6 +96,10 @@ class Festival protected constructor() : SoftDeletableEntity() {
     var region: FestivalRegion? = null
         protected set
 
+    @field:Column(length = 80)
+    var district: String? = null
+        protected set
+
     @field:Column(name = "region_detail", columnDefinition = "text")
     var regionDetail: String? = null
         protected set
@@ -123,8 +127,10 @@ class Festival protected constructor() : SoftDeletableEntity() {
     fun updateDetails(
         title: String?, category: String?, content: String?, referenceUrl: String?,
         region: FestivalRegion?, regionDetail: String?, imgUrl: String?,
-        beginDe: LocalDateTime?, endDe: LocalDateTime?, partcptExpnInfo: String?, telnoInfo: String?
+        beginDe: LocalDateTime?, endDe: LocalDateTime?, partcptExpnInfo: String?, telnoInfo: String?,
+        district: String? = if (region == this.region) this.district else null
     ) {
+        this.district = district
         this.title = title
         this.category = category
         this.content = content
@@ -167,8 +173,10 @@ class Festival protected constructor() : SoftDeletableEntity() {
             region: FestivalRegion? = null,
             regionDetail: String? = null,
             place: String? = null,
-            placeAddress: String? = null
+            placeAddress: String? = null,
+            district: String? = null
         ): Festival = Festival().also {
+            it.district = district
             it.id = id
             it.member = member
             it.providerType = providerType
@@ -192,6 +200,8 @@ class Festival protected constructor() : SoftDeletableEntity() {
     }
 
     class FestivalBuilder {
+        private var district: String? = null
+        fun district(district: String?): FestivalBuilder = apply { this.district = district }
         private var id: Long? = null
         private var member: Member? = null
         private var providerType: ProviderType? = null
@@ -233,6 +243,7 @@ class Festival protected constructor() : SoftDeletableEntity() {
         fun placeAddress(placeAddress: String?): FestivalBuilder = apply { this.placeAddress = placeAddress }
 
         fun build(): Festival = Festival().also {
+            it.district = district
             it.id = id
             it.member = member
             it.providerType = providerType

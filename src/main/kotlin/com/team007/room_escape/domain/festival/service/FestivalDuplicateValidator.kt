@@ -24,19 +24,24 @@ class FestivalDuplicateValidator(
         beginDe: LocalDateTime,
         endDe: LocalDateTime,
         region: FestivalRegion,
-        referenceUrl: String
+        title: String,
+        district: String
     ) {
         val begin = beginDe.toLocalDate()
         val end = endDe.toLocalDate()
-        val url = normalizeReferenceUrl(referenceUrl)
-        repository.lockSubmissionDuplicateKey(Objects.hash(begin, end, region.name, url).toLong())
-        if (repository.existsSubmissionDuplicate(
+        val normalizedTitle = title.trim(' ')
+        repository.lockSubmissionDuplicateKey(Objects.hash(begin, end, region.name, normalizedTitle, district).toLong())
+        val duplicateId = repository.findSubmissionDuplicateId(
                 currentId, begin.atStartOfDay(),
                 begin.plusDays(1).atStartOfDay(),
                 end.atStartOfDay(), end.plusDays(1).atStartOfDay(),
-                region.name, url
-            )) {
-            throw BusinessException(FestivalExceptionCode.DUPLICATE_FESTIVAL)
+                region.name, normalizedTitle, district
+            )
+        if (duplicateId != null) {
+            throw BusinessException(
+                FestivalExceptionCode.DUPLICATE_FESTIVAL,
+                details = mapOf("festivalId" to duplicateId)
+            )
         }
     }
 }

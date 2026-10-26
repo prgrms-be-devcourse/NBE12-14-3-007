@@ -11,6 +11,7 @@ enum class FestivalExceptionCode(
     override val status: HttpStatus,
     override val message: String
 ) : ExceptionCode {
+    INVALID_SUBMISSION_REGION("FESTIVAL013", HttpStatus.BAD_REQUEST, "시·도에 맞는 시·군·구를 선택해 주세요."),
 
     /** festival 테이블에서 행사 자체를 찾을 수 없을 때 */
     FESTIVAL_NOT_FOUND("FESTIVAL001", HttpStatus.NOT_FOUND, "존재하지 않는 행사입니다."),
@@ -30,7 +31,7 @@ enum class FestivalExceptionCode(
     /** 이미 다른 동기화가 실행 중일 때 (버튼 연타 등) */
     SYNC_ALREADY_RUNNING("FESTIVAL005", HttpStatus.CONFLICT, "이미 공공 행사 동기화가 진행 중입니다."),
 
-    /** 동일한 일정·지역·링크의 행사가 존재할 때 */
+    /** 동일한 행사명·시군구·일정의 행사가 존재할 때 */
     DUPLICATE_FESTIVAL("FESTIVAL006", HttpStatus.CONFLICT, "이미 등록된 행사입니다."),
 
     /** 삭제되지 않은 행사에 복구를 요청한 경우 */
@@ -45,9 +46,9 @@ enum class FestivalExceptionCode(
         "본인이 제보한 행사의 정확도는 평가할 수 없습니다."
     ),
 
-    /** 중복 검사에 필요한 일정·지역·링크가 비어 있어 복구 가능 여부를 판단할 수 없는 경우 */
+    /** 중복 검사에 필요한 행사명·시군구·일정이 비어 있어 복구 가능 여부를 판단할 수 없는 경우 */
     RESTORE_DATA_INCOMPLETE(
         "FESTIVAL010", HttpStatus.CONFLICT,
-        "일정·지역·참고 링크가 비어 있어 복구할 수 없습니다."
+        "행사명·시군구·일정이 비어 있어 복구할 수 없습니다."
     )
 }

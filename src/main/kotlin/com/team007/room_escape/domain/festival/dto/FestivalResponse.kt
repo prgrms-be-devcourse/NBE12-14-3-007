@@ -97,7 +97,9 @@ class FestivalResponse private constructor() {
         val inaccurateCount: Long,
 
         @field:Schema(description = "회원 제보 행사 작성자 정보. 공공데이터 행사는 null", nullable = true)
-        val member: MemberResponse.MemberInfo?
+        val member: MemberResponse.MemberInfo?,
+
+        val district: String? = null
     ) {
         companion object {
             fun builder(): ListItemBuilder = ListItemBuilder()
@@ -112,6 +114,7 @@ class FestivalResponse private constructor() {
                     .beginDe(festival.beginDe)
                     .endDe(festival.endDe)
                     .region(festival.region)
+                    .district(festival.district)
                     .regionDetail(festival.regionDetail)
                     .status(FestivalStatus.from(festival.endDe))
                     .likeCount(likeCount)
@@ -122,6 +125,8 @@ class FestivalResponse private constructor() {
         }
 
         class ListItemBuilder {
+            private var district: String? = null
+            fun district(district: String?): ListItemBuilder = apply { this.district = district }
             private var festivalId: Long? = null
             private var providerType: ProviderType? = null
             private var title: String? = null
@@ -165,7 +170,7 @@ class FestivalResponse private constructor() {
 
             fun member(member: MemberResponse.MemberInfo?): ListItemBuilder = apply { this.member = member }
 
-            fun build(): ListItem = ListItem(festivalId, providerType, title, category, imgUrl, beginDe, endDe, region, regionDetail, status, likeCount, accurateCount, inaccurateCount, member)
+            fun build(): ListItem = ListItem(festivalId, providerType, title, category, imgUrl, beginDe, endDe, region, regionDetail, status, likeCount, accurateCount, inaccurateCount, member, district)
         }
     }
 
@@ -233,7 +238,9 @@ class FestivalResponse private constructor() {
         val likedByMe: Boolean,
 
         @field:Schema(description = "회원 제보 행사 작성자 정보. 공공데이터 행사는 null", nullable = true)
-        val member: MemberResponse.MemberInfo?
+        val member: MemberResponse.MemberInfo?,
+
+        val district: String? = null
     ) {
         companion object {
             fun builder(): DetailBuilder = DetailBuilder()
@@ -253,6 +260,7 @@ class FestivalResponse private constructor() {
                     .partcptExpnInfo(festival.partcptExpnInfo)
                     .telnoInfo(festival.telnoInfo)
                     .region(festival.region)
+                    .district(festival.district)
                     .regionDetail(festival.regionDetail)
                     .status(FestivalStatus.from(festival.endDe))
                     .accurateCount(accurateCount)
@@ -265,6 +273,8 @@ class FestivalResponse private constructor() {
         }
 
         class DetailBuilder {
+            private var district: String? = null
+            fun district(district: String?): DetailBuilder = apply { this.district = district }
             private var festivalId: Long? = null
             private var providerType: ProviderType? = null
             private var title: String? = null
@@ -329,7 +339,7 @@ class FestivalResponse private constructor() {
 
             fun member(member: MemberResponse.MemberInfo?): DetailBuilder = apply { this.member = member }
 
-            fun build(): Detail = Detail(festivalId, providerType, title, category, festivalContent, imgUrl, url, referenceUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, region, regionDetail, status, accurateCount, inaccurateCount, myVote, likeCount, likedByMe, member)
+            fun build(): Detail = Detail(festivalId, providerType, title, category, festivalContent, imgUrl, url, referenceUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, region, regionDetail, status, accurateCount, inaccurateCount, myVote, likeCount, likedByMe, member, district)
         }
     }
 

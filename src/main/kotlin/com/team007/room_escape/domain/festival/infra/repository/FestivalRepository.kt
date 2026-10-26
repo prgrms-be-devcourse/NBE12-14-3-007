@@ -26,29 +26,26 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
     @Query(value = "SELECT count(*) FROM pg_advisory_xact_lock(:key)", nativeQuery = true)
     fun lockSubmissionDuplicateKey(@Param("key") key: Long): Long
 
-    @Query(
-        value = """
-		SELECT EXISTS (
-		SELECT 1 FROM festival f
-		WHERE f.deleted_at IS NULL
-		  AND (CAST(:currentId AS bigint) IS NULL OR f.id <> :currentId)
-		  AND f.begin_de >= :beginStart AND f.begin_de < :beginEnd
-		  AND f.end_de >= :endStart AND f.end_de < :endEnd
-		  AND f.region = :region
-		  AND rtrim(trim(f.url), '/') = :url
-		)
-		""",
-        nativeQuery = true,
-    )
-    fun existsSubmissionDuplicate(
+    @Query(value = """
+        SELECT f.id FROM festival f
+        WHERE f.deleted_at IS NULL
+          AND (CAST(:currentId AS bigint) IS NULL OR f.id <> :currentId)
+          AND f.begin_de >= :beginStart AND f.begin_de < :beginEnd
+          AND f.end_de >= :endStart AND f.end_de < :endEnd
+          AND f.region = :region AND btrim(f.title) = :title
+          AND COALESCE(f.district, f.region_detail, '') = :district
+        ORDER BY f.id LIMIT 1
+    """, nativeQuery = true)
+    fun findSubmissionDuplicateId(
         @Param("currentId") currentId: Long?,
         @Param("beginStart") beginStart: LocalDateTime,
         @Param("beginEnd") beginEnd: LocalDateTime,
         @Param("endStart") endStart: LocalDateTime,
         @Param("endEnd") endEnd: LocalDateTime,
         @Param("region") region: String,
-        @Param("url") url: String,
-    ): Boolean
+        @Param("title") title: String,
+        @Param("district") district: String,
+    ): Long?
 
     /** 저장 건수 조회 */
     fun countByProviderType(providerType: ProviderType): Long
@@ -80,7 +77,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 				OR LOWER(COALESCE(f.regionDetail, ''))
 					LIKE CONCAT('%', :keyword, '%'))
 		  AND (:hasRegion = false OR f.region = :region)
-		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.regionDetail, '')) = :regionDetail)
+		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
 		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
@@ -123,7 +120,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 				OR LOWER(COALESCE(f.regionDetail, ''))
 					LIKE CONCAT('%', :keyword, '%'))
 		  AND (:hasRegion = false OR f.region = :region)
-		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.regionDetail, '')) = :regionDetail)
+		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
 		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
@@ -148,7 +145,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 				OR LOWER(COALESCE(f.regionDetail, ''))
 					LIKE CONCAT('%', :keyword, '%'))
 		  AND (:hasRegion = false OR f.region = :region)
-		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.regionDetail, '')) = :regionDetail)
+		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
 		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
@@ -200,7 +197,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 				OR LOWER(COALESCE(f.regionDetail, ''))
 					LIKE CONCAT('%', :keyword, '%'))
 		  AND (:hasRegion = false OR f.region = :region)
-		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.regionDetail, '')) = :regionDetail)
+		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
 		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
@@ -217,7 +214,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 				OR LOWER(COALESCE(f.regionDetail, ''))
 					LIKE CONCAT('%', :keyword, '%'))
 		  AND (:hasRegion = false OR f.region = :region)
-		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.regionDetail, '')) = :regionDetail)
+		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
 		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
