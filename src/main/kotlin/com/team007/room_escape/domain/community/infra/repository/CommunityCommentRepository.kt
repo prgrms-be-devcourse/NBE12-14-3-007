@@ -17,11 +17,11 @@ import java.util.UUID
 interface CommunityCommentRepository : JpaRepository<CommunityComment, Long> {
     /** 복구 전용: 삭제 필터를 우회하고 대상 행을 잠근다. */
     @Query(value = "select * from community_comment where id = :id for update", nativeQuery = true)
-    fun findForRestoration(@Param("id") id: Long): Optional<CommunityComment>
+    fun findForRestoration(@Param("id") id: Long): CommunityComment?
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from CommunityComment c where c.id = :id and c.deletedAt is null")
-    fun findForDeletion(@Param("id") id: Long): Optional<CommunityComment>
+    fun findForDeletion(@Param("id") id: Long): CommunityComment?
 
     fun existsByMemberIdAndDeletedAtIsNullAndCreatedAtAfter(memberId: UUID, createdAfter: LocalDateTime): Boolean
 
@@ -88,7 +88,7 @@ interface CommunityCommentRepository : JpaRepository<CommunityComment, Long> {
 
     /** 삭제되지 않은 댓글. 수정·삭제·답글 달기처럼 살아 있는 댓글만 다루는 곳에서 쓴다. */
     @EntityGraph(attributePaths = ["member", "post"])
-    fun findByIdAndDeletedAtIsNull(id: Long): Optional<CommunityComment>
+    fun findByIdAndDeletedAtIsNull(id: Long): CommunityComment?
 
     fun existsByIdAndDeletedAtIsNull(id: Long): Boolean
 

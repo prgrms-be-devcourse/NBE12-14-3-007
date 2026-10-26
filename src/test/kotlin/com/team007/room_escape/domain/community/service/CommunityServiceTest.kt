@@ -5,6 +5,7 @@ import com.team007.room_escape.domain.community.infra.entity.CommunityPost
 import com.team007.room_escape.domain.community.infra.repository.CommunityCommentRepository
 import com.team007.room_escape.domain.community.infra.repository.CommunityPostRepository
 import com.team007.room_escape.domain.community.type.CommunityCategory
+import com.team007.room_escape.domain.deletion.service.DeletionHistoryService
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
@@ -18,13 +19,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
-import java.time.LocalDateTime
+import org.springframework.test.util.ReflectionTestUtils
 import java.util.Optional
 import java.util.UUID
 
@@ -46,20 +45,30 @@ class CommunityServiceTest {
     @field:Mock
     private lateinit var imageUrlResolver: ImageUrlResolver
 
-    @field:InjectMocks
-    private lateinit var communityService: CommunityService
+    @field:Mock
+    private lateinit var deletionHistoryService: DeletionHistoryService
+
+    private val communityService by lazy {
+        CommunityService(
+            postRepository, commentRepository, memberRepository,
+            richTextSanitizer, imageUrlResolver, deletionHistoryService,
+        )
+    }
 
     @Test
     fun 저장하기_전에_에디터_HTML을_정제한다() {
         val memberId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-            .thenReturn(Optional.of(member(memberId)))
-        `when`(richTextSanitizer.sanitize(any())).thenReturn("<p>안전한 내용</p>")
-        `when`(richTextSanitizer.hasVisibleText(any())).thenReturn(true)
+        givenActiveMember(memberId)
+        `when`(richTextSanitizer.sanitize(anyValue())).thenReturn("<p>안전한 내용</p>")
+        `when`(richTextSanitizer.hasVisibleText(anyValue())).thenReturn(true)
+        // 저장하면 DB가 id를 채운다.
+        `when`(postRepository.save(any(CommunityPost::class.java))).thenAnswer { invocation ->
+            invocation.getArgument<CommunityPost>(0).also { ReflectionTestUtils.setField(it, "id", UUID.randomUUID()) }
+        }
         val request = CommunityRequest.PostUpsert(
             CommunityCategory.FREE,
             "자유 이야기",
-            "<script>위험</script><p>안전한 내용</p>"
+            "<script>위험</script><p>안전한 내용</p>",
         )
 
         communityService.createPost(request, memberId)
@@ -73,14 +82,12 @@ class CommunityServiceTest {
     fun 작성자가_아니면_글을_수정할_수_없다() {
         val authorId = UUID.randomUUID()
         val otherId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(otherId))
-            .thenReturn(Optional.of(member(otherId)))
-        `when`(postRepository.findById(any()))
-            .thenReturn(Optional.of(CommunityPost.builder().member(member(authorId)).build()))
+        givenActiveMember(otherId)
+        `when`(postRepository.findById(anyValue())).thenReturn(Optional.of(post(author = member(authorId))))
         val request = CommunityRequest.PostUpsert(
             CommunityCategory.FREE,
             "수정할 제목",
-            "<p>수정할 내용</p>"
+            "<p>수정할 내용</p>",
         )
 
         assertThatThrownBy { communityService.updatePost(UUID.randomUUID(), request, otherId) }
@@ -92,16 +99,15 @@ class CommunityServiceTest {
     @Test
     fun 게시글은_30초_안에_연속으로_등록할_수_없다() {
         val memberId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-            .thenReturn(Optional.of(member(memberId)))
-        `when`(richTextSanitizer.sanitize(any())).thenReturn("<p>새 내용</p>")
-        `when`(richTextSanitizer.hasVisibleText(any())).thenReturn(true)
-        `when`(postRepository.existsByMemberIdAndCreatedAtAfter(any(), any())).thenReturn(true)
+        givenActiveMember(memberId)
+        `when`(richTextSanitizer.sanitize(anyValue())).thenReturn("<p>새 내용</p>")
+        `when`(richTextSanitizer.hasVisibleText(anyValue())).thenReturn(true)
+        `when`(postRepository.existsByMemberIdAndCreatedAtAfter(anyValue(), anyValue())).thenReturn(true)
 
         assertThatThrownBy {
             communityService.createPost(
                 CommunityRequest.PostUpsert(CommunityCategory.FREE, "새 제목", "<p>새 내용</p>"),
-                memberId
+                memberId,
             )
         }.isInstanceOfSatisfying(BusinessException::class.java) { exception ->
             assertThat(exception.exceptionCode).isEqualTo(CommunityExceptionCode.POST_CREATE_TOO_SOON)
@@ -111,17 +117,16 @@ class CommunityServiceTest {
     @Test
     fun 같은_게시글은_1분_안에_다시_등록할_수_없다() {
         val memberId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-            .thenReturn(Optional.of(member(memberId)))
-        `when`(richTextSanitizer.sanitize(any())).thenReturn("<p>같은 내용</p>")
-        `when`(richTextSanitizer.hasVisibleText(any())).thenReturn(true)
-        `when`(postRepository.existsByMemberIdAndContentAndCreatedAtAfter(any(), any(), any()))
+        givenActiveMember(memberId)
+        `when`(richTextSanitizer.sanitize(anyValue())).thenReturn("<p>같은 내용</p>")
+        `when`(richTextSanitizer.hasVisibleText(anyValue())).thenReturn(true)
+        `when`(postRepository.existsByMemberIdAndContentAndCreatedAtAfter(anyValue(), anyValue(), anyValue()))
             .thenReturn(true)
 
         assertThatThrownBy {
             communityService.createPost(
                 CommunityRequest.PostUpsert(CommunityCategory.FREE, "같은 제목", "<p>같은 내용</p>"),
-                memberId
+                memberId,
             )
         }.isInstanceOfSatisfying(BusinessException::class.java) { exception ->
             assertThat(exception.exceptionCode).isEqualTo(CommunityExceptionCode.POST_DUPLICATE)
@@ -132,18 +137,10 @@ class CommunityServiceTest {
     fun 댓글은_5초_안에_연속으로_등록할_수_없다() {
         val memberId = UUID.randomUUID()
         val postId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-            .thenReturn(Optional.of(member(memberId)))
-        `when`(postRepository.findById(postId))
-            .thenReturn(Optional.of(CommunityPost.builder().member(member(UUID.randomUUID())).build()))
-        // Mockito의 any()는 null을 반환하므로 Kotlin의 non-null 인자 검사를 통과할 대체값을 준다.
-        // 실제 호출 비교에는 대체값이 아니라 any()로 등록한 매처가 사용된다.
-        `when`(
-            commentRepository.existsByMemberIdAndDeletedAtIsNullAndCreatedAtAfter(
-                any(UUID::class.java) ?: UUID(0, 0),
-                any(LocalDateTime::class.java) ?: LocalDateTime.MIN
-            )
-        ).thenReturn(true)
+        givenActiveMember(memberId)
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post(author = member(UUID.randomUUID()))))
+        `when`(commentRepository.existsByMemberIdAndDeletedAtIsNullAndCreatedAtAfter(anyValue(), anyValue()))
+            .thenReturn(true)
 
         assertThatThrownBy {
             communityService.createComment(postId, CommunityRequest.CommentCreate("새 댓글", null), memberId)
@@ -156,15 +153,11 @@ class CommunityServiceTest {
     fun 같은_댓글은_1분_안에_다시_등록할_수_없다() {
         val memberId = UUID.randomUUID()
         val postId = UUID.randomUUID()
-        `when`(memberRepository.findByIdAndDeletedAtIsNull(memberId))
-            .thenReturn(Optional.of(member(memberId)))
-        `when`(postRepository.findById(postId))
-            .thenReturn(Optional.of(CommunityPost.builder().member(member(UUID.randomUUID())).build()))
+        givenActiveMember(memberId)
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post(author = member(UUID.randomUUID()))))
         `when`(
             commentRepository.existsByMemberIdAndContentAndDeletedAtIsNullAndCreatedAtAfter(
-                any(UUID::class.java) ?: UUID(0, 0),
-                anyString(),
-                any(LocalDateTime::class.java) ?: LocalDateTime.MIN
+                anyValue(), anyValue(), anyValue(),
             )
         ).thenReturn(true)
 
@@ -175,9 +168,23 @@ class CommunityServiceTest {
         }
     }
 
+    private fun givenActiveMember(id: UUID) {
+        `when`(memberRepository.findByIdAndDeletedAtIsNull(id)).thenReturn(Optional.of(member(id)))
+    }
+
     private fun member(id: UUID): Member = Member.builder()
         .id(id)
         .role(MemberRole.ROLE_UNVERIFIED)
         .nickname("이웃")
         .build()
+
+    private fun post(author: Member): CommunityPost =
+        CommunityPost(member = author, category = CommunityCategory.FREE, title = "기존 제목", content = "<p>기존 내용</p>")
+
+    /** Mockito any()는 null을 돌려줘서 Kotlin의 non-null 매개변수에 그대로 넣으면 NPE가 난다. 매처만 등록하고 타입을 맞춘다. */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> anyValue(): T {
+        any<T>()
+        return null as T
+    }
 }

@@ -220,8 +220,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val author = member("작성자", MemberRole.ROLE_ADMIN)
         val other = member("타인", MemberRole.ROLE_UNVERIFIED)
         val post = Post(member = author, title = "내 후기", content = "내용")
-        val community = CommunityPost.builder().member(author).category(CommunityCategory.FREE)
-            .title("내 글").content("내용").build()
+        val community = CommunityPost(member = author, category = CommunityCategory.FREE, title = "내 글", content = "내용")
         entityManager.persist(post)
         entityManager.persist(community)
         entityManager.persist(Post(member = other, title = "타인의 후기", content = "내용"))
@@ -519,8 +518,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val post = Post(member = author, title = "후기", content = "본문")
-        val communityPost = CommunityPost.builder().member(author).title("커뮤니티").content("본문")
-            .category(CommunityCategory.FREE).build()
+        val communityPost = CommunityPost(member = author, category = CommunityCategory.FREE, title = "커뮤니티", content = "본문")
         entityManager.persist(post)
         entityManager.persist(communityPost)
         val comment = Comment(post = post, member = author, content = "후기 댓글")
@@ -540,8 +538,8 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
             when (type) {
                 DeletionTargetType.POST -> postService.deletePost(post.id!!, actorId)
                 DeletionTargetType.COMMENT -> commentService.deleteComment(checkNotNull(comment.id), actorId)
-                DeletionTargetType.COMMUNITY_POST -> communityService.deletePost(communityPost.id, actorId)
-                DeletionTargetType.COMMUNITY_COMMENT -> communityService.deleteComment(communityComment.id, actorId)
+                DeletionTargetType.COMMUNITY_POST -> communityService.deletePost(checkNotNull(communityPost.id), actorId)
+                DeletionTargetType.COMMUNITY_COMMENT -> communityService.deleteComment(checkNotNull(communityComment.id), actorId)
                 else -> throw IllegalArgumentException()
             }
         }
