@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/images")
 class ImageController(
     private val r2StorageService: R2StorageService,
-    private val imageUrlResolver: ImageUrlResolver
+    private val imageUrlResolver: ImageUrlResolver,
 ) {
 
     /** 업로드 폴더 구분. 임의 경로를 못 넘기게 enum으로 고정한다. */
@@ -29,7 +29,7 @@ class ImageController(
         POST("posts"),
         PROFILE("profiles"),
         INQUIRY("inquiries"),
-        FESTIVAL("festivals")
+        FESTIVAL("festivals"),
     }
 
     /** 업로드 결과. key는 DB에 저장할 값, url은 화면에서 바로 쓸 공개 URL이다. */
@@ -37,22 +37,17 @@ class ImageController(
 
     @Operation(
         summary = "이미지 업로드",
-        description = "이미지를 업로드하고 저장 key와 공개 URL을 돌려준다. "
-            + "DB에는 URL이 아니라 key를 저장한다. jpeg/png/webp만 허용하며 최대 5MB."
+        description = "이미지를 업로드하고 저장 key와 공개 URL을 돌려준다. " +
+            "DB에는 URL이 아니라 key를 저장한다. jpeg/png/webp만 허용하며 최대 5MB.",
     )
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun upload(
         @AuthenticationPrincipal principal: CustomUserDetails,
         // 이름을 명시해 -parameters 컴파일 옵션에 의존하지 않는다.
         @RequestParam("type") type: ImageType,
-        @RequestPart("file") file: MultipartFile
+        @RequestPart("file") file: MultipartFile,
     ): ResponseEntity<ApiResponse<UploadInfo>> {
         val key = r2StorageService.upload(file, type.directory, principal.id)
-
-        return ResponseEntity.ok(
-            ApiResponse.ok(
-                UploadInfo(key, imageUrlResolver.resolve(key))
-            )
-        )
+        return ResponseEntity.ok(ApiResponse.ok(UploadInfo(key, imageUrlResolver.resolve(key))))
     }
 }

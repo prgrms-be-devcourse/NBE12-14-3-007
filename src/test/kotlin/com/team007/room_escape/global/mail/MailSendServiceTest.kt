@@ -12,16 +12,14 @@ import org.mockito.Mockito.verify
 import org.springframework.mail.MailSendException
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
-import org.springframework.test.util.ReflectionTestUtils
 
 class MailSendServiceTest {
 
     private val mailSender = mock(JavaMailSender::class.java)
 
-    private val service = MailSendService(mailSender, AuthMailProperties(5, 60, 30)).also {
-        // 발신 주소는 @Value 로 채워지는 필드라서 직접 넣는다
-        ReflectionTestUtils.setField(it, "from", "no-reply@room.test")
-    }
+    private val from = "no-reply@room.test"
+
+    private val service = MailSendService(mailSender, AuthMailProperties(5, 60, 30), from)
 
     private fun sentMessage(): SimpleMailMessage {
         val captor = ArgumentCaptor.forClass(SimpleMailMessage::class.java)
@@ -34,7 +32,7 @@ class MailSendServiceTest {
         service.sendPasswordChangeCode("user@example.com", "123456")
 
         val message = sentMessage()
-        assertThat(message.from).isEqualTo("no-reply@room.test")
+        assertThat(message.from).isEqualTo(from)
         assertThat(message.to).containsExactly("user@example.com")
         assertThat(message.subject).isEqualTo("[roomescape] 비밀번호 변경 인증 코드")
         assertThat(message.text).isEqualTo(
@@ -49,8 +47,7 @@ class MailSendServiceTest {
 
     @Test
     fun `유효시간은 설정한 분 단위 값을 쓴다`() {
-        val service = MailSendService(mailSender, AuthMailProperties(10, 60, 30))
-        ReflectionTestUtils.setField(service, "from", "no-reply@room.test")
+        val service = MailSendService(mailSender, AuthMailProperties(10, 60, 30), from)
 
         service.sendPasswordChangeCode("user@example.com", "000000")
 
