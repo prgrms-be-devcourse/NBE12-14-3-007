@@ -8,6 +8,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import org.springframework.web.util.HtmlUtils
 import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty
 
 /** /detail2 응답의 item 1건. */
@@ -37,9 +38,9 @@ data class CultureInfoDetailRow(
         return Festival.builder()
             .providerType(ProviderType.PUBLIC)
             .externalId(seq)
-            .title(title)
+            .title(unescapeHtml(title))
             .category(realmName)
-            .content(contents1)
+            .content(unescapeHtml(contents1))
             .url(url)
             .telnoInfo(phone)
             .partcptExpnInfo(price)
@@ -49,7 +50,7 @@ data class CultureInfoDetailRow(
             .status(FestivalStatus.from(end))
             .region(FestivalRegion.fromDisplayName(area))
             .regionDetail(sigungu)
-            .place(place)
+            .place(unescapeHtml(place))
             .placeAddress(placeAddr)
             .build()
     }
@@ -71,6 +72,21 @@ data class CultureInfoDetailRow(
                 return null
             }
             return LocalDate.parse(yyyyMMdd, API_DATE_FORMAT).atTime(LocalTime.MAX)
+        }
+
+        /**
+         * 공공 API가 title/contents1/place에 &lt;, &amp;, &#39; 같은 HTML 엔티티를 이스케이프해서 보낸다.
+         * 간혹 &amp;lsquo; 처럼 이중 이스케이프된 값도 있어 더 이상 안 바뀔 때까지 반복 디코딩한다.
+         */
+        private fun unescapeHtml(value: String?): String? {
+            var result: String = value ?: return null
+            while (true) {
+                val decoded = HtmlUtils.htmlUnescape(result)
+                if (decoded == result) {
+                    return result
+                }
+                result = decoded
+            }
         }
     }
 }
