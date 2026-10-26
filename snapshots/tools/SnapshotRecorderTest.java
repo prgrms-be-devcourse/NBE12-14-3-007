@@ -171,7 +171,13 @@ class SnapshotRecorderTest extends ApiContractSupport {
 
 	/** 실행마다 달라지는 값을 자리표시자로 바꾼다. */
 	private String normalize(String text) {
+		// 날씨 응답은 요청한 날짜(오늘, 1년 뒤)를 "date"로 그대로 돌려준다. 찍는 날마다 달라지므로 자리표시자로 바꾼다.
+		// 행사 날짜 같은 고정 값까지 바꾸지 않도록 "date" 키에만 적용한다.
+		String today = "\"date\" : \"" + LocalDate.now() + "\"";
+		String nextYear = "\"date\" : \"" + LocalDate.now().plusYears(1) + "\"";
 		return text
+			.replace(nextYear, "\"date\" : \"<today+1y>\"")
+			.replace(today, "\"date\" : \"<today>\"")
 			.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "<uuid>")
 			.replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?", "<ts>")
 			.replaceAll("계약테스트 (행사 )?[0-9a-f]{8}", "계약테스트 $1<t>")
