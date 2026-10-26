@@ -14,13 +14,12 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
-import java.util.Optional
 
 interface FestivalRepository : JpaRepository<Festival, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select f from Festival f where f.id = :id")
-    fun findForDeletion(@Param("id") id: Long): Optional<Festival>
+    fun findForDeletion(@Param("id") id: Long): Festival?
 
     // PostgreSQL 트랜잭션 종료 시 자동 해제. 같은 중복 조건의 등록/수정을 직렬화한다.
     @Query(value = "SELECT count(*) FROM pg_advisory_xact_lock(:key)", nativeQuery = true)
@@ -267,10 +266,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
     fun findByIdAndProviderTypeAndDeletedAtIsNull(
         festivalId: Long,
         providerType: ProviderType,
-    ): Optional<Festival>
+    ): Festival?
 
     @EntityGraph(attributePaths = ["member"])
-    fun findByIdAndDeletedAtIsNull(festivalId: Long): Optional<Festival>
+    fun findByIdAndDeletedAtIsNull(festivalId: Long): Festival?
 
     fun existsByIdAndDeletedAtIsNull(festivalId: Long): Boolean
 

@@ -51,69 +51,26 @@ class AdminFestivalResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?
     ) {
         companion object {
-            fun builder(): ListItemBuilder = ListItemBuilder()
-
             fun from(festival: Festival, latest: DeletionHistory?): ListItem =
-                ListItem.builder()
-                    .festivalId(festival.id)
-                    .providerType(festival.providerType)
-                    .title(festival.title)
-                    .category(festival.category)
-                    .imgUrl(festival.imgUrl)
-                    .beginDe(festival.beginDe)
-                    .endDe(festival.endDe)
-                    .createdAt(festival.createdAt)
-                    .region(festival.region)
-                    .status(festival.status)
-                    .deletedAt(festival.deletedAt)
-                    .deletion(deletionFromHistory(festival, latest))
-                    .build()
+                ListItem(
+                    festivalId = festival.id,
+                    providerType = festival.providerType,
+                    title = festival.title,
+                    category = festival.category,
+                    imgUrl = festival.imgUrl,
+                    beginDe = festival.beginDe,
+                    endDe = festival.endDe,
+                    createdAt = festival.createdAt,
+                    region = festival.region,
+                    status = festival.status,
+                    deletedAt = festival.deletedAt,
+                    deletion = deletionFromHistory(festival, latest),
+                )
 
             private fun deletionFromHistory(festival: Festival, latest: DeletionHistory?): FestivalResponse.DeletionInfo? {
                 if (!festival.isDeleted() || latest == null || latest.action != DeletionAction.DELETE) return null
                 return FestivalResponse.DeletionInfo.from(festival, latest)
             }
-        }
-
-        class ListItemBuilder {
-            private var festivalId: Long? = null
-            private var providerType: ProviderType? = null
-            private var title: String? = null
-            private var category: String? = null
-            private var imgUrl: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var createdAt: LocalDateTime? = null
-            private var region: FestivalRegion? = null
-            private var status: FestivalStatus? = null
-            private var deletedAt: LocalDateTime? = null
-            private var deletion: FestivalResponse.DeletionInfo? = null
-
-            fun festivalId(festivalId: Long?): ListItemBuilder = apply { this.festivalId = festivalId }
-
-            fun providerType(providerType: ProviderType?): ListItemBuilder = apply { this.providerType = providerType }
-
-            fun title(title: String?): ListItemBuilder = apply { this.title = title }
-
-            fun category(category: String?): ListItemBuilder = apply { this.category = category }
-
-            fun imgUrl(imgUrl: String?): ListItemBuilder = apply { this.imgUrl = imgUrl }
-
-            fun beginDe(beginDe: LocalDateTime?): ListItemBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): ListItemBuilder = apply { this.endDe = endDe }
-
-            fun createdAt(createdAt: LocalDateTime?): ListItemBuilder = apply { this.createdAt = createdAt }
-
-            fun region(region: FestivalRegion?): ListItemBuilder = apply { this.region = region }
-
-            fun status(status: FestivalStatus?): ListItemBuilder = apply { this.status = status }
-
-            fun deletedAt(deletedAt: LocalDateTime?): ListItemBuilder = apply { this.deletedAt = deletedAt }
-
-            fun deletion(deletion: FestivalResponse.DeletionInfo?): ListItemBuilder = apply { this.deletion = deletion }
-
-            fun build(): ListItem = ListItem(festivalId, providerType, title, category, imgUrl, beginDe, endDe, createdAt, region, status, deletedAt, deletion)
         }
     }
 }

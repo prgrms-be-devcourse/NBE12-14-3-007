@@ -35,7 +35,7 @@ class FestivalEditVersionIntegrationTest @Autowired constructor(
 
     @Test
     fun changingFestivalIncrementsVersionAndRejectsStaleEntity() {
-        val original = festivals.saveAndFlush(Festival.create(
+        val original = festivals.saveAndFlush(Festival(
             providerType = ProviderType.MEMBER, title = "원본"
         ))
         val id = checkNotNull(original.id)

@@ -38,7 +38,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.UUID
 
 class FestivalSubmissionServiceTest {
@@ -58,17 +57,22 @@ class FestivalSubmissionServiceTest {
     private val begin = LocalDateTime.of(2026, 10, 2, 10, 30)
     private val end = LocalDateTime.of(2026, 10, 3, 18, 0)
 
-    private fun request(): FestivalSubmissionRequest.Upsert = FestivalSubmissionRequest.Upsert.builder()
-        .title("행사").category("축제").region(FestivalRegion.GYEONGGI)
-        .referenceUrl(" https://example.com/event/// ")
-        .beginDe(begin).endDe(end).version(0L).build()
+    private fun request(): FestivalSubmissionRequest.Upsert = FestivalSubmissionRequest.Upsert(
+        title = "행사",
+        category = "축제",
+        region = FestivalRegion.GYEONGGI,
+        referenceUrl = " https://example.com/event/// ",
+        beginDe = begin,
+        endDe = end,
+        version = 0L,
+    )
 
     @Test
     fun staleEditCannotOverwriteFestival() {
-        val festival = Festival.create(id = 7L, title = "최신 제목")
+        val festival = Festival(id = 7L, title = "최신 제목")
         ReflectionTestUtils.setField(festival, "version", 2L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+            .thenReturn(FestivalSubmission(festival = festival))
 
         val exception = assertThrows<BusinessException> { service.update(memberId, submissionId, request()) }
         assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.EDIT_CONFLICT)
@@ -78,9 +82,9 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun updateRequiresVersion() {
-        val festival = Festival.create(id = 7L)
+        val festival = Festival(id = 7L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+            .thenReturn(FestivalSubmission(festival = festival))
         val exception = assertThrows<BusinessException> {
             service.update(memberId, submissionId, request().copy(version = null))
         }
@@ -90,9 +94,9 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun concurrentUpdateFailureReturnsConflict() {
-        val festival = Festival.create(id = 7L)
+        val festival = Festival(id = 7L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+            .thenReturn(FestivalSubmission(festival = festival))
         doThrow(OptimisticLockingFailureException("concurrent update")).`when`(festivals).flush()
         val exception = assertThrows<BusinessException> { service.update(memberId, submissionId, request()) }
         assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.EDIT_CONFLICT)
@@ -100,8 +104,8 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun detailUsesFestivalModificationTimeAndVersion() {
-        val festival = Festival.create(id = 7L)
-        val submission = FestivalSubmission.create(festival = festival)
+        val festival = Festival(id = 7L)
+        val submission = FestivalSubmission(festival = festival)
         val modified = LocalDateTime.of(2026, 10, 27, 12, 0)
         ReflectionTestUtils.setField(submission, "updatedAt", modified.minusDays(1))
         ReflectionTestUtils.setField(festival, "updatedAt", modified)
@@ -130,9 +134,9 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun duplicateUpdateExcludesCurrentEvent() {
-        val festival = Festival.builder().id(7L).build()
+        val festival = Festival(id = 7L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
+            .thenReturn(FestivalSubmission(festival = festival))
         `when`(festivals.existsSubmissionDuplicate(eq(7L), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText()))
             .thenReturn(true)
         assertDuplicate { service.update(memberId, submissionId, request()) }
@@ -141,11 +145,11 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun deleteKeepsSubmissionHistoryAndMarksEventDeleted() {
-        val festival = Festival.builder().id(7L).providerType(ProviderType.MEMBER).build()
-        val submission = FestivalSubmission.builder().festival(festival).build()
+        val festival = Festival(id = 7L, providerType = ProviderType.MEMBER)
+        val submission = FestivalSubmission(festival = festival)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(submission))
-        `when`(festivals.findForDeletion(7L)).thenReturn(Optional.of(festival))
+            .thenReturn(submission)
+        `when`(festivals.findForDeletion(7L)).thenReturn(festival)
         service.delete(memberId, submissionId)
         assertThat(festival.isDeleted()).isTrue()
         verify(deletionHistories).recordAuthorDeletion(DeletionTargetType.FESTIVAL, "7", memberId)
@@ -164,9 +168,9 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun nonDuplicateUpdateStillAllowsEditingOwnEvent() {
-        val festival = Festival.builder().id(7L).build()
+        val festival = Festival(id = 7L)
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
+            .thenReturn(FestivalSubmission(festival = festival))
         service.update(memberId, submissionId, request())
         assertThat(festival.title).isEqualTo("행사")
         assertThat(festival.url).isEqualTo("https://example.com/event")
@@ -175,7 +179,7 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun cannotDeleteAnotherMembersSubmission() {
-        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId)).thenReturn(Optional.empty())
+        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId)).thenReturn(null)
         assertThrows<BusinessException> { service.delete(memberId, submissionId) }
     }
 
@@ -186,9 +190,9 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun deletedSubmissionRemainsInMyListWithDeletionReason() {
-        val festival = Festival.builder().id(7L).title("삭제 이력").build()
+        val festival = Festival(id = 7L, title = "삭제 이력")
         festival.delete()
-        val submission = FestivalSubmission.builder().id(submissionId).festival(festival).build()
+        val submission = FestivalSubmission(id = submissionId, festival = festival)
         `when`(submissions.findAllByFestival_Member_IdAndFestival_ProviderTypeOrderByCreatedAtDesc(
             memberId, ProviderType.MEMBER,
         )).thenReturn(listOf(submission))
@@ -206,10 +210,10 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun cannotModifyDeletedEvent() {
-        val festival = Festival.builder().build()
+        val festival = Festival()
         festival.delete()
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
-            .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
+            .thenReturn(FestivalSubmission(festival = festival))
         assertThrows<BusinessException> { service.update(memberId, submissionId, request()) }
         assertThat(festival.title).isNull()
     }

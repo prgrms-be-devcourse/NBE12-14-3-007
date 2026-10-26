@@ -42,7 +42,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Optional
 import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -284,13 +283,13 @@ class FestivalServiceTest {
 
 	/** 종료 처리 대상으로 조회될 (종료일이 지났는데 아직 OPEN인) 행사를 만드는 헬퍼. */
 	private fun expiredOpenFestival(id: Long, title: String): Festival {
-		return Festival.builder()
-			.id(id)
-			.providerType(ProviderType.PUBLIC)
-			.title(title)
-			.endDe(LocalDate.now().minusDays(1).atStartOfDay())
-			.status(FestivalStatus.OPEN)
-			.build()
+		return Festival(
+		    id = id,
+		    providerType = ProviderType.PUBLIC,
+		    title = title,
+		    endDe = LocalDate.now().minusDays(1).atStartOfDay(),
+		    status = FestivalStatus.OPEN,
+		)
 	}
 
 	/** 수동 동기화 버튼에 돌려줄 결과: 종료 처리한 행사 목록과 새로 저장한 행사 목록(행사명 포함)이 담기는지 확인한다. */
@@ -363,16 +362,16 @@ class FestivalServiceTest {
 
 	/** 행사 검색 테스트용 PUBLIC 행사 엔티티를 만든다. */
 	private fun publicFestival(region: FestivalRegion, beginDe: LocalDateTime, endDe: LocalDateTime, storedStatus: FestivalStatus): Festival {
-		return Festival.builder()
-				.id(1L) // 검색 결과로 조회된 행사는 항상 DB에 저장돼 있어 id가 있다. 실제 상황을 맞추기 위한 값.
-				.providerType(ProviderType.PUBLIC)
-				.title("경기 행사")
-				.category("행사")
-				.beginDe(beginDe)
-				.endDe(endDe)
-				.region(region)
-				.status(storedStatus)
-				.build()
+		return Festival(
+			id = 1L, // 검색 결과로 조회된 행사는 항상 DB에 저장돼 있어 id가 있다. 실제 상황을 맞추기 위한 값.
+			providerType = ProviderType.PUBLIC,
+			title = "경기 행사",
+			category = "행사",
+			beginDe = beginDe,
+			endDe = endDe,
+			region = region,
+			status = storedStatus,
+		)
 	}
 
 	/** 테스트에서 공통으로 사용하는 검색 조건을 만든다. */
@@ -560,20 +559,20 @@ class FestivalServiceTest {
 	@DisplayName("행사 상세 조회 시 출처와 상세 필드를 응답에 담는다")
 	fun getFestivalReturnsDetail() {
 		val today = LocalDate.now()
-		val festival = Festival.builder()
-			.id(7L)
-			.providerType(ProviderType.PUBLIC)
-			.title("남한산성문화제")
-			.category("행사")
-			.partcptExpnInfo("무료")
-			.telnoInfo("031-000-0000")
-			.url("https://example.com/1")
-			.imgUrl("https://example.com/img.jpg")
-			.beginDe(today.minusDays(1).atStartOfDay())
-			.endDe(today.plusDays(1).atStartOfDay())
-			.region(FestivalRegion.GYEONGGI)
-			.build()
-		`when`(festivalRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(java.util.Optional.of(festival))
+		val festival = Festival(
+		    id = 7L,
+		    providerType = ProviderType.PUBLIC,
+		    title = "남한산성문화제",
+		    category = "행사",
+		    partcptExpnInfo = "무료",
+		    telnoInfo = "031-000-0000",
+		    url = "https://example.com/1",
+		    imgUrl = "https://example.com/img.jpg",
+		    beginDe = today.minusDays(1).atStartOfDay(),
+		    endDe = today.plusDays(1).atStartOfDay(),
+		    region = FestivalRegion.GYEONGGI,
+		)
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(7L)).thenReturn(festival)
 
 		val detail = festivalService.getFestival(7L, null)
 
@@ -589,21 +588,21 @@ class FestivalServiceTest {
 	@Test
 	@DisplayName("회원 제보 행사도 제보 시 입력한 상세 정보를 조회한다")
 	fun getMemberFestivalReturnsSubmissionDetails() {
-		val festival = Festival.builder()
-			.id(8L)
-			.providerType(ProviderType.MEMBER)
-			.title("동네 플리마켓")
-			.category("플리마켓")
-			.content("이웃과 함께하는 주말 장터")
-			.url("https://example.com/market")
-			.region(FestivalRegion.GYEONGGI)
-			.regionDetail("수원시 중앙공원")
-			.beginDe(LocalDate.now().atStartOfDay())
-			.endDe(LocalDate.now().plusDays(1).atStartOfDay())
-			.partcptExpnInfo("무료")
-			.build()
+		val festival = Festival(
+		    id = 8L,
+		    providerType = ProviderType.MEMBER,
+		    title = "동네 플리마켓",
+		    category = "플리마켓",
+		    content = "이웃과 함께하는 주말 장터",
+		    url = "https://example.com/market",
+		    region = FestivalRegion.GYEONGGI,
+		    regionDetail = "수원시 중앙공원",
+		    beginDe = LocalDate.now().atStartOfDay(),
+		    endDe = LocalDate.now().plusDays(1).atStartOfDay(),
+		    partcptExpnInfo = "무료",
+		)
 		`when`(festivalRepository.findByIdAndDeletedAtIsNull(8L))
-			.thenReturn(java.util.Optional.of(festival))
+			.thenReturn(festival)
 
 		val detail = festivalService.getFestival(8L, null)
 
@@ -618,17 +617,17 @@ class FestivalServiceTest {
 	@DisplayName("회원 제보 상세 조회 시 정확도 평가와 좋아요 정보를 함께 응답한다")
 	fun getMemberFestivalReturnsVoteAndLikeSummary() {
 		val memberId = UUID.randomUUID()
-		val festival = Festival.builder()
-			.id(8L)
-			.providerType(ProviderType.MEMBER)
-			.title("동네 플리마켓")
-			.region(FestivalRegion.GYEONGGI)
-			.beginDe(LocalDate.now().atStartOfDay())
-			.endDe(LocalDate.now().plusDays(1).atStartOfDay())
-			.build()
+		val festival = Festival(
+		    id = 8L,
+		    providerType = ProviderType.MEMBER,
+		    title = "동네 플리마켓",
+		    region = FestivalRegion.GYEONGGI,
+		    beginDe = LocalDate.now().atStartOfDay(),
+		    endDe = LocalDate.now().plusDays(1).atStartOfDay(),
+		)
 		val vote = Mockito.mock(FestivalAccuracyVote::class.java)
 
-		`when`(festivalRepository.findByIdAndDeletedAtIsNull(8L)).thenReturn(Optional.of(festival))
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(8L)).thenReturn(festival)
 		`when`(accuracyVoteRepository.countByFestivalAndVoteType(
 			festival,
 			FestivalAccuracyVoteType.ACCURATE
@@ -638,7 +637,7 @@ class FestivalServiceTest {
 			FestivalAccuracyVoteType.INACCURATE
 		)).thenReturn(1L)
 		`when`(accuracyVoteRepository.findByFestivalIdAndMemberId(8L, memberId))
-			.thenReturn(Optional.of(vote))
+			.thenReturn(vote)
 		`when`(vote.voteType).thenReturn(FestivalAccuracyVoteType.ACCURATE)
 		`when`(likeRepository.countByFestivalId(8L)).thenReturn(5L)
 		`when`(likeRepository.existsByFestivalIdAndMemberId(8L, memberId)).thenReturn(true)
@@ -656,7 +655,7 @@ class FestivalServiceTest {
 	@Test
 	@DisplayName("행사를 찾을 수 없으면 FESTIVAL_NOT_FOUND 예외가 발생한다")
 	fun getPublicFestivalThrowsWhenNotFound() {
-		`when`(festivalRepository.findByIdAndDeletedAtIsNull(999L)).thenReturn(java.util.Optional.empty())
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(999L)).thenReturn(null)
 
 		assertThatThrownBy { festivalService.getFestival(999L, null) }
 			.isInstanceOf(BusinessException::class.java)
@@ -670,7 +669,7 @@ class FestivalServiceTest {
 	fun getPublicFestivalComputesStatusFromEndDe() {
 		val pastEndDe = LocalDate.now().minusDays(1).atStartOfDay()
 		val stale = publicFestival(FestivalRegion.GYEONGGI, pastEndDe.minusDays(5), pastEndDe, FestivalStatus.OPEN)
-		`when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(java.util.Optional.of(stale))
+		`when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(stale)
 
 		assertThat(festivalService.getFestival(1L, null).status).isEqualTo(FestivalStatus.CLOSED)
 	}
@@ -682,7 +681,7 @@ class FestivalServiceTest {
 		val request = searchRequest(date)
 		val unsorted = PageRequest.of(0, 9)
 
-		val festival = Festival.builder().id(10L).providerType(ProviderType.PUBLIC).title("곧 시작").build()
+		val festival = Festival(id = 10L, providerType = ProviderType.PUBLIC, title = "곧 시작")
 
 		`when`(festivalRepository.searchFestivalsOrderByNearestStart(
 				true, "경기",
@@ -714,8 +713,8 @@ class FestivalServiceTest {
 		val pageable = PageRequest.of(1, 9, Sort.by(Sort.Direction.DESC, "likeCount"))
 		val unsorted = PageRequest.of(1, 9)
 
-		val liked = Festival.builder().id(10L).providerType(ProviderType.PUBLIC).title("인기").build()
-		val notLiked = Festival.builder().id(11L).providerType(ProviderType.PUBLIC).title("조용").build()
+		val liked = Festival(id = 10L, providerType = ProviderType.PUBLIC, title = "인기")
+		val notLiked = Festival(id = 11L, providerType = ProviderType.PUBLIC, title = "조용")
 
 		`when`(festivalRepository.searchFestivalsOrderByLikeCount(
 				true, "경기",

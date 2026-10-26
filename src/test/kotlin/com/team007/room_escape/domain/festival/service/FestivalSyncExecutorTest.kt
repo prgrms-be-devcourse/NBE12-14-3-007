@@ -12,7 +12,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
-import java.util.Optional
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -36,14 +35,14 @@ class FestivalSyncExecutorTest {
     fun tryRunReturnsResultWhenIdle() {
         `when`(festivalService.syncPublicFestivals()).thenReturn(RESULT)
 
-        val result: Optional<FestivalResponse.SyncResponse> = executor.tryRun()
+        val result: FestivalResponse.SyncResponse? = executor.tryRun()
 
-        assertThat(result).contains(RESULT)
+        assertThat(result).isEqualTo(RESULT)
     }
 
     @Test
-    @DisplayName("이미 실행 중이면 tryRun은 기다리지 않고 empty를 돌려주고 동기화를 또 실행하지 않는다")
-    fun tryRunReturnsEmptyWhileAnotherRunIsInProgress() {
+    @DisplayName("이미 실행 중이면 tryRun은 기다리지 않고 null을 돌려주고 동기화를 또 실행하지 않는다")
+    fun tryRunReturnsNullWhileAnotherRunIsInProgress() {
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
         `when`(festivalService.syncPublicFestivals()).thenAnswer {
@@ -54,14 +53,14 @@ class FestivalSyncExecutorTest {
 
         val pool = Executors.newSingleThreadExecutor()
         try {
-            val first: Future<Optional<FestivalResponse.SyncResponse>> = pool.submit(executor::tryRun)
+            val first: Future<FestivalResponse.SyncResponse?> = pool.submit(executor::tryRun)
             assertThat(started.await(5, TimeUnit.SECONDS)).isTrue()
 
             val second = executor.tryRun() // 첫 실행이 잡고 있는 중
 
-            assertThat(second).isEmpty()
+            assertThat(second).isNull()
             release.countDown()
-            assertThat(first.get(5, TimeUnit.SECONDS)).contains(RESULT)
+            assertThat(first.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
             verify(festivalService, times(1)).syncPublicFestivals()
         } finally {
             release.countDown()
@@ -78,7 +77,7 @@ class FestivalSyncExecutorTest {
 
         assertThatThrownBy { executor.tryRun() }.isInstanceOf(IllegalStateException::class.java)
 
-        assertThat(executor.tryRun()).contains(RESULT)
+        assertThat(executor.tryRun()).isEqualTo(RESULT)
     }
 
     @Test
@@ -96,7 +95,7 @@ class FestivalSyncExecutorTest {
 
         val pool = Executors.newFixedThreadPool(2)
         try {
-            val manual: Future<Optional<FestivalResponse.SyncResponse>> = pool.submit(executor::tryRun)
+            val manual: Future<FestivalResponse.SyncResponse?> = pool.submit(executor::tryRun)
             assertThat(started.await(5, TimeUnit.SECONDS)).isTrue()
 
             val scheduled: Future<FestivalResponse.SyncResponse> = pool.submit(executor::run)
@@ -104,7 +103,7 @@ class FestivalSyncExecutorTest {
             assertThat(scheduled.isDone).isFalse() // 아직 기다리는 중
 
             release.countDown() // 수동 실행 종료
-            assertThat(manual.get(5, TimeUnit.SECONDS)).contains(RESULT)
+            assertThat(manual.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
             assertThat(scheduled.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
             verify(festivalService, times(2)).syncPublicFestivals() // 건너뛰지 않고 두 번 다 실행
         } finally {

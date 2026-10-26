@@ -79,11 +79,11 @@ class MemberTrustGradeConcurrencyTest @Autowired constructor(
                 nickname = "작성자",
             ))
             authorId = author.id
-            festivalId = festivals.save(Festival.builder()
-                .member(author)
-                .providerType(ProviderType.MEMBER)
-                .title("등급 검증 행사")
-                .build()).requiredId
+            festivalId = festivals.save(Festival(
+                member = author,
+                providerType = ProviderType.MEMBER,
+                title = "등급 검증 행사",
+            )).requiredId
         }
     }
 
@@ -177,11 +177,11 @@ class MemberTrustGradeConcurrencyTest @Autowired constructor(
                     likes.save(Like.of(festival, voter))
                 }
                 if (index < accurateCount) {
-                    votes.save(FestivalAccuracyVote.builder()
-                        .festival(festival)
-                        .member(voter)
-                        .voteType(FestivalAccuracyVoteType.ACCURATE)
-                        .build())
+                    votes.save(FestivalAccuracyVote(
+                        festival = festival,
+                        member = voter,
+                        voteType = FestivalAccuracyVoteType.ACCURATE,
+                    ))
                 }
             }
             grades.refreshForFestival(festival)

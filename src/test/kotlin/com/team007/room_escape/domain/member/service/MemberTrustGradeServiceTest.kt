@@ -94,8 +94,8 @@ class MemberTrustGradeServiceTest {
         id = UUID.randomUUID(),
     )
 
-    private fun festivalBy(author: Member): Festival = Festival.builder()
-        .member(author)
-        .providerType(ProviderType.MEMBER)
-        .build()
+    private fun festivalBy(author: Member): Festival = Festival(
+        member = author,
+        providerType = ProviderType.MEMBER,
+    )
 }

@@ -24,9 +24,13 @@ class SubmissionDuplicateRepositoryTest @Autowired constructor(
         val start = LocalDateTime.of(2026, 10, 2, 0, 0)
         val end = start.plusDays(1)
         val url = "https://example.com/${UUID.randomUUID()}"
-        val festival = Festival.builder().providerType(ProviderType.MEMBER)
-            .url(" $url/// ").region(FestivalRegion.GYEONGGI)
-            .beginDe(start.plusHours(10)).endDe(end.plusHours(18)).build()
+        val festival = Festival(
+            providerType = ProviderType.MEMBER,
+            url = " $url/// ",
+            region = FestivalRegion.GYEONGGI,
+            beginDe = start.plusHours(10),
+            endDe = end.plusHours(18),
+        )
         em.persist(festival)
         em.flush()
         assertThat(festivals.lockSubmissionDuplicateKey(123456789L)).isEqualTo(1)

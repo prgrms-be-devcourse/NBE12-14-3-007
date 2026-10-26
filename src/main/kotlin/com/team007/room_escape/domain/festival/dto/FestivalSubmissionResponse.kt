@@ -23,28 +23,12 @@ class FestivalSubmissionResponse private constructor() {
         val status: FestivalStatus?
     ) {
         companion object {
-            fun builder(): CreateBuilder = CreateBuilder()
-
             fun from(festival: Festival, festivalSubmission: FestivalSubmission): Create =
-                Create.builder()
-                    .festivalId(festival.id)
-                    .festivalSubmissionId(festivalSubmission.id)
-                    .status(FestivalStatus.from(festival.endDe))
-                    .build()
-        }
-
-        class CreateBuilder {
-            private var festivalId: Long? = null
-            private var festivalSubmissionId: UUID? = null
-            private var status: FestivalStatus? = null
-
-            fun festivalId(festivalId: Long?): CreateBuilder = apply { this.festivalId = festivalId }
-
-            fun festivalSubmissionId(festivalSubmissionId: UUID?): CreateBuilder = apply { this.festivalSubmissionId = festivalSubmissionId }
-
-            fun status(status: FestivalStatus?): CreateBuilder = apply { this.status = status }
-
-            fun build(): Create = Create(festivalId, festivalSubmissionId, status)
+                Create(
+                    festivalId = festival.id,
+                    festivalSubmissionId = festivalSubmission.id,
+                    status = FestivalStatus.from(festival.endDe),
+                )
         }
     }
 
@@ -82,59 +66,22 @@ class FestivalSubmissionResponse private constructor() {
         val status: FestivalStatus?
     ) {
         companion object {
-            fun builder(): ListItemBuilder = ListItemBuilder()
-
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): ListItem {
-                val festival = festivalSubmission.requiredFestival
+                val festival = festivalSubmission.festival
 
-                return ListItem.builder()
-                    .festivalSubmissionId(festivalSubmission.id)
-                    .festivalId(festival.id)
-                    .title(festival.title)
-                    .region(festival.region)
-                    .regionDetail(festival.regionDetail)
-                    .beginDe(festival.beginDe)
-                    .endDe(festival.endDe)
-                    .createdAt(festivalSubmission.createdAt)
-                    .deletion(FestivalResponse.DeletionInfo.from(festival, latest))
-                    .status(FestivalStatus.from(festival.endDe))
-                    .build()
+                return ListItem(
+                    festivalSubmissionId = festivalSubmission.id,
+                    festivalId = festival.id,
+                    title = festival.title,
+                    region = festival.region,
+                    regionDetail = festival.regionDetail,
+                    beginDe = festival.beginDe,
+                    endDe = festival.endDe,
+                    createdAt = festivalSubmission.createdAt,
+                    deletion = FestivalResponse.DeletionInfo.from(festival, latest),
+                    status = FestivalStatus.from(festival.endDe),
+                )
             }
-        }
-
-        class ListItemBuilder {
-            private var festivalSubmissionId: UUID? = null
-            private var festivalId: Long? = null
-            private var title: String? = null
-            private var region: FestivalRegion? = null
-            private var regionDetail: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var createdAt: LocalDateTime? = null
-            private var deletion: FestivalResponse.DeletionInfo? = null
-            private var status: FestivalStatus? = null
-
-            fun festivalSubmissionId(festivalSubmissionId: UUID?): ListItemBuilder = apply { this.festivalSubmissionId = festivalSubmissionId }
-
-            fun festivalId(festivalId: Long?): ListItemBuilder = apply { this.festivalId = festivalId }
-
-            fun title(title: String?): ListItemBuilder = apply { this.title = title }
-
-            fun region(region: FestivalRegion?): ListItemBuilder = apply { this.region = region }
-
-            fun regionDetail(regionDetail: String?): ListItemBuilder = apply { this.regionDetail = regionDetail }
-
-            fun beginDe(beginDe: LocalDateTime?): ListItemBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): ListItemBuilder = apply { this.endDe = endDe }
-
-            fun createdAt(createdAt: LocalDateTime?): ListItemBuilder = apply { this.createdAt = createdAt }
-
-            fun deletion(deletion: FestivalResponse.DeletionInfo?): ListItemBuilder = apply { this.deletion = deletion }
-
-            fun status(status: FestivalStatus?): ListItemBuilder = apply { this.status = status }
-
-            fun build(): ListItem = ListItem(festivalSubmissionId, festivalId, title, region, regionDetail, beginDe, endDe, createdAt, deletion, status)
         }
     }
 
@@ -145,20 +92,10 @@ class FestivalSubmissionResponse private constructor() {
         val submission: SubmissionInfo?
     ) {
         companion object {
-            fun builder(): DetailBuilder = DetailBuilder()
-
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): Detail =
-                Detail.builder()
-                    .submission(SubmissionInfo.from(festivalSubmission, latest))
-                    .build()
-        }
-
-        class DetailBuilder {
-            private var submission: SubmissionInfo? = null
-
-            fun submission(submission: SubmissionInfo?): DetailBuilder = apply { this.submission = submission }
-
-            fun build(): Detail = Detail(submission)
+                Detail(
+                    submission = SubmissionInfo.from(festivalSubmission, latest),
+                )
         }
     }
 
@@ -181,8 +118,6 @@ class FestivalSubmissionResponse private constructor() {
         val version: Long = 0
     ) {
         companion object {
-            fun builder(): SubmissionInfoBuilder = SubmissionInfoBuilder()
-
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): SubmissionInfo {
                 val festival = checkNotNull(festivalSubmission.festival)
                 return SubmissionInfo(
@@ -193,25 +128,6 @@ class FestivalSubmissionResponse private constructor() {
                     version = festival.version
                 )
             }
-        }
-
-        class SubmissionInfoBuilder {
-            private var version: Long = 0
-            fun version(version: Long): SubmissionInfoBuilder = apply { this.version = version }
-            private var festivalSubmissionId: UUID? = null
-            private var createdAt: LocalDateTime? = null
-            private var updatedAt: LocalDateTime? = null
-            private var festival: FestivalInfo? = null
-
-            fun festivalSubmissionId(festivalSubmissionId: UUID?): SubmissionInfoBuilder = apply { this.festivalSubmissionId = festivalSubmissionId }
-
-            fun createdAt(createdAt: LocalDateTime?): SubmissionInfoBuilder = apply { this.createdAt = createdAt }
-
-            fun updatedAt(updatedAt: LocalDateTime?): SubmissionInfoBuilder = apply { this.updatedAt = updatedAt }
-
-            fun festival(festival: FestivalInfo?): SubmissionInfoBuilder = apply { this.festival = festival }
-
-            fun build(): SubmissionInfo = SubmissionInfo(festivalSubmissionId, createdAt, updatedAt, festival, version)
         }
     }
 
@@ -261,72 +177,23 @@ class FestivalSubmissionResponse private constructor() {
         val status: FestivalStatus?
     ) {
         companion object {
-            fun builder(): FestivalInfoBuilder = FestivalInfoBuilder()
-
             fun from(festival: Festival, latest: DeletionHistory?): FestivalInfo =
-                FestivalInfo.builder()
-                    .festivalId(festival.id)
-                    .category(festival.category)
-                    .title(festival.title)
-                    .festivalContent(festival.content)
-                    .referenceUrl(festival.url)
-                    .region(festival.region)
-                    .regionDetail(festival.regionDetail)
-                    .imgUrl(festival.imgUrl)
-                    .beginDe(festival.beginDe)
-                    .endDe(festival.endDe)
-                    .partcptExpnInfo(festival.partcptExpnInfo)
-                    .telnoInfo(festival.telnoInfo)
-                    .deletion(FestivalResponse.DeletionInfo.from(festival, latest))
-                    .status(FestivalStatus.from(festival.endDe))
-                    .build()
-        }
-
-        class FestivalInfoBuilder {
-            private var festivalId: Long? = null
-            private var title: String? = null
-            private var category: String? = null
-            private var festivalContent: String? = null
-            private var referenceUrl: String? = null
-            private var region: FestivalRegion? = null
-            private var regionDetail: String? = null
-            private var imgUrl: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var partcptExpnInfo: String? = null
-            private var telnoInfo: String? = null
-            private var deletion: FestivalResponse.DeletionInfo? = null
-            private var status: FestivalStatus? = null
-
-            fun festivalId(festivalId: Long?): FestivalInfoBuilder = apply { this.festivalId = festivalId }
-
-            fun title(title: String?): FestivalInfoBuilder = apply { this.title = title }
-
-            fun category(category: String?): FestivalInfoBuilder = apply { this.category = category }
-
-            fun festivalContent(festivalContent: String?): FestivalInfoBuilder = apply { this.festivalContent = festivalContent }
-
-            fun referenceUrl(referenceUrl: String?): FestivalInfoBuilder = apply { this.referenceUrl = referenceUrl }
-
-            fun region(region: FestivalRegion?): FestivalInfoBuilder = apply { this.region = region }
-
-            fun regionDetail(regionDetail: String?): FestivalInfoBuilder = apply { this.regionDetail = regionDetail }
-
-            fun imgUrl(imgUrl: String?): FestivalInfoBuilder = apply { this.imgUrl = imgUrl }
-
-            fun beginDe(beginDe: LocalDateTime?): FestivalInfoBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): FestivalInfoBuilder = apply { this.endDe = endDe }
-
-            fun partcptExpnInfo(partcptExpnInfo: String?): FestivalInfoBuilder = apply { this.partcptExpnInfo = partcptExpnInfo }
-
-            fun telnoInfo(telnoInfo: String?): FestivalInfoBuilder = apply { this.telnoInfo = telnoInfo }
-
-            fun deletion(deletion: FestivalResponse.DeletionInfo?): FestivalInfoBuilder = apply { this.deletion = deletion }
-
-            fun status(status: FestivalStatus?): FestivalInfoBuilder = apply { this.status = status }
-
-            fun build(): FestivalInfo = FestivalInfo(festivalId, title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, deletion, status)
+                FestivalInfo(
+                    festivalId = festival.id,
+                    category = festival.category,
+                    title = festival.title,
+                    festivalContent = festival.content,
+                    referenceUrl = festival.url,
+                    region = festival.region,
+                    regionDetail = festival.regionDetail,
+                    imgUrl = festival.imgUrl,
+                    beginDe = festival.beginDe,
+                    endDe = festival.endDe,
+                    partcptExpnInfo = festival.partcptExpnInfo,
+                    telnoInfo = festival.telnoInfo,
+                    deletion = FestivalResponse.DeletionInfo.from(festival, latest),
+                    status = FestivalStatus.from(festival.endDe),
+                )
         }
     }
 }

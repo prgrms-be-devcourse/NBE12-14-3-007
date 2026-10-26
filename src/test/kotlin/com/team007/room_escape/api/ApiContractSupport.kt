@@ -81,13 +81,13 @@ abstract class ApiContractSupport {
 
     /** 후기·댓글이 매달릴 행사 하나. 테스트마다 새로 만들어 서로 간섭하지 않는다. */
     protected fun festivalId(): Long = savedFestivalId ?: festivalRepository.saveAndFlush(
-        Festival.builder()
-            .providerType(ProviderType.PUBLIC)
-            .title("계약테스트 행사 " + UUID.randomUUID().toString().substring(0, 8))
-            .region(FestivalRegion.SEOUL)
-            .beginDe(LocalDateTime.of(2026, 10, 1, 10, 0))
-            .endDe(LocalDateTime.of(2026, 10, 5, 18, 0))
-            .build(),
+        Festival(
+            providerType = ProviderType.PUBLIC,
+            title = "계약테스트 행사 " + UUID.randomUUID().toString().substring(0, 8),
+            region = FestivalRegion.SEOUL,
+            beginDe = LocalDateTime.of(2026, 10, 1, 10, 0),
+            endDe = LocalDateTime.of(2026, 10, 5, 18, 0),
+        ),
     ).requiredId().also { savedFestivalId = it }
 
     private fun Festival.requiredId(): Long = checkNotNull(id) { "저장되지 않은 행사입니다." }

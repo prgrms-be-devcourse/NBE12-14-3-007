@@ -17,7 +17,7 @@ class FestivalDeletionHandler(
 ) : DeletionHandler {
     override fun restore(history: DeletionHistory) {
         val festival = festivals.findForDeletion(java.lang.Long.valueOf(history.targetId))
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         if (!festival.isDeleted()) {
             throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_DELETED)
         }
@@ -31,7 +31,7 @@ class FestivalDeletionHandler(
 
     override fun delete(history: DeletionHistory) {
         val festival = festivals.findForDeletion(java.lang.Long.valueOf(history.targetId))
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         deletion.delete(festival)
     }
 }
