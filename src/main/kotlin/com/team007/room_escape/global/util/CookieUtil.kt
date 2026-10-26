@@ -18,7 +18,7 @@ class CookieUtil(
 ) {
 
     fun addRefreshCookie(response: HttpServletResponse, token: String) =
-        addCookie(response, base(token).maxAge(jwtProperties.refreshTokenValiditySeconds()))
+        addCookie(response, base(token).maxAge(jwtProperties.refreshTokenValiditySeconds))
 
     fun clearRefreshCookie(response: HttpServletResponse) =
         addCookie(response, base("").maxAge(0))
@@ -29,9 +29,9 @@ class CookieUtil(
     private fun base(value: String): ResponseCookie.ResponseCookieBuilder =
         ResponseCookie.from(REFRESH_TOKEN_COOKIE, value)
             .httpOnly(true)
-            .secure(properties.secure())
-            .sameSite(properties.sameSite())
-            .path(properties.path())
+            .secure(properties.secure)
+            .sameSite(properties.sameSite)
+            .path(properties.path)
 
     companion object {
         const val REFRESH_TOKEN_COOKIE = "refreshToken"

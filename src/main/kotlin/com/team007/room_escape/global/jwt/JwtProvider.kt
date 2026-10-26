@@ -18,14 +18,14 @@ class JwtProvider(
     private val properties: JwtProperties,
 ) {
 
-    private val accessKey = keyOf(properties.secret())
-    private val refreshKey = keyOf(properties.refreshSecret())
+    private val accessKey = keyOf(properties.secret)
+    private val refreshKey = keyOf(properties.refreshSecret)
 
     fun createAccessToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String =
-        build(memberId, nickname, role, profileImg, properties.accessTokenValiditySeconds(), accessKey)
+        build(memberId, nickname, role, profileImg, properties.accessTokenValiditySeconds, accessKey)
 
     fun createRefreshToken(memberId: UUID, nickname: String, role: String, profileImg: String?): String =
-        build(memberId, nickname, role, profileImg, properties.refreshTokenValiditySeconds(), refreshKey)
+        build(memberId, nickname, role, profileImg, properties.refreshTokenValiditySeconds, refreshKey)
 
     fun parse(token: String): Claims = parseWith(token, accessKey)
 
@@ -41,7 +41,7 @@ class JwtProvider(
     ): String {
         val now = Instant.now()
         return Jwts.builder()
-            .issuer(properties.issuer())
+            .issuer(properties.issuer)
             .subject(memberId.toString())
             .claim("nickname", nickname)
             .claim("role", role)
@@ -55,7 +55,7 @@ class JwtProvider(
     private fun parseWith(token: String, key: SecretKey): Claims =
         Jwts.parser()
             .verifyWith(key)
-            .requireIssuer(properties.issuer())
+            .requireIssuer(properties.issuer)
             .build()
             .parseSignedClaims(token)
             .payload

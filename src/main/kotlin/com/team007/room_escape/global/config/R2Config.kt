@@ -23,12 +23,12 @@ class R2Config(
 
     @Bean
     fun s3Client(): S3Client = S3Client.builder()
-        .endpointOverride(URI.create(properties.endpoint()))
+        .endpointOverride(URI.create(properties.endpoint))
         // R2는 리전 개념이 없어 auto를 쓴다. 다른 값을 넣으면 서명이 어긋난다.
         .region(Region.of("auto"))
         .credentialsProvider(
             StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(properties.accessKey(), properties.secretKey())
+                AwsBasicCredentials.create(properties.accessKey, properties.secretKey)
             )
         )
         .forcePathStyle(true)

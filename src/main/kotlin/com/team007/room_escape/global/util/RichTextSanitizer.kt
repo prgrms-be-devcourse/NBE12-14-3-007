@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 @Component
 class RichTextSanitizer(r2Properties: R2Properties) {
 
-    private val policy: PolicyFactory = policyFor(r2Properties.publicUrl())
+    private val policy: PolicyFactory = policyFor(r2Properties.publicUrl)
 
     fun sanitize(content: String?): String? =
         // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다. Kotlin trim()은 NBSP 등도 자른다.

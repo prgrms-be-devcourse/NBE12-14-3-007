@@ -70,7 +70,7 @@ class R2StorageService(
     fun delete(key: String?) {
         if (key == null || key.isBlankLikeJava()) return
         try {
-            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(properties.bucket()).key(key).build())
+            s3Client.deleteObject(DeleteObjectRequest.builder().bucket(properties.bucket).key(key).build())
         } catch (e: SdkException) {
             log.warn("R2 삭제 실패 key={}", key, e)
         }
@@ -85,7 +85,7 @@ class R2StorageService(
         try {
             s3Client.putObject(
                 PutObjectRequest.builder()
-                    .bucket(properties.bucket())
+                    .bucket(properties.bucket)
                     .key(key)
                     .contentType(contentType)
                     // key가 UUID라 내용이 안 바뀌어서 1년 캐시해도 안전하다.

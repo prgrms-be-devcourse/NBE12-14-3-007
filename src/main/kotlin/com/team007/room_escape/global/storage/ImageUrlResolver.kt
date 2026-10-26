@@ -21,5 +21,5 @@ class ImageUrlResolver(
     fun toKey(value: String?): String? =
         if (value == null || value.isBlankLikeJava()) value else value.removePrefix("${prefix()}/")
 
-    private fun prefix(): String = properties.publicUrl().removeSuffix("/")
+    private fun prefix(): String = properties.publicUrl.removeSuffix("/")
 }

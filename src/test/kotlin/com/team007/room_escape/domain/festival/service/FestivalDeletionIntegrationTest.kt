@@ -35,9 +35,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -74,14 +74,20 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         @DynamicPropertySource
         fun isolatedDatabase(properties: DynamicPropertyRegistry) {
             TestDatabase.configure(properties, TEST_SCHEMA)
+            mapOf(
+                "r2.account-id" to "test",
+                "r2.access-key" to "test",
+                "r2.secret-key" to "test",
+                "r2.bucket" to "test",
+                "r2.public-url" to "https://images.example.com",
+            ).forEach { (key, value) -> properties.add(key) { value } }
         }
     }
 
+    /** @DataJpaTest는 설정 클래스를 올리지 않아서, 본문 정제기가 쓰는 R2 설정만 직접 등록한다. */
     @TestConfiguration
-    class StorageConfiguration {
-        @Bean
-        fun r2Properties() = R2Properties("test", "test", "test", "test", "https://images.example.com")
-    }
+    @EnableConfigurationProperties(R2Properties::class)
+    class StorageConfiguration
 
     private fun operator(): UUID = members.saveAndFlush(
         Member.builder().email("${UUID.randomUUID()}@example.com")

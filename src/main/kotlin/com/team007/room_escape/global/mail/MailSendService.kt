@@ -30,7 +30,7 @@ class MailSendService(
 
                     $code
 
-                유효시간은 ${properties.expireMinutes()}분입니다.
+                유효시간은 ${properties.expireMinutes}분입니다.
                 본인이 요청하지 않았다면 이 메일을 무시하고 비밀번호를 바꾸지 마세요.
                 """.trimIndent() + "\n"
         }
