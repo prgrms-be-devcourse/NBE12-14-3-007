@@ -109,7 +109,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val festival = festivals.save(
             Festival.builder().member(author).title("행사")
                 .providerType(ProviderType.MEMBER).url("https://example.com/${UUID.randomUUID()}")
-                .region(FestivalRegion.SEOUL).beginDe(LocalDateTime.of(2026, 10, 20, 10, 0))
+                .region(FestivalRegion.SEOUL).district("강남구").beginDe(LocalDateTime.of(2026, 10, 20, 10, 0))
                 .endDe(LocalDateTime.of(2026, 10, 21, 18, 0)).build(),
         )
         return histories.saveAndFlush(FestivalSubmission.builder().festival(festival).build())
@@ -179,7 +179,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val operator = operator()
         deleteAsAdmin(event.id!!, operator, "오등록")
         festivals.saveAndFlush(Festival.builder().providerType(ProviderType.MEMBER)
-            .url(event.url).region(event.region)
+            .url("https://different.example.com").title(event.title).district(event.district).region(event.region)
             .beginDe(event.beginDe!!.plusHours(1)).endDe(event.endDe!!.plusHours(1)).build())
 
         assertThrows<BusinessException> { admin.restore(operator, DeletionTargetType.FESTIVAL, event.id.toString()) }

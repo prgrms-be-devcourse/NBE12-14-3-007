@@ -11,6 +11,7 @@ export function RegionSelects({
   variant?: "filter" | "discovery" | "form";
 }) {
   const { province, district } = selectedRegion(value);
+  const hasDistricts = Boolean(province?.districts.length);
   const className =
     variant === "filter"
       ? "filter-select region-select"
@@ -43,18 +44,28 @@ export function RegionSelects({
           </select>
         </div>
       </label>
-      {/* 제보 폼은 "상세 주소" 자유 입력란이 따로 있어서, 여기선 검색·둘러보기 화면에만 보여준다. */}
-      {variant !== "form" && province && province.districts.length > 0 && (
+      {(variant === "form" || hasDistricts) && (
         <label className={className}>
           <div>
-            <span>시·군·구</span>
+            <span>
+              시·군·구
+              {variant === "form" && (!province || hasDistricts) && <b className="required">*</b>}
+            </span>
             <select
               aria-label="시·군·구 선택"
+              required={variant === "form" && hasDistricts}
+              disabled={!hasDistricts}
               value={district}
-              onChange={(e) => onChange(e.target.value || province.value)}
+              onChange={(e) => onChange(e.target.value || province?.value || "")}
             >
-              <option value="">전체</option>
-              {province.districts.map((d) => (
+              <option value="">
+                {!province
+                  ? "시·도를 먼저 선택해 주세요"
+                  : !hasDistricts
+                    ? "시·군·구 선택 대상 없음"
+                    : variant === "form" ? "시·군·구 선택" : "전체"}
+              </option>
+              {province?.districts.map((d) => (
                 <option key={d.value} value={d.value}>
                   {d.label}
                 </option>

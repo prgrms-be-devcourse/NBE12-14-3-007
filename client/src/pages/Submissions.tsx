@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
 import { dateText, errorText, period, regions } from "../lib/format";
-import { selectedRegion } from "../lib/regions";
+import { selectedRegion, regionGroups } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
 import { ApiError } from "../lib/api";
 import { LazyRichTextEditor } from "../components/LazyRichTextEditor";
@@ -119,7 +119,7 @@ export function SubmissionList({ compact = false }: { compact?: boolean }) {
                   )}
                   <p>
                     <MapPin size={14} />
-                    {regions[s.region] || s.region} {s.regionDetail}
+                    {regions[s.region] || s.region} {s.district} {s.regionDetail}
                   </p>
                   <p>
                     <CalendarDays size={14} />
@@ -228,6 +228,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     festivalContent: "",
     region: "",
     regionDetail: "",
+    district: "",
     beginDe: "",
     endDe: "",
     eventTmInfo: "",
@@ -245,13 +246,15 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     ...(current
       ? {
           title: current.festival.title,
-          region:
-            selectedRegion(current.festival.region).province?.value ||
-            current.festival.region,
+          region: current.festival.district
+            ? regionGroups.find(g => g.value === current.festival.region)?.districts
+                .find(d => d.label === current.festival.district)?.value || current.festival.region
+            : current.festival.region,
         }
       : {}),
   }));
   const [error, setError] = useState("");
+  const [duplicateFestivalId, setDuplicateFestivalId] = useState<number | null>(null);
   const [editConflict, setEditConflict] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -307,6 +310,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     if (busy) return;
     setError("");
     setEditConflict(false);
+    setDuplicateFestivalId(null);
     const requiredFields = {
       title: "행사 이름",
       category: "행사 종류",
@@ -320,6 +324,11 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
         setError(`${label} 항목을 입력해 주세요.`);
         return;
       }
+    }
+    const selected = selectedRegion(form.region);
+    if (!selected.province || (selected.province.districts.length > 0 && !selected.district)) {
+      setError("시·도와 시·군·구를 선택해 주세요.");
+      return;
     }
     if (form.endDe < form.beginDe) {
       setError("종료 일시는 시작 일시보다 빠를 수 없어요.");
@@ -336,7 +345,8 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
         title: form.title.trim(),
         category: form.category.trim(),
         festivalContent: form.festivalContent?.trim(),
-        region: form.region,
+        region: selected.province.value,
+        district: selected.province.districts.find(d => d.value === selected.district)?.label || "",
         regionDetail: form.regionDetail?.trim(),
         beginDe: `${form.beginDe.slice(0, 10)}T00:00:00`,
         endDe: `${form.endDe.slice(0, 10)}T23:59:59`,
@@ -355,6 +365,9 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
       navigate(`/submissions/${id}`);
     } catch (err) {
       setError(errorText(err));
+      if (err instanceof ApiError && err.code === "FESTIVAL006") {
+        setDuplicateFestivalId(err.data?.festivalId ?? null);
+      }
       setEditConflict(err instanceof ApiError && err.code === "FESTIVAL012");
     } finally {
       setBusy(false);
@@ -583,6 +596,9 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
           행사 일정과 안내 링크를 확인했으며, 정확한 정보를 제보합니다.
         </label>
         <FormError message={error} />
+        {duplicateFestivalId && (
+          <p><Link to={`/events/${duplicateFestivalId}`} target="_blank" rel="noopener noreferrer">이미 등록된 행사 확인</Link></p>
+        )}
         {editConflict && current && (
           <p>
             입력한 내용은 이 화면에 유지됩니다. 최신 내용을 확인한 뒤 다시 수정해 주세요.

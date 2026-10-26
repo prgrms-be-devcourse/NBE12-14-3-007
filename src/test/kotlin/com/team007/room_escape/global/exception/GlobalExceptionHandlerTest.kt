@@ -101,6 +101,16 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    fun `중복 행사 안내 정보는 실패 응답 data에 포함한다`() {
+        val response = handler.handleBusiness(BusinessException(
+            com.team007.room_escape.global.response.code.FestivalExceptionCode.DUPLICATE_FESTIVAL,
+            details = mapOf("festivalId" to 99L)
+        ))
+        assertThat(response.statusCode.value()).isEqualTo(409)
+        assertThat(response.body?.data).isEqualTo(mapOf("festivalId" to 99L))
+    }
+
+    @Test
     fun `비즈니스 예외에 메시지를 따로 줬다면 그 메시지를 내려준다`() {
         val response = handler.handleBusiness(BusinessException(MemberExceptionCode.EMAIL_DUPLICATED, "이미 가입한 메일입니다."))
 
@@ -169,7 +179,7 @@ class GlobalExceptionHandlerTest {
     }
 
     /** 응답이 특정 에러 코드(상태, 코드, 메시지)와 같은지 확인한다 */
-    private fun ResponseEntity<ApiResponse<Void?>>.shouldBe(expected: ExceptionCode, message: String = expected.message) {
+    private fun ResponseEntity<out ApiResponse<*>>.shouldBe(expected: ExceptionCode, message: String = expected.message) {
         assertThat(statusCode).isEqualTo(expected.status)
         val body = requireNotNull(body)
         assertThat(body.success).isFalse()

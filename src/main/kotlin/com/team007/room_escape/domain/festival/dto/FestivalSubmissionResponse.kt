@@ -82,7 +82,9 @@ class FestivalSubmissionResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?,
 
         @field:Schema(description = "행사 상태", example = "OPEN")
-        val status: FestivalStatus?
+        val status: FestivalStatus?,
+
+        val district: String? = null
     ) {
         companion object {
             @JvmStatic
@@ -97,6 +99,7 @@ class FestivalSubmissionResponse private constructor() {
                     .festivalId(festival.id)
                     .title(festival.title)
                     .region(festival.region)
+                    .district(festival.district)
                     .regionDetail(festival.regionDetail)
                     .beginDe(festival.beginDe)
                     .endDe(festival.endDe)
@@ -108,6 +111,8 @@ class FestivalSubmissionResponse private constructor() {
         }
 
         class ListItemBuilder {
+            private var district: String? = null
+            fun district(district: String?): ListItemBuilder = apply { this.district = district }
             private var festivalSubmissionId: UUID? = null
             private var festivalId: Long? = null
             private var title: String? = null
@@ -139,7 +144,7 @@ class FestivalSubmissionResponse private constructor() {
 
             fun status(status: FestivalStatus?): ListItemBuilder = apply { this.status = status }
 
-            fun build(): ListItem = ListItem(festivalSubmissionId, festivalId, title, region, regionDetail, beginDe, endDe, createdAt, deletion, status)
+            fun build(): ListItem = ListItem(festivalSubmissionId, festivalId, title, region, regionDetail, beginDe, endDe, createdAt, deletion, status, district)
         }
     }
 
@@ -268,7 +273,9 @@ class FestivalSubmissionResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?,
 
         @field:Schema(description = "행사 상태", example = "OPEN")
-        val status: FestivalStatus?
+        val status: FestivalStatus?,
+
+        val district: String? = null
     ) {
         companion object {
             @JvmStatic
@@ -278,6 +285,7 @@ class FestivalSubmissionResponse private constructor() {
             fun from(festival: Festival, latest: DeletionHistory?): FestivalInfo {
                 return FestivalInfo.builder()
                     .festivalId(festival.id)
+                    .district(festival.district)
                     .category(festival.category)
                     .title(festival.title)
                     .festivalContent(festival.content)
@@ -296,6 +304,8 @@ class FestivalSubmissionResponse private constructor() {
         }
 
         class FestivalInfoBuilder {
+            private var district: String? = null
+            fun district(district: String?): FestivalInfoBuilder = apply { this.district = district }
             private var festivalId: Long? = null
             private var title: String? = null
             private var category: String? = null
@@ -339,7 +349,7 @@ class FestivalSubmissionResponse private constructor() {
 
             fun status(status: FestivalStatus?): FestivalInfoBuilder = apply { this.status = status }
 
-            fun build(): FestivalInfo = FestivalInfo(festivalId, title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, deletion, status)
+            fun build(): FestivalInfo = FestivalInfo(festivalId, title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, deletion, status, district)
         }
     }
 }

@@ -268,7 +268,7 @@ class FestivalApiContractTest : ApiContractSupport() {
 	private fun submissionBody(title: String): String {
 		return """
 			{"title":"%s","category":"축제","referenceUrl":"https://example.com/%s",
-			 "region":"SEOUL","beginDe":"2026-12-01T10:00:00","endDe":"2026-12-02T18:00:00"}
+			 "region":"SEOUL","district":"강남구","beginDe":"2026-12-01T10:00:00","endDe":"2026-12-02T18:00:00"}
 			""".trimIndent().format(title, shortToken())
 	}
 

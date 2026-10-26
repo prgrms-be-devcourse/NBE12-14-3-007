@@ -32,11 +32,13 @@ class GlobalExceptionHandler {
 
     /** 서비스에서 의도적으로 던진 비즈니스 예외 (AUTH/MEMBER 등 ExceptionCode 전부) */
     @ExceptionHandler(BusinessException::class)
-    fun handleBusiness(e: BusinessException): FailureResponse {
+    fun handleBusiness(e: BusinessException): ResponseEntity<out ApiResponse<*>> {
         val ec = e.exceptionCode
         // 5xx는 스택트레이스까지, 4xx는 메시지만 남긴다
         if (ec.status.is5xxServerError) log.error("[{}] {}", ec.code, e.message, e) else log.warn("[{}] {}", ec.code, e.message)
-        return respond(ec, e.message)
+        val details = e.details
+        return if (details == null) respond(ec, e.message)
+        else ResponseEntity.status(ec.status).body(ApiResponse.failWithDetails(ec, e.message, details))
     }
 
     /** @Valid 요청 본문 검증 실패 (필드 제약 위반) */

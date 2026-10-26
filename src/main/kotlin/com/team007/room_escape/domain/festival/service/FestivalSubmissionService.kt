@@ -34,13 +34,14 @@ class FestivalSubmissionService(
     @Transactional
     fun create(memberId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
+        val district = SubmissionRegions.validate(request.region!!, request.district)
         val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(request.referenceUrl!!)
-        duplicateValidator.validate(null, request.beginDe!!, request.endDe!!, request.region!!, normalizedReferenceUrl)
+        duplicateValidator.validate(null, request.beginDe!!, request.endDe!!, request.region!!, request.title!!, district)
         val festival = Festival.create(
             member = member, providerType = ProviderType.MEMBER,
             title = request.title, category = request.category,
             content = richTextSanitizer.sanitize(request.festivalContent), url = normalizedReferenceUrl,
-            region = request.region, regionDetail = request.regionDetail, imgUrl = request.imgUrl,
+            region = request.region, district = district, regionDetail = request.regionDetail, imgUrl = request.imgUrl,
             beginDe = request.beginDe, endDe = request.endDe,
             partcptExpnInfo = request.partcptExpnInfo, telnoInfo = request.telnoInfo,
             status = FestivalStatus.from(request.endDe)
@@ -82,12 +83,13 @@ class FestivalSubmissionService(
         val version = request.version
             ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
         if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
+        val district = SubmissionRegions.validate(request.region!!, request.district)
         val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(request.referenceUrl!!)
-        duplicateValidator.validate(festival.id, request.beginDe!!, request.endDe!!, request.region!!, normalizedReferenceUrl)
+        duplicateValidator.validate(festival.id, request.beginDe!!, request.endDe!!, request.region!!, request.title!!, district)
         festival.updateDetails(
             request.title, request.category, richTextSanitizer.sanitize(request.festivalContent),
             normalizedReferenceUrl, request.region, request.regionDetail, request.imgUrl,
-            request.beginDe, request.endDe, request.partcptExpnInfo, request.telnoInfo
+            request.beginDe, request.endDe, request.partcptExpnInfo, request.telnoInfo, district
         )
         flushFestivalChanges()
         return FestivalSubmissionResponse.Detail.from(submission, null)
@@ -132,6 +134,6 @@ class FestivalSubmissionService(
     }
 
     companion object {
-        private const val DUPLICATE_CONSTRAINT_NAME = "uk_member_festival_schedule_region_url"
+        private const val DUPLICATE_CONSTRAINT_NAME = "uk_member_festival_name_district_dates"
     }
 }
