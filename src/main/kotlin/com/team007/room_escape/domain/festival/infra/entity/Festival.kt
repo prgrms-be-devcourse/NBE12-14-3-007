@@ -37,6 +37,7 @@ class Festival(
     telnoInfo: String? = null,
     status: FestivalStatus? = null,
     region: FestivalRegion? = null,
+    district: String? = null,
     regionDetail: String? = null,
     place: String? = null,
     placeAddress: String? = null,
@@ -116,6 +117,10 @@ class Festival(
     var region: FestivalRegion? = region
         protected set
 
+    @field:Column(length = 80)
+    var district: String? = district
+        protected set
+
     @field:Column(name = "region_detail", columnDefinition = "text")
     var regionDetail: String? = regionDetail
         protected set
@@ -143,8 +148,10 @@ class Festival(
     fun updateDetails(
         title: String?, category: String?, content: String?, referenceUrl: String?,
         region: FestivalRegion?, regionDetail: String?, imgUrl: String?,
-        beginDe: LocalDateTime?, endDe: LocalDateTime?, partcptExpnInfo: String?, telnoInfo: String?
+        beginDe: LocalDateTime?, endDe: LocalDateTime?, partcptExpnInfo: String?, telnoInfo: String?,
+        district: String? = if (region == this.region) this.district else null
     ) {
+        this.district = district
         this.title = title
         this.category = category
         this.content = content

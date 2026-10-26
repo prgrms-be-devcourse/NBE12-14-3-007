@@ -63,7 +63,9 @@ class FestivalSubmissionResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?,
 
         @field:Schema(description = "행사 상태", example = "OPEN")
-        val status: FestivalStatus?
+        val status: FestivalStatus?,
+
+        val district: String? = null
     ) {
         companion object {
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): ListItem {
@@ -74,6 +76,7 @@ class FestivalSubmissionResponse private constructor() {
                     festivalId = festival.id,
                     title = festival.title,
                     region = festival.region,
+                    district = festival.district,
                     regionDetail = festival.regionDetail,
                     beginDe = festival.beginDe,
                     endDe = festival.endDe,
@@ -174,12 +177,15 @@ class FestivalSubmissionResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?,
 
         @field:Schema(description = "행사 상태", example = "OPEN")
-        val status: FestivalStatus?
+        val status: FestivalStatus?,
+
+        val district: String? = null
     ) {
         companion object {
             fun from(festival: Festival, latest: DeletionHistory?): FestivalInfo =
                 FestivalInfo(
                     festivalId = festival.id,
+                    district = festival.district,
                     category = festival.category,
                     title = festival.title,
                     festivalContent = festival.content,

@@ -25,5 +25,8 @@ class ApiResponse<T> private constructor(
 
         fun fail(code: ExceptionCode, message: String? = code.message): ApiResponse<Void?> =
             ApiResponse(false, code.code, message, null)
+
+        fun failWithDetails(code: ExceptionCode, message: String?, details: Map<String, Any>): ApiResponse<Map<String, Any>> =
+            ApiResponse(false, code.code, message, details)
     }
 }

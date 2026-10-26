@@ -8,7 +8,6 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalReposito
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
-import com.team007.room_escape.global.util.isNullOrBlankLikeJava
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -42,19 +41,19 @@ class FestivalDeletionService(
         refreshGrade(festival)
     }
 
-    /** 새 중복 정책은 적용하지 않고 기존 회원 제보의 날짜·지역·링크 기준을 사용한다. */
+    /** 복구도 등록·수정과 같은 행사명·지역·날짜 기준으로 확인한다. */
     private fun validateRestoreDuplicate(festival: Festival) {
-        if (festival.providerType != ProviderType.MEMBER) {
-            return
-        }
+        if (festival.providerType != ProviderType.MEMBER) return
         val beginDe = festival.beginDe
         val endDe = festival.endDe
         val region = festival.region
-        val url = festival.url
-        if (beginDe == null || endDe == null || region == null || url.isNullOrBlankLikeJava()) {
+        val title = festival.title
+        val district = festival.district
+        if (beginDe == null || endDe == null || region == null || title.isNullOrBlank() || district == null) {
             throw BusinessException(FestivalExceptionCode.RESTORE_DATA_INCOMPLETE)
         }
-        duplicateValidator.validate(festival.id, beginDe, endDe, region, url)
+        duplicateValidator.validate(festival.id, beginDe, endDe, region, title,
+            SubmissionRegions.validate(region, district))
     }
 
     private fun refreshGrade(festival: Festival) {

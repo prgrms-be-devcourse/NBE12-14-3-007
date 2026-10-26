@@ -56,7 +56,11 @@ class FestivalSubmissionRequest private constructor() {
         val telnoInfo: String? = null,
 
         @field:Schema(description = "상세 조회에서 받은 행사 버전. 수정 시 필수")
-        val version: Long? = null
+        val version: Long? = null,
+
+        @field:Size(max = 80)
+        @field:Schema(description = "시·군·구. 하위 지역이 없는 시·도는 생략")
+        val district: String? = null
     ) {
         @AssertTrue(message = "행사 종료 일시는 시작 일시보다 빠를 수 없습니다.")
         fun isValidPeriod(): Boolean = beginDe == null || endDe == null || !endDe.isBefore(beginDe)

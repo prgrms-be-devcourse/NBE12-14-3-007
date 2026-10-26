@@ -16,6 +16,7 @@ export interface Member {
   updatedAt: string;
 }
 export interface Festival {
+  district?: string | null;
   /** 내 제보 이력에서 제공하는 현재 삭제 정보. 공개 행사 응답에는 없다. */
   deletion?: FestivalDeletion | null;
   festivalId: number;
@@ -64,6 +65,7 @@ export interface FestivalSearchInput {
   sort?: "soon" | "name" | "likes" | "recent";
 }
 export interface FestivalSearchItem {
+  district?: string | null;
   festivalId: number;
   providerType: "PUBLIC" | "MEMBER";
   title: string;
@@ -83,6 +85,7 @@ export interface FestivalSearchItem {
 }
 // GET /api/v1/festivals/{festivalId} 응답 그대로의 모양
 export interface FestivalDetailItem {
+  district?: string | null;
   festivalId: number;
   providerType: "PUBLIC" | "MEMBER";
   title: string;
@@ -122,6 +125,7 @@ export interface WeatherView {
   date: string;
 }
 export interface SubmissionInput {
+  district?: string;
   version?: number;
   title: string;
   category: string;
@@ -139,6 +143,7 @@ export interface SubmissionInput {
   hostInstNm?: string;
 }
 export interface SubmissionSummary {
+  district?: string | null;
   deletion?: FestivalDeletion | null;
   festivalSubmissionId: string;
   festivalId: number;

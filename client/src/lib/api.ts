@@ -55,7 +55,7 @@ import {
   updateDemo,
   type ReviewSort,
 } from "./demo";
-import { parseDateTime } from "./format";
+import { parseDateTime, formatRegionDetail } from "./format";
 import { matchesRegion } from "./regions";
 
 // 선택 항목을 비운 등록·수정 요청은 DB에 빈 문자열 대신 null로 저장합니다.
@@ -80,6 +80,7 @@ export class ApiError extends Error {
     message: string,
     public status = 0,
     public code = "",
+    public data?: { festivalId?: number },
   ) {
     super(message);
   }
@@ -196,6 +197,7 @@ async function transport<T>(
             : "요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요."),
       response.status,
       result?.code,
+      result?.data,
     );
   }
   console.log(`[${method}] ${path}`, result.data);
@@ -259,7 +261,7 @@ function toEventView(item: FestivalSearchItem): EventView {
     festivalContent: null,
     referenceUrl: null,
     region: item.region,
-    regionDetail: item.regionDetail || "",
+    regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,
     endDe: item.endDe,
@@ -290,7 +292,7 @@ function toDetailEvent(item: FestivalDetailItem): EventView {
     festivalContent: item.festivalContent,
     referenceUrl: item.referenceUrl,
     region: item.region,
-    regionDetail: item.regionDetail || "",
+    regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,
     endDe: item.endDe,

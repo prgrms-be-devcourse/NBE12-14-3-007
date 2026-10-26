@@ -20,13 +20,15 @@ class SubmissionDuplicateRepositoryTest @Autowired constructor(
     private val festivals: FestivalRepository,
 ) {
     @Test
-    fun comparesCalendarDatesNormalizesStoredUrlAndExcludesDeletedAndSelf() {
+    fun comparesNameDistrictDatesRegardlessOfUrlAndExcludesDeletedAndSelf() {
         val start = LocalDateTime.of(2026, 10, 2, 0, 0)
         val end = start.plusDays(1)
         val url = "https://example.com/${UUID.randomUUID()}"
         val festival = Festival(
             providerType = ProviderType.MEMBER,
-            url = " $url/// ",
+            title = url,
+            district = "수원시",
+            url = "https://different.example.com",
             region = FestivalRegion.GYEONGGI,
             beginDe = start.plusHours(10),
             endDe = end.plusHours(18),
@@ -39,14 +41,31 @@ class SubmissionDuplicateRepositoryTest @Autowired constructor(
         assertThat(duplicate(null, start.plusDays(1), end, url)).isFalse()
         assertThat(duplicate(null, start, end.plusDays(1), url)).isFalse()
         assertThat(duplicate(null, start, end, url + "different")).isFalse()
-        assertThat(festivals.existsSubmissionDuplicate(null, start, start.plusDays(1),
-            end, end.plusDays(1), FestivalRegion.SEOUL.name, url)).isFalse()
+        assertThat(festivals.findSubmissionDuplicateId(null, start, start.plusDays(1),
+            end, end.plusDays(1), FestivalRegion.GYEONGGI.name, url, "성남시")).isNull()
+        assertThat(festivals.findSubmissionDuplicateId(null, start, start.plusDays(1),
+            end, end.plusDays(1), FestivalRegion.SEOUL.name, url, "수원시")).isNull()
         festival.delete()
         em.flush()
         assertThat(duplicate(null, start, end, url)).isFalse()
     }
 
+    @Test
+    fun databaseRejectsSameNameDistrictDatesEvenWithDifferentUrlsAndTimes() {
+        val start = LocalDateTime.of(2026, 10, 2, 10, 0)
+        val title = UUID.randomUUID().toString()
+        fun event(url: String, hour: Long) = Festival(
+            providerType = ProviderType.MEMBER, title = title,
+            region = FestivalRegion.SEOUL, district = "강남구", url = url,
+            beginDe = start.plusHours(hour), endDe = start.plusDays(1).plusHours(hour)
+        )
+        festivals.saveAndFlush(event("https://first.example.com", 0))
+        org.junit.jupiter.api.assertThrows<org.springframework.dao.DataIntegrityViolationException> {
+            festivals.saveAndFlush(event("https://second.example.com", 1))
+        }
+    }
+
     private fun duplicate(id: Long?, start: LocalDateTime, end: LocalDateTime, url: String): Boolean =
-        festivals.existsSubmissionDuplicate(id, start, start.plusDays(1),
-            end, end.plusDays(1), FestivalRegion.GYEONGGI.name, url)
+        festivals.findSubmissionDuplicateId(id, start, start.plusDays(1),
+            end, end.plusDays(1), FestivalRegion.GYEONGGI.name, url, "수원시") != null
 }

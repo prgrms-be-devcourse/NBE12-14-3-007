@@ -120,6 +120,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
                 providerType = ProviderType.MEMBER,
                 url = "https://example.com/${UUID.randomUUID()}",
                 region = FestivalRegion.SEOUL,
+                district = "강남구",
                 beginDe = LocalDateTime.of(2026, 10, 20, 10, 0),
                 endDe = LocalDateTime.of(2026, 10, 21, 18, 0),
             ),
@@ -199,7 +200,9 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         deleteAsAdmin(event.requiredId, operator, "오등록")
         festivals.saveAndFlush(Festival(
             providerType = ProviderType.MEMBER,
-            url = event.url,
+            url = "https://different.example.com",
+            title = event.title,
+            district = event.district,
             region = event.region,
             beginDe = checkNotNull(event.beginDe).plusHours(1),
             endDe = checkNotNull(event.endDe).plusHours(1),

@@ -34,12 +34,12 @@ class FestivalSubmissionService(
     @Transactional
     fun create(memberId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
-        val normalizedReferenceUrl = validateNotDuplicated(null, request)
+        val (normalizedReferenceUrl, district) = validateNotDuplicated(null, request)
         val festival = Festival(
             member = member, providerType = ProviderType.MEMBER,
             title = request.title, category = request.category,
             content = richTextSanitizer.sanitize(request.festivalContent), url = normalizedReferenceUrl,
-            region = request.region, regionDetail = request.regionDetail, imgUrl = request.imgUrl,
+            region = request.region, district = district, regionDetail = request.regionDetail, imgUrl = request.imgUrl,
             beginDe = request.beginDe, endDe = request.endDe,
             partcptExpnInfo = request.partcptExpnInfo, telnoInfo = request.telnoInfo,
             status = FestivalStatus.from(request.endDe)
@@ -81,11 +81,11 @@ class FestivalSubmissionService(
         val version = request.version
             ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
         if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
-        val normalizedReferenceUrl = validateNotDuplicated(festival.id, request)
+        val (normalizedReferenceUrl, district) = validateNotDuplicated(festival.id, request)
         festival.updateDetails(
             request.title, request.category, richTextSanitizer.sanitize(request.festivalContent),
             normalizedReferenceUrl, request.region, request.regionDetail, request.imgUrl,
-            request.beginDe, request.endDe, request.partcptExpnInfo, request.telnoInfo
+            request.beginDe, request.endDe, request.partcptExpnInfo, request.telnoInfo, district
         )
         flushFestivalChanges()
         return FestivalSubmissionResponse.Detail.from(submission, null)
@@ -100,10 +100,12 @@ class FestivalSubmissionService(
     }
 
     /**
-     * 같은 기간·지역·주소의 행사가 이미 있는지 확인하고, 비교에 쓴 정규화된 주소를 돌려준다.
+     * 행사명·시군구·날짜로 중복을 확인하고 저장에 사용할 주소와 시군구를 돌려준다.
      * 요청 검증(@NotNull)을 통과했다면 이 값들은 항상 있다.
      */
-    private fun validateNotDuplicated(currentFestivalId: Long?, request: FestivalSubmissionRequest.Upsert): String {
+    private fun validateNotDuplicated(currentFestivalId: Long?, request: FestivalSubmissionRequest.Upsert): ValidatedSubmission {
+        val region = requireNotNull(request.region) { "검증을 통과한 요청에는 지역이 있다." }
+        val district = SubmissionRegions.validate(region, request.district)
         val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(
             requireNotNull(request.referenceUrl) { "검증을 통과한 요청에는 참고 주소가 있다." },
         )
@@ -111,11 +113,14 @@ class FestivalSubmissionService(
             currentFestivalId,
             requireNotNull(request.beginDe) { "검증을 통과한 요청에는 시작 일시가 있다." },
             requireNotNull(request.endDe) { "검증을 통과한 요청에는 종료 일시가 있다." },
-            requireNotNull(request.region) { "검증을 통과한 요청에는 지역이 있다." },
-            normalizedReferenceUrl,
+            region,
+            requireNotNull(request.title) { "검증을 통과한 요청에는 행사명이 있다." },
+            district,
         )
-        return normalizedReferenceUrl
+        return ValidatedSubmission(normalizedReferenceUrl, district)
     }
+
+    private data class ValidatedSubmission(val referenceUrl: String, val district: String)
 
     private fun findSubmission(memberId: UUID, submissionId: UUID): FestivalSubmission =
         festivalSubmissionRepository.findByIdAndFestival_Member_Id(submissionId, memberId)
@@ -147,6 +152,6 @@ class FestivalSubmissionService(
     }
 
     companion object {
-        private const val DUPLICATE_CONSTRAINT_NAME = "uk_member_festival_schedule_region_url"
+        private const val DUPLICATE_CONSTRAINT_NAME = "uk_member_festival_name_district_dates"
     }
 }

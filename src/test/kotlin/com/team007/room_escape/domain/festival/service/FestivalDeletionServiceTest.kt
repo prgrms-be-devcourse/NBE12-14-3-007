@@ -31,17 +31,19 @@ class FestivalDeletionServiceTest {
 
     private fun deletedFestival(
         providerType: ProviderType = ProviderType.MEMBER,
-        url: String? = "https://example.com/event",
+        title: String? = "행사",
         beginDe: LocalDateTime? = begin,
         region: FestivalRegion? = FestivalRegion.GYEONGGI,
+        district: String? = "수원시",
     ) = Festival(
-        id = 7L, providerType = providerType, url = url, beginDe = beginDe, endDe = end, region = region,
+        id = 7L, providerType = providerType, title = title, beginDe = beginDe, endDe = end,
+        region = region, district = district,
     ).also { it.delete() }
 
-    @ParameterizedTest(name = "참고 링크 \"{0}\"")
+    @ParameterizedTest(name = "행사명 \"{0}\"")
     @ValueSource(strings = ["", " ", "\t\n"])
-    fun `회원 제보 행사는 참고 링크가 비어 있으면 복구할 수 없다`(url: String) {
-        val festival = deletedFestival(url = url)
+    fun `회원 제보 행사는 행사명이 비어 있으면 복구할 수 없다`(title: String) {
+        val festival = deletedFestival(title = title)
 
         val e = assertThrows<BusinessException> { service.restore(festival) }
 
@@ -51,11 +53,12 @@ class FestivalDeletionServiceTest {
     }
 
     @Test
-    fun `회원 제보 행사는 링크, 시작일, 지역 중 하나라도 없으면 복구할 수 없다`() {
+    fun `회원 제보 행사는 행사명, 시작일, 지역, 시군구 중 하나라도 없으면 복구할 수 없다`() {
         listOf(
-            deletedFestival(url = null),
+            deletedFestival(title = null),
             deletedFestival(beginDe = null),
             deletedFestival(region = null),
+            deletedFestival(district = null),
         ).forEach { festival ->
             val e = assertThrows<BusinessException> { service.restore(festival) }
 
@@ -71,13 +74,13 @@ class FestivalDeletionServiceTest {
         service.restore(festival)
 
         assertThat(festival.isDeleted()).isFalse()
-        verify(duplicates).validate(7L, begin, end, FestivalRegion.GYEONGGI, "https://example.com/event")
+        verify(duplicates).validate(7L, begin, end, FestivalRegion.GYEONGGI, "행사", "수원시")
         verify(grades).refreshForFestival(festival)
     }
 
     @Test
     fun `공공 행사는 제보 정보 검사 없이 복구된다`() {
-        val festival = deletedFestival(providerType = ProviderType.PUBLIC, url = null, beginDe = null, region = null)
+        val festival = deletedFestival(providerType = ProviderType.PUBLIC, title = null, beginDe = null, region = null, district = null)
 
         service.restore(festival)
 

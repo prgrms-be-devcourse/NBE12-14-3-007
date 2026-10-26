@@ -81,7 +81,9 @@ class FestivalResponse private constructor() {
         val inaccurateCount: Long,
 
         @field:Schema(description = "회원 제보 행사 작성자 정보. 공공데이터 행사는 null", nullable = true)
-        val member: MemberResponse.MemberInfo?
+        val member: MemberResponse.MemberInfo?,
+
+        val district: String? = null
     ) {
         companion object {
             fun from(festival: Festival, likeCount: Long, accurateCount: Long, inaccurateCount: Long, imageUrlResolver: ImageUrlResolver?): ListItem =
@@ -94,6 +96,7 @@ class FestivalResponse private constructor() {
                     beginDe = festival.beginDe,
                     endDe = festival.endDe,
                     region = festival.region,
+                    district = festival.district,
                     regionDetail = festival.regionDetail,
                     status = FestivalStatus.from(festival.endDe),
                     likeCount = likeCount,
@@ -168,7 +171,9 @@ class FestivalResponse private constructor() {
         val likedByMe: Boolean,
 
         @field:Schema(description = "회원 제보 행사 작성자 정보. 공공데이터 행사는 null", nullable = true)
-        val member: MemberResponse.MemberInfo?
+        val member: MemberResponse.MemberInfo?,
+
+        val district: String? = null
     ) {
         companion object {
             fun from(festival: Festival, accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?, likeCount: Long, likedByMe: Boolean, imageUrlResolver: ImageUrlResolver?): Detail =
@@ -186,6 +191,7 @@ class FestivalResponse private constructor() {
                     partcptExpnInfo = festival.partcptExpnInfo,
                     telnoInfo = festival.telnoInfo,
                     region = festival.region,
+                    district = festival.district,
                     regionDetail = festival.regionDetail,
                     status = FestivalStatus.from(festival.endDe),
                     accurateCount = accurateCount,
