@@ -131,3 +131,13 @@ export function errorText(error: unknown) {
     ? error.message
     : "요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.";
 }
+
+/** 시군구가 원본 상세 지역에도 포함되어 있으면 한 번만 표시한다. */
+export function formatRegionDetail(district?: string | null, detail?: string | null) {
+  const area = district?.trim() || "";
+  const address = detail?.trim() || "";
+  if (!area) return address;
+  if (!address || address === area) return area;
+  if (address.startsWith(`${area} `)) return address;
+  return `${area} ${address}`;
+}

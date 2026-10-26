@@ -12,7 +12,7 @@ import {
   Send,
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
-import { dateText, errorText, period, regions } from "../lib/format";
+import { dateText, errorText, period, regions, formatRegionDetail } from "../lib/format";
 import { selectedRegion, regionGroups } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
 import { ApiError } from "../lib/api";
@@ -119,7 +119,7 @@ export function SubmissionList({ compact = false }: { compact?: boolean }) {
                   )}
                   <p>
                     <MapPin size={14} />
-                    {regions[s.region] || s.region} {s.district} {s.regionDetail}
+                    {regions[s.region] || s.region} {formatRegionDetail(s.district, s.regionDetail)}
                   </p>
                   <p>
                     <CalendarDays size={14} />

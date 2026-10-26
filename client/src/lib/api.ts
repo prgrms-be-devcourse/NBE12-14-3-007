@@ -55,7 +55,7 @@ import {
   updateDemo,
   type ReviewSort,
 } from "./demo";
-import { parseDateTime } from "./format";
+import { parseDateTime, formatRegionDetail } from "./format";
 import { matchesRegion } from "./regions";
 
 // 선택 항목을 비운 등록·수정 요청은 DB에 빈 문자열 대신 null로 저장합니다.
@@ -261,7 +261,7 @@ function toEventView(item: FestivalSearchItem): EventView {
     festivalContent: null,
     referenceUrl: null,
     region: item.region,
-    regionDetail: [item.district, item.regionDetail].filter(Boolean).join(" "),
+    regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,
     endDe: item.endDe,
@@ -292,7 +292,7 @@ function toDetailEvent(item: FestivalDetailItem): EventView {
     festivalContent: item.festivalContent,
     referenceUrl: item.referenceUrl,
     region: item.region,
-    regionDetail: [item.district, item.regionDetail].filter(Boolean).join(" "),
+    regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,
     endDe: item.endDe,
