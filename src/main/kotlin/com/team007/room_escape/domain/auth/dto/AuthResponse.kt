@@ -17,7 +17,6 @@ class AuthResponse private constructor() {
 
         companion object {
 
-            @JvmStatic
             fun bearer(accessToken: String): Token = Token(accessToken, "Bearer")
         }
     }

@@ -33,8 +33,6 @@ object WeatherRegionMapping {
         POINTS[FestivalRegion.JEJU] = WeatherRegionPoint(53, 38)
     }
 
-    @JvmStatic
-    fun resolve(region: FestivalRegion): WeatherRegionPoint {
-        return POINTS[region] ?: throw IllegalArgumentException("날씨를 지원하지 않는 지역입니다: $region")
-    }
+    fun resolve(region: FestivalRegion): WeatherRegionPoint =
+        POINTS[region] ?: throw IllegalArgumentException("날씨를 지원하지 않는 지역입니다: $region")
 }

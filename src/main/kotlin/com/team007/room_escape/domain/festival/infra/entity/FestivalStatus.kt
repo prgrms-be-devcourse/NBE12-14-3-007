@@ -7,7 +7,6 @@ enum class FestivalStatus {
     CLOSED;
 
     companion object {
-        @JvmStatic
         fun from(endDe: LocalDateTime?): FestivalStatus {
             if (endDe == null) {
                 return OPEN

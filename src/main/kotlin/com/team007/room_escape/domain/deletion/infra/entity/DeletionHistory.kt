@@ -62,7 +62,6 @@ class DeletionHistory protected constructor() {
         protected set
 
     companion object {
-        @JvmStatic
         fun record(
             targetType: DeletionTargetType?,
             targetId: String?,

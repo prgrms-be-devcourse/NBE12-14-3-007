@@ -25,13 +25,11 @@ class DeletionHistoryResponse private constructor() {
         fun createdAt(): LocalDateTime? = createdAt
 
         companion object {
-            @JvmStatic
-            fun from(history: DeletionHistory): Latest {
-                return Latest(
+            fun from(history: DeletionHistory): Latest =
+                Latest(
                     history.action, history.actorType, history.reason,
                     history.reason.description, history.reasonDetail, history.createdAt
                 )
-            }
         }
     }
 }

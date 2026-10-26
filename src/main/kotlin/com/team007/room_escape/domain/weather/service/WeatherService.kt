@@ -63,12 +63,11 @@ class WeatherService(
     }
 
     /** 해당 날짜의 하루 대표값 선정. 정오(12시)와 가장 가까운 발표시각의 값 채택 */
-    private fun pickValue(items: List<ShortTermForecastItem>, targetDate: String, category: String): String? {
-        return items
+    private fun pickValue(items: List<ShortTermForecastItem>, targetDate: String, category: String): String? =
+        items
             .filter { item -> item.fcstDate == targetDate && item.category == category }
             .minByOrNull { item -> abs(item.fcstTime.substring(0, 2).toInt() - 12) }
             ?.fcstValue
-    }
 
     /** SKY/PTY 코드 → WeatherCondition 매핑. 강수형태(PTY)가 하늘상태(SKY)보다 우선 판단 */
     private fun toCondition(sky: String?, pty: String?): WeatherCondition {

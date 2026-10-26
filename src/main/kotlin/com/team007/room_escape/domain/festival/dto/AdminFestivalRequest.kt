@@ -89,6 +89,11 @@ class AdminFestivalRequest private constructor() {
         val telnoInfo: String?
     ) {
         /** 종료일이 시작일보다 앞서면 진행 상태 계산이 틀어진다. */
-        fun hasValidPeriod(): Boolean = !endDe!!.isBefore(beginDe)
+        fun hasValidPeriod(): Boolean {
+            val begin = beginDe
+            val end = endDe
+            // 비어 있는 값은 각 필드의 @NotNull이 따로 알린다.
+            return begin == null || end == null || !end.isBefore(begin)
+        }
     }
 }

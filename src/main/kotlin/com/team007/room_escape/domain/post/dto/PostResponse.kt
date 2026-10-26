@@ -37,8 +37,8 @@ class PostResponse private constructor() {
                 return ListItem(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id!!,
-                    festivalTitle = festival.title!!,
+                    festivalId = festival.requiredId,
+                    festivalTitle = titleOf(festival),
                     title = post.title,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
                     date = post.updatedAt,
@@ -65,8 +65,8 @@ class PostResponse private constructor() {
                 return AdminListItem(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id!!,
-                    festivalTitle = festival.title!!,
+                    festivalId = festival.requiredId,
+                    festivalTitle = titleOf(festival),
                     title = post.title,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
                     date = post.updatedAt,
@@ -95,8 +95,8 @@ class PostResponse private constructor() {
                 return Detail(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id!!,
-                    festivalTitle = festival.title!!,
+                    festivalId = festival.requiredId,
+                    festivalTitle = titleOf(festival),
                     title = post.title,
                     content = post.content,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
@@ -111,6 +111,9 @@ class PostResponse private constructor() {
     private companion object {
         fun savedId(post: Post): UUID =
             requireNotNull(post.id) { "저장되지 않은 후기는 응답으로 만들 수 없습니다." }
+
+        fun titleOf(festival: Festival): String =
+            requireNotNull(festival.title) { "제목 없는 행사는 후기 응답으로 만들 수 없습니다: ${festival.id}" }
 
         /** 응답에는 행사가 꼭 있어야 한다. 행사 없는 후기는 API로 만들 수 없다. */
         fun festivalOf(post: Post): Festival =

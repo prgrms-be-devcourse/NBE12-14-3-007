@@ -8,6 +8,7 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalReposito
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.util.isNullOrBlankLikeJava
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -30,7 +31,7 @@ class FestivalDeletionService(
     fun deleteByAuthor(festival: Festival, actorId: UUID) {
         delete(festival)
         deletionHistoryService.recordAuthorDeletion(
-            DeletionTargetType.FESTIVAL, festival.id!!.toString(), actorId
+            DeletionTargetType.FESTIVAL, festival.requiredId.toString(), actorId
         )
     }
 
@@ -50,10 +51,7 @@ class FestivalDeletionService(
         val endDe = festival.endDe
         val region = festival.region
         val url = festival.url
-        // Java String.isBlank()와 같은 공백 판정을 유지한다.
-        if (beginDe == null || endDe == null || region == null || url == null
-            || url.codePoints().allMatch { Character.isWhitespace(it) }
-        ) {
+        if (beginDe == null || endDe == null || region == null || url.isNullOrBlankLikeJava()) {
             throw BusinessException(FestivalExceptionCode.RESTORE_DATA_INCOMPLETE)
         }
         duplicateValidator.validate(festival.id, beginDe, endDe, region, url)

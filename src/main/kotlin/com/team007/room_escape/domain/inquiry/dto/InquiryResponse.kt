@@ -24,9 +24,8 @@ class InquiryResponse private constructor() {
 
         companion object {
 
-            @JvmStatic
-            fun from(inquiry: Inquiry): ListItem {
-                return ListItem(
+            fun from(inquiry: Inquiry): ListItem =
+                ListItem(
                     id = inquiry.id,
                     category = inquiry.category,
                     targetType = inquiry.targetType,
@@ -35,7 +34,6 @@ class InquiryResponse private constructor() {
                     status = inquiry.status,
                     createdAt = inquiry.createdAt
                 )
-            }
         }
     }
 
@@ -58,9 +56,8 @@ class InquiryResponse private constructor() {
 
         companion object {
 
-            @JvmStatic
-            fun from(inquiry: Inquiry, imgUrl: String?): Detail {
-                return Detail(
+            fun from(inquiry: Inquiry, imgUrl: String?): Detail =
+                Detail(
                     id = inquiry.id,
                     category = inquiry.category,
                     targetType = inquiry.targetType,
@@ -72,7 +69,6 @@ class InquiryResponse private constructor() {
                     answer = inquiry.answer,
                     createdAt = inquiry.createdAt
                 )
-            }
         }
     }
 }

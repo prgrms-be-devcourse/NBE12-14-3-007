@@ -35,7 +35,6 @@ class FestivalAccuracyVote protected constructor() : BaseTimeEntity() {
 
     companion object {
         @Deprecated("Kotlin에서는 create()를 사용하세요. Java 호출 호환용입니다.")
-        @JvmStatic
         fun builder(): FestivalAccuracyVoteBuilder = FestivalAccuracyVoteBuilder()
 
         fun create(

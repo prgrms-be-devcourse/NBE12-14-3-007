@@ -26,9 +26,8 @@ class FestivalDeletionHandler(
         deletion.restore(festival)
     }
 
-    override fun supports(): DeletionTargetType {
-        return DeletionTargetType.FESTIVAL
-    }
+    override fun supports(): DeletionTargetType =
+        DeletionTargetType.FESTIVAL
 
     override fun delete(history: DeletionHistory) {
         val festival = festivals.findForDeletion(java.lang.Long.valueOf(history.targetId))

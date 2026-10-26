@@ -19,10 +19,8 @@ class FestivalAccuracyVoteResponse private constructor() {
         val myVote: FestivalAccuracyVoteType?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): InfoBuilder = InfoBuilder()
 
-            @JvmStatic
             fun from(accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?): Info =
                 builder()
                     .accurateCount(accurateCount)

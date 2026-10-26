@@ -27,18 +27,15 @@ class FestivalResponse private constructor() {
         val reason: String?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): DeletionInfoBuilder = DeletionInfoBuilder()
 
-            @JvmStatic
             fun from(festival: Festival, latest: DeletionHistory?): DeletionInfo? {
                 if (!festival.isDeleted()) return null
                 if (latest == null || latest.action != DeletionAction.DELETE) {
                     return DeletionInfo(festival.deletedAt, null, "삭제 사유를 확인할 수 없습니다.")
                 }
-                var reason = latest.reason.description
-                if (latest.reasonDetail != null) reason += " — " + latest.reasonDetail
-                return DeletionInfo(festival.deletedAt, latest.actorType, reason)
+                val detail = latest.reasonDetail?.let { " — $it" }.orEmpty()
+                return DeletionInfo(festival.deletedAt, latest.actorType, latest.reason.description + detail)
             }
         }
 
@@ -103,12 +100,10 @@ class FestivalResponse private constructor() {
         val member: MemberResponse.MemberInfo?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): ListItemBuilder = ListItemBuilder()
 
-            @JvmStatic
-            fun from(festival: Festival, likeCount: Long, accurateCount: Long, inaccurateCount: Long, imageUrlResolver: ImageUrlResolver?): ListItem {
-                return ListItem.builder()
+            fun from(festival: Festival, likeCount: Long, accurateCount: Long, inaccurateCount: Long, imageUrlResolver: ImageUrlResolver?): ListItem =
+                ListItem.builder()
                     .festivalId(festival.id)
                     .providerType(festival.providerType)
                     .title(festival.title)
@@ -124,7 +119,6 @@ class FestivalResponse private constructor() {
                     .inaccurateCount(inaccurateCount)
                     .member(toMember(festival, imageUrlResolver))
                     .build()
-            }
         }
 
         class ListItemBuilder {
@@ -242,12 +236,10 @@ class FestivalResponse private constructor() {
         val member: MemberResponse.MemberInfo?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): DetailBuilder = DetailBuilder()
 
-            @JvmStatic
-            fun from(festival: Festival, accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?, likeCount: Long, likedByMe: Boolean, imageUrlResolver: ImageUrlResolver?): Detail {
-                return Detail.builder()
+            fun from(festival: Festival, accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?, likeCount: Long, likedByMe: Boolean, imageUrlResolver: ImageUrlResolver?): Detail =
+                Detail.builder()
                     .festivalId(festival.id)
                     .providerType(festival.providerType)
                     .title(festival.title)
@@ -270,7 +262,6 @@ class FestivalResponse private constructor() {
                     .likedByMe(likedByMe)
                     .member(toMember(festival, imageUrlResolver))
                     .build()
-            }
         }
 
         class DetailBuilder {
@@ -362,10 +353,8 @@ class FestivalResponse private constructor() {
         val title: String?
     ) {
         companion object {
-            @JvmStatic
-            fun from(festival: Festival): SyncedFestival {
-                return SyncedFestival(festival.id, festival.title)
-            }
+            fun from(festival: Festival): SyncedFestival =
+                SyncedFestival(festival.id, festival.title)
         }
     }
 
@@ -377,8 +366,7 @@ class FestivalResponse private constructor() {
             return MemberResponse.MemberInfo.from(member, imageUrlResolver)
         }
 
-        private fun image(value: String?, imageUrlResolver: ImageUrlResolver?): String? {
-            return if (imageUrlResolver == null) value else imageUrlResolver.resolve(value)
-        }
+        private fun image(value: String?, imageUrlResolver: ImageUrlResolver?): String? =
+            if (imageUrlResolver == null) value else imageUrlResolver.resolve(value)
     }
 }

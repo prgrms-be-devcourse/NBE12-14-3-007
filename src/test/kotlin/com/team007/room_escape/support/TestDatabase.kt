@@ -8,7 +8,6 @@ object TestDatabase {
     private const val URL = "jdbc:tc:postgresql:16-alpine:///roomescape_policy_test" +
         "?TC_INITSCRIPT=db/init/001_extensions.sql"
 
-    @JvmStatic
     fun configure(properties: DynamicPropertyRegistry, schema: String) {
         properties.add("spring.datasource.url") { "$URL&currentSchema=$schema,public" }
         properties.add("spring.flyway.schemas") { schema }

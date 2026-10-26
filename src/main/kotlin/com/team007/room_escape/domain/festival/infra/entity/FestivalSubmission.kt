@@ -23,10 +23,13 @@ class FestivalSubmission protected constructor() : BaseTimeEntity() {
     var festival: Festival? = null
         protected set
 
+    /** 제보에는 항상 행사가 있다. DB에서 NOT NULL로 막혀 있다. */
+    val requiredFestival: Festival
+        get() = checkNotNull(festival) { "행사 없는 제보입니다: $id" }
+
 
     companion object {
         @Deprecated("Kotlin에서는 create()를 사용하세요. Java 호출 호환용입니다.")
-        @JvmStatic
         fun builder(): FestivalSubmissionBuilder = FestivalSubmissionBuilder()
 
         fun create(

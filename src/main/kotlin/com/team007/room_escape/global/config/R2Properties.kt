@@ -14,8 +14,4 @@ data class R2Properties(
 
     /** R2의 S3 호환 엔드포인트. 계정마다 주소가 다르다. */
     val endpoint: String get() = "https://$accountId.r2.cloudflarestorage.com"
-
-    // TODO(java-compat): Java FestivalService가 쓰는 동안만 둔다. Kotlin으로 옮기면 지운다.
-    @Deprecated("프로퍼티 publicUrl을 쓰세요", ReplaceWith("publicUrl"))
-    fun publicUrl(): String = publicUrl
 }
