@@ -29,8 +29,10 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracy
 import com.team007.room_escape.domain.festival.infra.repository.PublicFestivalSourceRepository
 import com.team007.room_escape.domain.like.infra.dto.FestivalLikeCount
 import com.team007.room_escape.domain.like.infra.repository.LikeRepository
+import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.storage.ImageUrlResolver
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -54,6 +56,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
 import tools.jackson.databind.ObjectMapper
 
@@ -91,10 +94,17 @@ class FestivalServiceTest {
 	@field:Mock
 	private lateinit var festivalImageProcessor: FestivalImageProcessor
 
+	@field:Mock
+	private lateinit var imageUrlResolver: ImageUrlResolver
+
+	@field:Mock
+	private lateinit var r2Properties: R2Properties
+
 	/** 실제 DB 없이 콜백만 그대로 실행되도록 가짜 트랜잭션 매니저를 끼운다. */
+	private val transactionManager: PlatformTransactionManager = Mockito.mock(PlatformTransactionManager::class.java)
+
 	@field:Spy
-	private var transactionTemplate =
-		TransactionTemplate(Mockito.mock(PlatformTransactionManager::class.java))
+	private var transactionTemplate = TransactionTemplate(transactionManager)
 
 	@field:InjectMocks
 	private lateinit var festivalService: FestivalService
@@ -105,6 +115,8 @@ class FestivalServiceTest {
 		lenient().`when`(festivalImageProcessor.process(any())).thenAnswer { it.getArgument<String?>(0) }
 		lenient().`when`(accuracyVoteRepository.countByFestivalIds(anyList())).thenReturn(listOf())
 		lenient().`when`(festivalRepository.findExistingExternalIds(any(), any())).thenReturn(listOf())
+		// 실제 트랜잭션 매니저는 항상 TransactionStatus를 돌려준다. mock은 스텁 없으면 null이라 Kotlin 람다에서 NPE가 난다.
+		lenient().`when`(transactionManager.getTransaction(any())).thenReturn(Mockito.mock(TransactionStatus::class.java))
 	}
 
 	/** /period2 응답 1건. 신규 판별에만 쓰이므로 seq/title만 있으면 충분하다. */
@@ -347,6 +359,7 @@ class FestivalServiceTest {
 	/** 행사 검색 테스트용 PUBLIC 행사 엔티티를 만든다. */
 	private fun publicFestival(region: FestivalRegion, beginDe: LocalDateTime, endDe: LocalDateTime, storedStatus: FestivalStatus): Festival {
 		return Festival.builder()
+				.id(1L) // 검색 결과로 조회된 행사는 항상 DB에 저장돼 있어 id가 있다. 실제 상황을 맞추기 위한 값.
 				.providerType(ProviderType.PUBLIC)
 				.title("경기 행사")
 				.category("행사")
