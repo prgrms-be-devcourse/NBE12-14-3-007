@@ -269,9 +269,9 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         ))
         entityManager.flush()
         entityManager.clear()
-        assertThat(submissions.findAllByMemberId(author.id).first().deletion().reason())
+        assertThat(submissions.findAllByMemberId(author.id).first().deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
-        assertThat(submissions.findById(author.id, submission.id).submission().festival().deletion().reason())
+        assertThat(submissions.findById(author.id, submission.id).submission?.festival?.deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
     }
 
@@ -308,10 +308,10 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         // 기존 컬럼의 사유가 아닌 이력의 분류와 상세가 함께 내려와야 한다.
         val page = adminFestivals.search(AdminFestivalRequest.Search(prefix, null, false, true), PageRequest.of(0, 20))
         assertThat(page.content).hasSize(2)
-        assertThat(page.content.first { it.festivalId() == legacy.id }.deletion()).isNull()
-        val item = page.content.first { it.festivalId() == current.id }
-        assertThat(item.deletion().type()).isEqualTo(DeletionActorType.ADMIN)
-        assertThat(item.deletion().reason()).contains("도배·스팸", "이력의 상세 사유")
+        assertThat(page.content.first { it.festivalId == legacy.id }.deletion).isNull()
+        val item = page.content.first { it.festivalId == current.id }
+        assertThat(item.deletion?.type).isEqualTo(DeletionActorType.ADMIN)
+        assertThat(item.deletion?.reason).contains("도배·스팸", "이력의 상세 사유")
     }
 
     @Test

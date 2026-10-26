@@ -119,8 +119,8 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         em.clear()
         assertThat(festivals.findByIdAndDeletedAtIsNull(eventId)).isEmpty()
         val item = submissions.findAllByMemberId(owner).first()
-        assertThat(item.deletion().type()).isEqualTo(DeletionActorType.AUTHOR)
-        assertThat(submissions.findById(owner, id).submission().festival().deletion().reason())
+        assertThat(item.deletion?.type).isEqualTo(DeletionActorType.AUTHOR)
+        assertThat(submissions.findById(owner, id).submission?.festival?.deletion?.reason)
             .isEqualTo("작성자 직접 삭제")
         val operator = operator()
         assertThrows<BusinessException> { admin.restore(operator, DeletionTargetType.FESTIVAL, eventId.toString()) }
