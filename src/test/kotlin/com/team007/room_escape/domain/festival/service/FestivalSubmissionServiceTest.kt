@@ -7,6 +7,10 @@ import com.team007.room_escape.domain.deletion.infra.entity.DeletionReason
 import com.team007.room_escape.domain.deletion.infra.entity.DeletionTargetType
 import com.team007.room_escape.domain.deletion.service.DeletionHistoryService
 import com.team007.room_escape.domain.festival.dto.FestivalSubmissionRequest
+import com.team007.room_escape.domain.festival.dto.FestivalSubmissionResponse
+import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.dao.OptimisticLockingFailureException
+import org.mockito.Mockito.doThrow
 import com.team007.room_escape.domain.festival.infra.entity.Festival
 import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.FestivalSubmission
@@ -55,7 +59,55 @@ class FestivalSubmissionServiceTest {
     private fun request(): FestivalSubmissionRequest.Upsert = FestivalSubmissionRequest.Upsert.builder()
         .title("행사").category("축제").region(FestivalRegion.GYEONGGI)
         .referenceUrl(" https://example.com/event/// ")
-        .beginDe(begin).endDe(end).build()
+        .beginDe(begin).endDe(end).version(0L).build()
+
+    @Test
+    fun staleEditCannotOverwriteFestival() {
+        val festival = Festival.create(id = 7L, title = "최신 제목")
+        ReflectionTestUtils.setField(festival, "version", 2L)
+        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
+            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+
+        val exception = assertThrows<BusinessException> { service.update(memberId, submissionId, request()) }
+        assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.EDIT_CONFLICT)
+        assertThat(festival.title).isEqualTo("최신 제목")
+        verify(festivals, never()).flush()
+    }
+
+    @Test
+    fun updateRequiresVersion() {
+        val festival = Festival.create(id = 7L)
+        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
+            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+        val exception = assertThrows<BusinessException> {
+            service.update(memberId, submissionId, request().copy(version = null))
+        }
+        assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
+        verify(festivals, never()).flush()
+    }
+
+    @Test
+    fun concurrentUpdateFailureReturnsConflict() {
+        val festival = Festival.create(id = 7L)
+        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
+            .thenReturn(Optional.of(FestivalSubmission.create(festival = festival)))
+        doThrow(OptimisticLockingFailureException("concurrent update")).`when`(festivals).flush()
+        val exception = assertThrows<BusinessException> { service.update(memberId, submissionId, request()) }
+        assertThat(exception.exceptionCode).isEqualTo(FestivalExceptionCode.EDIT_CONFLICT)
+    }
+
+    @Test
+    fun detailUsesFestivalModificationTimeAndVersion() {
+        val festival = Festival.create(id = 7L)
+        val submission = FestivalSubmission.create(festival = festival)
+        val modified = LocalDateTime.of(2026, 10, 27, 12, 0)
+        ReflectionTestUtils.setField(submission, "updatedAt", modified.minusDays(1))
+        ReflectionTestUtils.setField(festival, "updatedAt", modified)
+        ReflectionTestUtils.setField(festival, "version", 3L)
+        val response = FestivalSubmissionResponse.SubmissionInfo.from(submission, null)
+        assertThat(response.updatedAt).isEqualTo(modified)
+        assertThat(response.version).isEqualTo(3L)
+    }
 
     @Test
     fun duplicateCreateUsesDatesAndNormalizedUrlAndRejectsBeforeSaving() {

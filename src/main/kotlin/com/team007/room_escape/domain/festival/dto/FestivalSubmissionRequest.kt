@@ -53,7 +53,10 @@ class FestivalSubmissionRequest private constructor() {
         val partcptExpnInfo: String?,
 
         @field:Schema(description = "전화번호", example = "010-1234-5678")
-        val telnoInfo: String?
+        val telnoInfo: String?,
+
+        @field:Schema(description = "상세 조회에서 받은 행사 버전. 수정 시 필수")
+        val version: Long? = null
     ) {
         @AssertTrue(message = "행사 종료 일시는 시작 일시보다 빠를 수 없습니다.")
         fun isValidPeriod(): Boolean = beginDe == null || endDe == null || !endDe.isBefore(beginDe)
@@ -64,6 +67,8 @@ class FestivalSubmissionRequest private constructor() {
         }
 
         class UpsertBuilder {
+            private var version: Long? = null
+            fun version(version: Long?): UpsertBuilder = apply { this.version = version }
             private var title: String? = null
             private var category: String? = null
             private var festivalContent: String? = null
@@ -98,7 +103,7 @@ class FestivalSubmissionRequest private constructor() {
 
             fun telnoInfo(telnoInfo: String?): UpsertBuilder = apply { this.telnoInfo = telnoInfo }
 
-            fun build(): Upsert = Upsert(title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo)
+            fun build(): Upsert = Upsert(title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, version)
         }
     }
 }

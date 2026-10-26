@@ -21,6 +21,11 @@ import com.team007.room_escape.global.response.code.FestivalExceptionCode
 @Entity
 @Table(name = "festival")
 class Festival protected constructor() : SoftDeletableEntity() {
+    @field:jakarta.persistence.Version
+    @field:Column(nullable = false)
+    var version: Long = 0
+        protected set
+
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
