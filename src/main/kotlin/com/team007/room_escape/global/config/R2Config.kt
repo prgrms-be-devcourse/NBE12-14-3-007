@@ -18,24 +18,22 @@ import java.net.URI
 @Configuration
 @EnableConfigurationProperties(R2Properties::class)
 class R2Config(
-    private val properties: R2Properties
+    private val properties: R2Properties,
 ) {
 
     @Bean
-    fun s3Client(): S3Client {
-        return S3Client.builder()
-            .endpointOverride(URI.create(properties.endpoint()))
-            // R2는 리전 개념이 없어 auto를 쓴다. 다른 값을 넣으면 서명이 어긋난다.
-            .region(Region.of("auto"))
-            .credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(properties.accessKey(), properties.secretKey())
-                )
+    fun s3Client(): S3Client = S3Client.builder()
+        .endpointOverride(URI.create(properties.endpoint()))
+        // R2는 리전 개념이 없어 auto를 쓴다. 다른 값을 넣으면 서명이 어긋난다.
+        .region(Region.of("auto"))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(properties.accessKey(), properties.secretKey())
             )
-            .forcePathStyle(true)
-            // AWS SDK 2.30+는 기본으로 CRC32 체크섬 헤더를 붙이는데 R2가 이를 거부한다.
-            .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
-            .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
-            .build()
-    }
+        )
+        .forcePathStyle(true)
+        // AWS SDK 2.30+는 기본으로 CRC32 체크섬 헤더를 붙이는데 R2가 이를 거부한다.
+        .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+        .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+        .build()
 }

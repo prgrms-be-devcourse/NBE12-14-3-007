@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 @Constraint(validatedBy = [])
 @Pattern(
     regexp = "^$|^01[016789]\\d{7,8}$",
-    message = "휴대폰 번호는 하이픈 없이 숫자만 입력해 주세요."
+    message = "휴대폰 번호는 하이픈 없이 숫자만 입력해 주세요.",
 )
 annotation class ValidPhone(
 
@@ -20,5 +20,5 @@ annotation class ValidPhone(
 
     val groups: Array<KClass<*>> = [],
 
-    val payload: Array<KClass<out Payload>> = []
+    val payload: Array<KClass<out Payload>> = [],
 )
