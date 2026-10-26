@@ -17,6 +17,7 @@ import com.team007.room_escape.global.response.code.CommunityExceptionCode
 import com.team007.room_escape.global.response.code.MemberExceptionCode
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.util.RichTextSanitizer
+import com.team007.room_escape.global.util.escapeLikePattern
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -37,7 +38,7 @@ class CommunityService(
 
     @Transactional(readOnly = true)
     fun getPosts(category: CommunityCategory?, keyword: String?, pageable: Pageable): Page<CommunityResponse.PostListItem> {
-        val posts = postRepository.search(category, keyword?.trimLikeJava().orEmpty(), pageable)
+        val posts = postRepository.search(category, keyword?.trimLikeJava().orEmpty().escapeLikePattern(), pageable)
         val commentCounts: Map<UUID, Long> =
             if (posts.isEmpty) {
                 emptyMap()

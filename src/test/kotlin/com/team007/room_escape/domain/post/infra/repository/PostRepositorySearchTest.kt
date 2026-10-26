@@ -7,6 +7,7 @@ import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
 import com.team007.room_escape.domain.post.infra.entity.Post
+import com.team007.room_escape.domain.post.service.PostService
 import com.team007.room_escape.domain.post.type.PostSearchType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,6 +27,7 @@ class PostRepositorySearchTest @Autowired constructor(
     private val postRepository: PostRepository,
     private val memberRepository: MemberRepository,
     private val festivalRepository: FestivalRepository,
+    private val postService: PostService,
 ) {
 
     private val page = PageRequest.of(0, 10)
@@ -32,12 +35,13 @@ class PostRepositorySearchTest @Autowired constructor(
     // 시드 데이터와 겹치지 않게 테스트마다 다른 검색어를 쓴다.
     private val token = UUID.randomUUID().toString().substring(0, 8)
 
+    private lateinit var festival: Festival
     private lateinit var activePost: Post
     private lateinit var withdrawnPost: Post
 
     @BeforeEach
     fun setUp() {
-        val festival = festivalRepository.save(
+        festival = festivalRepository.save(
             Festival.builder()
                 .providerType(ProviderType.PUBLIC)
                 .title("행사 $token")
@@ -92,6 +96,48 @@ class PostRepositorySearchTest @Autowired constructor(
         val result = postRepository.searchPostsIncludingDeleted(PostSearchType.MEMBER_NICKNAME, token, page)
 
         assertThat(result.content.map { it.id }).containsExactlyInAnyOrder(activePost.id, withdrawnPost.id)
+    }
+
+    /** LIKE의 와일드카드(%, _)를 검색어에 그대로 넣으면 "할인_50"이 "할인 50"까지, "%"가 모든 후기를 찾는다. */
+    @Test
+    fun 검색어의_퍼센트와_밑줄은_글자_그대로_찾는다() {
+        val author = memberRepository.save(member("기호$token"))
+        fun save(title: String) = checkNotNull(
+            postRepository.save(Post(member = author, festival = festival, title = title, content = "본문")).id
+        )
+        val space = save("할인 50 $token")
+        val underscore = save("할인_50 $token")
+        val percent = save("100% 환불 $token")
+        val bang = save("느낌표! $token")
+        val mine = setOf(space, underscore, percent, bang)
+        val all = PageRequest.of(0, 100)
+        val byLike = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "likeCount"))
+
+        val searches: Map<String, (String) -> List<UUID?>> = mapOf(
+            "최신순" to { k -> postService.searchPosts(PostSearchType.TITLE, k, all).content.map { it.id } },
+            "좋아요순" to { k -> postService.searchPosts(PostSearchType.TITLE, k, byLike).content.map { it.id } },
+            "관리자" to { k -> postService.searchPostsForAdmin(PostSearchType.TITLE, k, all).content.map { it.id } },
+        )
+        searches.forEach { (name, search) ->
+            fun found(keyword: String) = search(keyword).filter { it in mine }
+            assertThat(found("할인_50")).`as`(name).containsExactly(underscore)
+            assertThat(found("0%")).`as`(name).containsExactly(percent)
+            assertThat(found("%")).`as`(name).containsExactly(percent)
+            assertThat(found("_")).`as`(name).containsExactly(underscore)
+            assertThat(found("!")).`as`(name).containsExactly(bang)
+        }
+    }
+
+    @Test
+    fun 닉네임_검색도_밑줄을_글자_그대로_찾는다() {
+        val underscoreAuthor = memberRepository.save(member("밑줄_$token"))
+        val spaceAuthor = memberRepository.save(member("밑줄 $token"))
+        val underscore = postRepository.save(Post(member = underscoreAuthor, festival = festival, title = "제목", content = "본문"))
+        postRepository.save(Post(member = spaceAuthor, festival = festival, title = "제목", content = "본문"))
+
+        val result = postService.searchPosts(PostSearchType.MEMBER_NICKNAME, "밑줄_$token", page)
+
+        assertThat(result.content.map { it.id }).containsExactly(underscore.id)
     }
 
     private fun member(nickname: String): Member =

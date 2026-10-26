@@ -18,6 +18,7 @@ import com.team007.room_escape.global.response.code.PostExceptionCode
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.util.RichTextSanitizer
+import com.team007.room_escape.global.util.escapeLikePattern
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -65,14 +66,14 @@ class PostService(
         if (LikeSort.isRequested(page)) {
             val unsorted = LikeSort.withoutSort(page)
             return toListItems(
-                if (hasKeyword) postRepository.searchPostsOrderByLikeCount(type.name, keyword, unsorted)
+                if (hasKeyword) postRepository.searchPostsOrderByLikeCount(type.name, keyword.escapeLikePattern(), unsorted)
                 else postRepository.findAllOrderByLikeCount(unsorted)
             )
         }
         if (!hasKeyword) {
             return toListItems(postRepository.findAllNotDeleted(page))
         }
-        return toListItems(postRepository.searchPosts(type, keyword, page))
+        return toListItems(postRepository.searchPosts(type, keyword.escapeLikePattern(), page))
     }
 
     @Transactional(readOnly = true)
@@ -80,7 +81,7 @@ class PostService(
         val posts = if (type == null || keyword.isNullOrBlank()) {
             postRepository.findAllIncludingDeleted(page)
         } else {
-            postRepository.searchPostsIncludingDeleted(type, keyword, page)
+            postRepository.searchPostsIncludingDeleted(type, keyword.escapeLikePattern(), page)
         }
         return posts.map { PostResponse.AdminListItem.from(it, imageUrlResolver) }
     }
