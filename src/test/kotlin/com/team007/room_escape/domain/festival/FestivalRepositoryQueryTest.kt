@@ -5,6 +5,7 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
+import com.team007.room_escape.support.requiredId
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -144,9 +145,9 @@ class FestivalRepositoryQueryTest @Autowired constructor(
         val removed = festival("removed").also { it.delete() }
         em.flush()
 
-        assertThat(festivals.existsByIdAndDeletedAtIsNull(visible.id!!)).isTrue()
-        assertThat(festivals.existsByIdAndDeletedAtIsNull(removed.id!!)).isFalse()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(removed.id!!)).isEmpty()
+        assertThat(festivals.existsByIdAndDeletedAtIsNull(visible.requiredId)).isTrue()
+        assertThat(festivals.existsByIdAndDeletedAtIsNull(removed.requiredId)).isFalse()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(removed.requiredId)).isEmpty()
     }
 
     @Test

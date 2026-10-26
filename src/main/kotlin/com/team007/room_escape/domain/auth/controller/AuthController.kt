@@ -40,8 +40,7 @@ class AuthController(
         @Valid @RequestBody request: AuthRequest.Login,
         response: HttpServletResponse,
     ): ResponseEntity<ApiResponse<AuthResponse.Token>> {
-        // @Valid(@NotBlank)를 통과했으므로 null이 아니다.
-        val pair = authService.login(request.email!!, request.password!!)
+        val pair = authService.login(request.email, request.password)
         cookieUtil.addRefreshCookie(response, pair.refreshToken)
         return ResponseEntity.ok(ApiResponse.ok(AuthResponse.Token.bearer(pair.accessToken)))
     }

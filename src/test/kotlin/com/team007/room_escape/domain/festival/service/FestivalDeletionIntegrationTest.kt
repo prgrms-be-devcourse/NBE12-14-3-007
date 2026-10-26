@@ -29,6 +29,7 @@ import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.support.TestDatabase
+import com.team007.room_escape.support.requiredId
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -119,11 +120,11 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val history = history()
         val owner = history.festival!!.member!!.id
         val id = history.id!!
-        val eventId = history.festival!!.id
+        val eventId = checkNotNull(history.festival).requiredId
 
         submissions.delete(owner, id)
         em.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(eventId!!)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(eventId)).isEmpty()
         val item = submissions.findAllByMemberId(owner).first()
         assertThat(item.deletion?.type).isEqualTo(DeletionActorType.AUTHOR)
         assertThat(submissions.findById(owner, id).submission?.festival?.deletion?.reason)

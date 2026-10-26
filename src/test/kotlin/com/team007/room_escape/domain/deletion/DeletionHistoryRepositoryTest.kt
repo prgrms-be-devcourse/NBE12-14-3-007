@@ -47,6 +47,7 @@ import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.support.TestDatabase
+import com.team007.room_escape.support.requiredId
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -359,7 +360,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val reloaded = entityManager.find(Inquiry::class.java, report.id)
         assertThat(reloaded.status).isEqualTo(InquiryStatus.ANSWERED)
         assertThat(reloaded.answer).contains("삭제", "잘못된 정보", "행사 장소가 다릅니다")
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id!!)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(
             DeletionTargetType.FESTIVAL, festival.id.toString(),
         )).hasSize(1)
@@ -388,7 +389,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.persist(report)
         entityManager.flush()
         val adminId = admin.id
-        val festivalId = festival.id
+        val festivalId = festival.requiredId
         val reportId = report.id
         val originalAnswer = report.answer
         val originalStatus = report.status
@@ -404,7 +405,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         }
         TestTransaction.end()
         TestTransaction.start()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festivalId!!)).isPresent()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festivalId)).isPresent()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festivalId.toString())).isEmpty()
         val unchanged = entityManager.find(Inquiry::class.java, reportId)
         assertThat(unchanged.answer).isEqualTo(originalAnswer)
@@ -422,7 +423,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         facade.restore(admin.id, DeletionTargetType.FESTIVAL, id)
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id!!)).isPresent()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isPresent()
         val records = histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, id)
         assertThat(records.map { it.action }).containsExactly(DeletionAction.RESTORE, DeletionAction.DELETE)
         assertThat(records[1].reasonDetail).isEqualTo("도배 확인")
@@ -467,7 +468,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         festivalDeletionService.deleteByAuthor(festival, author.id)
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id!!)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString()))
             .singleElement().satisfies(Consumer<DeletionHistory> {
                 assertThat(it.actorId).isEqualTo(author.id)
@@ -628,7 +629,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         ))
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id!!)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
         assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString())?.reason)
             .isEqualTo(DeletionReason.SPAM)
     }
