@@ -15,6 +15,9 @@ enum class FestivalExceptionCode(
     /** festival 테이블에서 행사 자체를 찾을 수 없을 때 */
     FESTIVAL_NOT_FOUND("FESTIVAL001", HttpStatus.NOT_FOUND, "존재하지 않는 행사입니다."),
 
+    EDIT_VERSION_REQUIRED("FESTIVAL011", HttpStatus.BAD_REQUEST, "최신 행사 내용을 조회한 뒤 수정해 주세요."),
+    EDIT_CONFLICT("FESTIVAL012", HttpStatus.CONFLICT, "다른 화면에서 행사 정보가 변경되었습니다. 작성 중인 내용을 보관하고 최신 내용을 확인해 주세요."),
+
     /** 공공 API 호출 자체가 실패 (네트워크 오류, 타임아웃, 4xx/5xx 응답 등) */
     PUBLIC_API_CALL_FAILED("FESTIVAL002", HttpStatus.SERVICE_UNAVAILABLE, "공공 API 호출에 실패했습니다."),
 

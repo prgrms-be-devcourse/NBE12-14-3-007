@@ -15,6 +15,7 @@ import { useApp, useLoad } from "../lib/context";
 import { dateText, errorText, period, regions } from "../lib/format";
 import { selectedRegion } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
+import { ApiError } from "../lib/api";
 import { LazyRichTextEditor } from "../components/LazyRichTextEditor";
 import { FestivalDeletionNotice } from "../components/FestivalDeletionNotice";
 import type {
@@ -251,6 +252,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
       : {}),
   }));
   const [error, setError] = useState("");
+  const [editConflict, setEditConflict] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [titleFocused, setTitleFocused] = useState(false);
@@ -304,6 +306,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     e.preventDefault();
     if (busy) return;
     setError("");
+    setEditConflict(false);
     const requiredFields = {
       title: "행사 이름",
       category: "행사 종류",
@@ -329,6 +332,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     setBusy(true);
     try {
       const payload: SubmissionInput = {
+        version: current?.version,
         title: form.title.trim(),
         category: form.category.trim(),
         festivalContent: form.festivalContent?.trim(),
@@ -351,6 +355,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
       navigate(`/submissions/${id}`);
     } catch (err) {
       setError(errorText(err));
+      setEditConflict(err instanceof ApiError && err.code === "FESTIVAL012");
     } finally {
       setBusy(false);
     }
@@ -578,6 +583,14 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
           행사 일정과 안내 링크를 확인했으며, 정확한 정보를 제보합니다.
         </label>
         <FormError message={error} />
+        {editConflict && current && (
+          <p>
+            입력한 내용은 이 화면에 유지됩니다. 최신 내용을 확인한 뒤 다시 수정해 주세요.
+            <Link to={`/submissions/${current.festivalSubmissionId}`} target="_blank" rel="noopener noreferrer">
+              최신 행사 내용 새 탭에서 확인
+            </Link>
+          </p>
+        )}
         <div className="form-actions">
           <Link
             className="btn secondary"

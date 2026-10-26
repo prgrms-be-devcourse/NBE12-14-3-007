@@ -16,6 +16,7 @@ import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.util.RichTextSanitizer
 import org.hibernate.exception.ConstraintViolationException
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -78,6 +79,9 @@ class FestivalSubmissionService(
         val submission = findSubmission(memberId, submissionId)
         val festival = submission.festival!!
         if (festival.isDeleted()) throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
+        val version = request.version
+            ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
+        if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
         val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(request.referenceUrl!!)
         duplicateValidator.validate(festival.id, request.beginDe!!, request.endDe!!, request.region!!, normalizedReferenceUrl)
         festival.updateDetails(
@@ -113,6 +117,8 @@ class FestivalSubmissionService(
     private fun flushFestivalChanges() {
         try {
             festivalRepository.flush()
+        } catch (exception: OptimisticLockingFailureException) {
+            throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
         } catch (exception: DataIntegrityViolationException) {
             throw translateDuplicateConstraint(exception)
         }
