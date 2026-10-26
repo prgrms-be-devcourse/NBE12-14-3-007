@@ -2,6 +2,7 @@ package com.team007.room_escape.domain.deletion.infra.entity
 
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.DeletionExceptionCode
+import com.team007.room_escape.global.util.isNullOrBlankLikeJava
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -72,7 +73,7 @@ class DeletionHistory protected constructor() {
             detail: String?
         ): DeletionHistory {
             // Java String.isBlank()/strip()과 같은 공백 판정을 유지한다.
-            val text = if (detail == null || detail.codePoints().allMatch { Character.isWhitespace(it) }) {
+            val text = if (detail.isNullOrBlankLikeJava()) {
                 null
             } else {
                 detail.trim { Character.isWhitespace(it) }

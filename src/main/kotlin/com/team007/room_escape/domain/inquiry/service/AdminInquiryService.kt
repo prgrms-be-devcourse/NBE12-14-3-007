@@ -14,6 +14,7 @@ import com.team007.room_escape.global.storage.ImageUrlResolver
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -84,8 +85,8 @@ class AdminInquiryService(
     private fun findCommentPostId(inquiry: Inquiry): UUID? {
         val commentId = inquiry.targetId?.toLongOrNull() ?: return null
         return when (inquiry.targetType) {
-            InquiryTargetType.COMMENT ->
-                commentRepository.findById(commentId).map { it.post.id }.orElse(null)
+            InquiryTargetType.COMMENT -> commentRepository.findByIdOrNull(commentId)?.post?.id
+            // 커뮤니티 댓글 저장소는 findById를 직접 다시 선언해서, findByIdOrNull 대신 Optional을 그대로 쓴다.
             InquiryTargetType.COMMUNITY_COMMENT ->
                 communityCommentRepository.findById(commentId).map { it.post.id }.orElse(null)
             else -> null

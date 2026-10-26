@@ -11,9 +11,7 @@ import com.team007.room_escape.global.response.code.DeletionExceptionCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.Optional
 import java.util.UUID
-import java.util.stream.Collectors
 
 @Service
 @Transactional(readOnly = true)
@@ -36,23 +34,21 @@ class DeletionHistoryService(
         )
     }
 
-    fun findLatest(type: DeletionTargetType, targetId: String?): Optional<DeletionHistory> {
-        return repository.findFirstByTargetTypeAndTargetIdOrderByIdDesc(type, type.normalizeId(targetId))
-    }
+    fun findLatest(type: DeletionTargetType, targetId: String?): DeletionHistory? =
+        repository.findFirstByTargetTypeAndTargetIdOrderByIdDesc(type, type.normalizeId(targetId))
 
     fun findLatestForTargets(type: DeletionTargetType, ids: List<String?>): Map<String, DeletionHistory> {
         if (ids.isEmpty()) {
             return emptyMap()
         }
-        val normalized = ids.stream().map { type.normalizeId(it) }.distinct().toList()
-        return repository.findLatestForTargets(type, normalized).stream()
-            .collect(Collectors.toMap({ it.targetId }, { it }))
+        val normalized = ids.map { type.normalizeId(it) }.distinct()
+        return repository.findLatestForTargets(type, normalized).associateBy { it.targetId }
     }
 
     /** 대상 행을 잠근 뒤 호출한다. 마지막 조치가 관리자 삭제인지 확인한다. */
     fun requireAdministratorDeletion(type: DeletionTargetType, targetId: String?) {
         val latest = findLatest(type, targetId)
-            .orElseThrow { BusinessException(DeletionExceptionCode.RESTORE_HISTORY_NOT_FOUND) }
+            ?: throw BusinessException(DeletionExceptionCode.RESTORE_HISTORY_NOT_FOUND)
         if (latest.action != DeletionAction.DELETE || latest.actorType != DeletionActorType.ADMIN) {
             throw BusinessException(DeletionExceptionCode.RESTORE_NOT_ALLOWED)
         }

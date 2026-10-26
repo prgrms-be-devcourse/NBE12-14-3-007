@@ -48,7 +48,7 @@ class WeatherService(
 
         val items = client.fetchShortTerm(
             point.nx, point.ny,
-            base.format(DATE_FORMAT), String.format("%02d00", base.hour)
+            base.format(DATE_FORMAT), "%02d00".format(base.hour)
         )
 
         val targetDate = date.format(DATE_FORMAT)

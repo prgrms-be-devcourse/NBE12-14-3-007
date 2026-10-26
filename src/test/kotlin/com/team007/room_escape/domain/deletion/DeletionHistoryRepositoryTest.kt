@@ -629,8 +629,8 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.flush()
         entityManager.clear()
         assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id)).isEmpty()
-        assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString()))
-            .get().extracting(DeletionHistory::reason).isEqualTo(DeletionReason.SPAM)
+        assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString())?.reason)
+            .isEqualTo(DeletionReason.SPAM)
     }
 
     @Test
@@ -645,8 +645,8 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val records = histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, "12")
         assertThat(records.map { it.action }).containsExactly(DeletionAction.RESTORE, DeletionAction.DELETE)
         assertThat(records[1].reasonDetail).isEqualTo("도배 삭제")
-        assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, "12"))
-            .get().extracting(DeletionHistory::id).isEqualTo(restored.id)
+        assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, "12")?.id)
+            .isEqualTo(restored.id)
         assertThat(deleted.id).isNotEqualTo(restored.id)
     }
 }

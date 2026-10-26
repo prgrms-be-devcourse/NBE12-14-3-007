@@ -24,12 +24,12 @@ public class MyContentController {
 	@Operation(summary = "내가 작성한 글", description = "행사 제보·후기·커뮤니티 글을 삭제 여부와 관계없이 조회합니다.")
 	public ResponseEntity<ApiResponse<Page<MyContentResponse.Item>>> posts(@AuthenticationPrincipal CustomUserDetails user,
 		@PageableDefault(size = 20) Pageable page) {
-		return ResponseEntity.ok(ApiResponse.success(service.findMine(user.getId(), false, page)));
+		return ResponseEntity.ok(ApiResponse.ok(service.findMine(user.getId(), false, page)));
 	}
 	@GetMapping("/comments")
 	@Operation(summary = "내가 작성한 댓글", description = "후기·커뮤니티 댓글을 삭제 여부와 관계없이 조회합니다.")
 	public ResponseEntity<ApiResponse<Page<MyContentResponse.Item>>> comments(@AuthenticationPrincipal CustomUserDetails user,
 		@PageableDefault(size = 20) Pageable page) {
-		return ResponseEntity.ok(ApiResponse.success(service.findMine(user.getId(), true, page)));
+		return ResponseEntity.ok(ApiResponse.ok(service.findMine(user.getId(), true, page)));
 	}
 }
