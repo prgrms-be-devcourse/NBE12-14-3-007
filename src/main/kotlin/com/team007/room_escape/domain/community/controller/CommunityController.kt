@@ -7,6 +7,7 @@ import com.team007.room_escape.domain.community.type.CommunityCategory
 import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.security.CustomUserDetails
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -43,10 +44,13 @@ class CommunityController(
     ): ResponseEntity<ApiResponse<Page<CommunityResponse.PostListItem>>> =
         ResponseEntity.ok(ApiResponse.ok(communityService.getPosts(category, keyword, pageable)))
 
-    @Operation(summary = "커뮤니티 글 상세")
+    @Operation(summary = "커뮤니티 글 상세", description = "부를 때마다 조회수가 1 오른다. 수정 화면처럼 글을 읽는 게 아니면 countView=false로 부른다.")
     @GetMapping("/posts/{postId}")
-    fun getPost(@PathVariable postId: UUID): ResponseEntity<ApiResponse<CommunityResponse.PostDetail>> =
-        ResponseEntity.ok(ApiResponse.ok(communityService.getPost(postId)))
+    fun getPost(
+        @PathVariable postId: UUID,
+        @Parameter(description = "false면 조회수를 올리지 않는다") @RequestParam(defaultValue = "true") countView: Boolean,
+    ): ResponseEntity<ApiResponse<CommunityResponse.PostDetail>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.getPost(postId, countView)))
 
     @Operation(summary = "커뮤니티 글 작성")
     @PostMapping("/posts")

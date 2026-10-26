@@ -9,7 +9,12 @@ import com.team007.room_escape.domain.deletion.dto.AdminDeletionRequest
 import com.team007.room_escape.domain.deletion.infra.entity.DeletionReason
 import com.team007.room_escape.domain.deletion.infra.entity.DeletionTargetType
 import com.team007.room_escape.domain.deletion.service.AdminDeletionFacade
+import com.team007.room_escape.domain.inquiry.infra.entity.Inquiry
+import com.team007.room_escape.domain.inquiry.infra.entity.InquiryCategory
+import com.team007.room_escape.domain.inquiry.infra.entity.InquiryStatus
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryTargetType
+import com.team007.room_escape.domain.inquiry.infra.repository.InquiryRepository
+import com.team007.room_escape.domain.inquiry.service.AdminInquiryService
 import com.team007.room_escape.domain.inquiry.service.InquiryTargetValidator
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
@@ -45,6 +50,8 @@ class CommunityCommentTest @Autowired constructor(
     private val entityManager: EntityManager,
     private val jdbcTemplate: JdbcTemplate,
     private val adminDeletions: AdminDeletionFacade,
+    private val inquiryRepository: InquiryRepository,
+    private val adminInquiryService: AdminInquiryService,
 ) {
 
     private val firstPage = PageRequest.of(0, 20)
@@ -276,6 +283,34 @@ class CommunityCommentTest @Autowired constructor(
             )
         )
         assertThat(comments()[0].deleted).isTrue()
+    }
+
+    /**
+     * 관리자는 신고된 댓글을 댓글이 달린 글에서 확인한다.
+     * 글이 지워졌다고 글 ID까지 비우면 관리자 화면은 "댓글이 이미 삭제되어" 이동할 수 없다고 잘못 안내한다.
+     */
+    @Test
+    fun 글이_삭제돼도_관리자_문의_상세는_신고된_댓글의_글_ID를_돌려준다() {
+        val comment = write("신고될 댓글")
+        val inquiryId = checkNotNull(
+            inquiryRepository.save(
+                Inquiry(
+                    member = newMember(),
+                    category = InquiryCategory.REPORT,
+                    title = "댓글 신고",
+                    content = "욕설이 있어요",
+                    targetType = InquiryTargetType.COMMUNITY_COMMENT,
+                    targetId = comment.id.toString(),
+                    status = InquiryStatus.PENDING,
+                )
+            ).id
+        )
+        val authorId = postRepository.findById(postId).orElseThrow().member.id
+        communityService.deletePost(postId, authorId)
+        entityManager.flush()
+        entityManager.clear()
+
+        assertThat(adminInquiryService.findById(inquiryId).targetPostId).isEqualTo(postId)
     }
 
     private data class Written(val id: Long, val writer: Member)

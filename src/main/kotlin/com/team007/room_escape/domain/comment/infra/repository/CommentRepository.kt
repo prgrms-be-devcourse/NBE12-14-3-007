@@ -9,17 +9,16 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.Optional
 import java.util.UUID
 
 interface CommentRepository : JpaRepository<Comment, Long> {
     /** 복구 대상 행을 잠근다. */
     @Query(value = "select * from comment where id = :id for update", nativeQuery = true)
-    fun findForRestoration(@Param("id") id: Long): Optional<Comment>
+    fun findForRestoration(@Param("id") id: Long): Comment?
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from Comment c where c.id = :id and c.deletedAt is null")
-    fun findForDeletion(@Param("id") id: Long): Optional<Comment>
+    fun findForDeletion(@Param("id") id: Long): Comment?
 
     /**
      * 후기의 일반 댓글 한 페이지. 페이지는 일반 댓글 기준으로 나눠 대댓글이 두 페이지로 갈리지 않게 한다.
@@ -57,7 +56,7 @@ interface CommentRepository : JpaRepository<Comment, Long> {
 
     /** 삭제되지 않은 댓글. 수정·삭제·답글 달기처럼 살아 있는 댓글만 다루는 곳에서 쓴다. */
     @EntityGraph(attributePaths = ["member", "post"])
-    fun findByIdAndDeletedAtIsNull(id: Long): Optional<Comment>
+    fun findByIdAndDeletedAtIsNull(id: Long): Comment?
 
     fun existsByIdAndDeletedAtIsNull(id: Long): Boolean
 }

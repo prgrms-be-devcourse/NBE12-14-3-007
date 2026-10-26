@@ -46,15 +46,15 @@ interface CommunityPostRepository : JpaRepository<CommunityPost, UUID> {
         createdAfter: LocalDateTime,
     ): Boolean
 
-    /** 카테고리가 null이면 전체, 검색어가 빈 문자열이면 검색하지 않는다. */
+    /** 카테고리가 null이면 전체, 검색어가 빈 문자열이면 검색하지 않는다. 검색어는 escapeLikePattern()으로 바꿔 넘긴다. */
     @EntityGraph(attributePaths = ["member"])
     @Query(
         """
         select p from CommunityPost p
         where (:category is null or p.category = :category)
           and (:keyword = ''
-               or lower(p.title) like lower(concat('%', :keyword, '%'))
-               or lower(p.content) like lower(concat('%', :keyword, '%')))
+               or lower(p.title) like lower(concat('%', :keyword, '%')) escape '!'
+               or lower(p.content) like lower(concat('%', :keyword, '%')) escape '!')
         """
     )
     fun search(

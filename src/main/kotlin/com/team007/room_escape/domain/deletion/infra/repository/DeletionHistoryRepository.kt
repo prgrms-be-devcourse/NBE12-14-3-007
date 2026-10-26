@@ -29,7 +29,7 @@ interface DeletionHistoryRepository : Repository<DeletionHistory, Long> {
 
     fun findFirstByTargetTypeAndTargetIdOrderByIdDesc(
         targetType: DeletionTargetType, targetId: String
-    ): Optional<DeletionHistory>
+    ): DeletionHistory?
 
     fun findAllByTargetTypeAndTargetIdOrderByIdDesc(
         targetType: DeletionTargetType, targetId: String

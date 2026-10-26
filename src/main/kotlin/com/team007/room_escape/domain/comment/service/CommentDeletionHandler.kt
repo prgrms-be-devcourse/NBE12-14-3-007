@@ -18,8 +18,7 @@ class CommentDeletionHandler(
 ) : DeletionHandler {
 
     override fun restore(history: DeletionHistory) {
-        val target = comments.findForRestoration(history.targetId.toLong())
-            .orElseThrow { notFound() }
+        val target = comments.findForRestoration(history.targetId.toLong()) ?: throw notFound()
         if (!target.isDeleted()) {
             throw notFound()
         }
@@ -35,9 +34,7 @@ class CommentDeletionHandler(
     override fun supports(): DeletionTargetType = DeletionTargetType.COMMENT
 
     override fun delete(history: DeletionHistory) {
-        comments.findForDeletion(history.targetId.toLong())
-            .orElseThrow { notFound() }
-            .delete()
+        (comments.findForDeletion(history.targetId.toLong()) ?: throw notFound()).delete()
     }
 
     private fun notFound() = BusinessException(CommentExceptionCode.COMMENT_NOT_FOUND)
