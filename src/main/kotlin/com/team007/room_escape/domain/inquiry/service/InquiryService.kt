@@ -28,6 +28,7 @@ class InquiryService(
         val member = memberReader.getActiveMember(memberId)
         targetValidator.validate(request.targetType, request.targetId)
         r2StorageService.requireOwnedBy(request.img, null, memberId)
+        r2StorageService.confirmImages(memberId, attachments = arrayOf(request.img))
 
         val saved = inquiryRepository.save(request.toEntity(member))
 
@@ -60,6 +61,7 @@ class InquiryService(
         if (inquiry.isAnswered()) throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_ANSWERED)
 
         r2StorageService.requireOwnedBy(request.img, inquiry.img, memberId)
+        r2StorageService.confirmImages(memberId, attachments = arrayOf(request.img))
 
         val previousImg = inquiry.img
         inquiry.update(request.category, request.title, request.content, request.img)

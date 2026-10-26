@@ -5,6 +5,8 @@ import com.team007.room_escape.domain.festival.dto.AdminFestivalResponse
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
 import com.team007.room_escape.domain.festival.service.AdminFestivalService
 import com.team007.room_escape.global.response.ApiResponse
+import com.team007.room_escape.global.security.CustomUserDetails
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -49,11 +51,12 @@ class AdminFestivalController(
     @PatchMapping("/{festivalId}")
     @PreAuthorize("hasRole('ADMIN')")
     fun update(
+        @AuthenticationPrincipal principal: CustomUserDetails,
         @PathVariable("festivalId") festivalId: Long,
         @Valid @RequestBody request: AdminFestivalRequest.Update
     ): ResponseEntity<ApiResponse<FestivalResponse.Detail>> {
         val response: FestivalResponse.Detail =
-            adminFestivalService.update(festivalId, request)
+            adminFestivalService.update(festivalId, request, principal.id)
 
         return ResponseEntity.ok(ApiResponse.ok(response))
     }

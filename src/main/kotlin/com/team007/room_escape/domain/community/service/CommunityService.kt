@@ -15,6 +15,7 @@ import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.CommonExceptionCode
 import com.team007.room_escape.global.response.code.CommunityExceptionCode
 import com.team007.room_escape.global.response.code.MemberExceptionCode
+import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.global.util.escapeLikePattern
@@ -35,6 +36,7 @@ class CommunityService(
     private val richTextSanitizer: RichTextSanitizer,
     private val imageUrlResolver: ImageUrlResolver,
     private val deletionHistoryService: DeletionHistoryService,
+    private val storage: R2StorageService,
 ) {
 
     @Transactional(readOnly = true)
@@ -68,6 +70,7 @@ class CommunityService(
         val title = requiredTitle(request)
         val content = sanitizeRequiredContent(request.content)
         checkPostCreationAllowed(memberId, content)
+        storage.confirmImages(memberId, content)
 
         val post = postRepository.save(
             CommunityPost(member = member, category = requiredCategory(request), title = title, content = content)
@@ -81,7 +84,9 @@ class CommunityService(
         val post = getPostEntity(postId)
         checkAuthor(post.member.id, memberId, CommunityExceptionCode.POST_FORBIDDEN)
 
-        post.update(requiredCategory(request), requiredTitle(request), sanitizeRequiredContent(request.content))
+        val content = sanitizeRequiredContent(request.content)
+        storage.confirmImages(memberId, content)
+        post.update(requiredCategory(request), requiredTitle(request), content)
         return CommunityResponse.PostDetail.from(post, commentRepository.countByPostIdAndDeletedAtIsNull(postId), imageUrlResolver)
     }
 

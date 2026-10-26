@@ -41,6 +41,7 @@ class MemberService(
 
         validateNickname(member, request.nickname)
         r2StorageService.requireOwnedBy(request.profileImg, member.profileImg, memberId)
+        r2StorageService.confirmImages(memberId, attachments = arrayOf(request.profileImg))
 
         val previousProfileImg = member.profileImg
         member.updateProfile(request.nickname, request.phone, request.profileImg)

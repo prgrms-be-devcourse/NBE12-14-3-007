@@ -45,6 +45,7 @@ class PostService(
         val content = sanitizeRequiredContent(request.content)
         val thumbnail = imageUrlResolver.toKey(request.thumbnail)
         r2StorageService.requireOwnedBy(thumbnail, null, memberId)
+        r2StorageService.confirmImages(memberId, content, thumbnail)
 
         val post = postRepository.save(
             Post(
@@ -125,6 +126,7 @@ class PostService(
         val previousThumbnail = imageUrlResolver.toKey(post.thumbnail)
         val thumbnail = imageUrlResolver.toKey(request.thumbnail)
         r2StorageService.requireOwnedBy(thumbnail, previousThumbnail, memberId)
+        r2StorageService.confirmImages(memberId, content, thumbnail)
 
         post.update(requiredTitle(request), content, thumbnail)
         deleteReplacedThumbnail(previousThumbnail, thumbnail, memberId)
