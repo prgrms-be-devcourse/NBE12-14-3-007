@@ -101,7 +101,7 @@ class LikeService(
         val like = likeRepository.findByFestivalIdAndMemberId(festivalId, memberId)
             ?: throw BusinessException(LikeExceptionCode.LIKE_NOT_FOUND)
 
-        val festival = like.festival
+        val festival = checkNotNull(like.festival) { "행사 좋아요에는 행사가 있다." }
         likeRepository.delete(like)
         likeRepository.flush()
         memberTrustGradeService.refreshForFestival(festival)

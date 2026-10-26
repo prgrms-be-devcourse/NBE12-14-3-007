@@ -91,8 +91,12 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     class StorageConfiguration
 
     private fun operator(): UUID = members.saveAndFlush(
-        Member.builder().email("${UUID.randomUUID()}@example.com")
-            .password("test").nickname("관리자").role(MemberRole.ROLE_ADMIN).build(),
+        Member(
+            email = "${UUID.randomUUID()}@example.com",
+            password = "test",
+            role = MemberRole.ROLE_ADMIN,
+            nickname = "관리자",
+        ),
     ).id
 
     private fun deleteAsAdmin(id: Long, actor: UUID, reason: String) {
@@ -103,8 +107,12 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
 
     private fun history(): FestivalSubmission {
         val author = members.save(
-            Member.builder().email("${UUID.randomUUID()}@example.com")
-                .password("test").nickname("작성자").role(MemberRole.ROLE_UNVERIFIED).build(),
+            Member(
+                email = "${UUID.randomUUID()}@example.com",
+                password = "test",
+                role = MemberRole.ROLE_UNVERIFIED,
+                nickname = "작성자",
+            ),
         )
         val festival = festivals.save(
             Festival.builder().member(author).title("행사")
@@ -140,8 +148,12 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val author = history.festival!!.member!!
         repeat(10) {
             val voter = members.save(
-                Member.builder().email("${UUID.randomUUID()}@example.com")
-                    .password("test").nickname("평가자").role(MemberRole.ROLE_UNVERIFIED).build(),
+                Member(
+                    email = "${UUID.randomUUID()}@example.com",
+                    password = "test",
+                    role = MemberRole.ROLE_UNVERIFIED,
+                    nickname = "평가자",
+                ),
             )
             likes.save(Like.of(history.festival!!, voter))
             votes.save(FestivalAccuracyVote.builder().member(voter).festival(history.festival!!)

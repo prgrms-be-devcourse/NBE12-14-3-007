@@ -53,14 +53,14 @@ class AuthService(
         }
 
         val saved = memberRepository.save(
-            Member.builder()
-                .email(request.email)
-                .password(passwordEncoder.encode(request.password))
-                .nickname(request.nickname)
+            Member(
+                email = requireNotNull(request.email) { "검증을 통과한 요청에는 이메일이 있다." },
+                password = requireNotNull(passwordEncoder.encode(request.password)),
+                role = MemberRole.ROLE_UNVERIFIED,
+                nickname = requireNotNull(request.nickname) { "검증을 통과한 요청에는 닉네임이 있다." },
                 // 빈 문자열이 그대로 저장되면 "번호 없음"과 구분이 안 되고 DB 제약에도 걸린다.
-                .phone(emptyToNull(request.phone))
-                .role(MemberRole.ROLE_UNVERIFIED)
-                .build()
+                phone = emptyToNull(request.phone),
+            )
         )
 
         log.info("[가입] 완료 id={} email={}", saved.id, saved.email)
@@ -72,7 +72,7 @@ class AuthService(
     @Transactional
     fun login(email: String?, password: String?): TokenPair {
         // 이메일이나 비밀번호가 없으면(검증을 통과했다면 생기지 않는다) 일치하는 회원이 없는 것과 같게 처리한다.
-        val member = memberRepository.findByEmailAndDeletedAtIsNull(email).orElse(null)
+        val member = memberRepository.findByEmailAndDeletedAtIsNull(email)
             ?.takeIf { password != null && passwordEncoder.matches(password, it.password) }
             ?: throw BusinessException(AuthExceptionCode.INVALID_CREDENTIALS)
         return issueTokens(member)
@@ -91,7 +91,7 @@ class AuthService(
         val memberId = UUID.fromString(jwtProvider.parseRefresh(refreshToken).subject)
         refreshTokenService.verify(memberId, refreshToken)
 
-        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId).orElse(null)
+        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             ?: throw BusinessException(AuthExceptionCode.TOKEN_INVALID)
 
         return jwtProvider.createAccessToken(member.id, member.nickname, member.authority(), member.profileImg)

@@ -157,13 +157,13 @@ class PostServiceTest {
 
     /** DB에서 읽어 온 후기처럼 id와 좋아요 수를 채운다. 둘 다 DB가 정하는 값이라 생성자로 받지 않는다. */
     private fun post(likeCount: Long): Post {
-        val member = Member.builder()
-            .id(UUID.randomUUID())
-            .email("a@test.local")
-            .password("x")
-            .role(MemberRole.ROLE_UNVERIFIED)
-            .nickname("닉네임")
-            .build()
+        val member = Member(
+            email = "a@test.local",
+            password = "x",
+            role = MemberRole.ROLE_UNVERIFIED,
+            nickname = "닉네임",
+            id = UUID.randomUUID(),
+        )
         val festival = Festival.builder().id(3L).providerType(ProviderType.PUBLIC).title("행사").build()
         return Post(member = member, festival = festival, title = "후기", content = "내용").apply {
             ReflectionTestUtils.setField(this, "id", UUID.randomUUID())

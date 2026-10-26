@@ -58,10 +58,12 @@ class FestivalAccuracyVoteConcurrencyTest @Autowired constructor(
     fun concurrentFirstVotesBothSucceedAndLeaveOneVote() {
         val transactions = TransactionTemplate(transactionManager)
         val ids = checkNotNull(transactions.execute {
-            fun member() = members.save(Member.builder()
-                .email("${UUID.randomUUID()}@example.com")
-                .password("test").nickname("투표 검증")
-                .role(MemberRole.ROLE_UNVERIFIED).build())
+            fun member() = members.save(Member(
+                email = "${UUID.randomUUID()}@example.com",
+                password = "test",
+                role = MemberRole.ROLE_UNVERIFIED,
+                nickname = "투표 검증",
+            ))
             val author = member()
             val voter = member()
             val festival = festivals.save(Festival.create(
