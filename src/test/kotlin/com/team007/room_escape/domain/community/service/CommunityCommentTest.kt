@@ -53,7 +53,7 @@ class CommunityCommentTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        postId = postRepository.save(post(newMember())).id
+        postId = savedPost()
     }
 
     @Test
@@ -139,7 +139,7 @@ class CommunityCommentTest @Autowired constructor(
             assertThat(r.id).isEqualTo(reply.id)
             assertThat(r.deleted).isFalse()
             assertThat(r.content).isEqualTo("남아야 하는 답글")
-            assertThat(r.member.nickname).isEqualTo(reply.writer.nickname)
+            assertThat(r.member?.nickname).isEqualTo(reply.writer.nickname)
         })
     }
 
@@ -242,7 +242,7 @@ class CommunityCommentTest @Autowired constructor(
 
     @Test
     fun 다른_글의_댓글에는_답글을_달_수_없다() {
-        val otherPostId = postRepository.save(post(newMember())).id
+        val otherPostId = savedPost()
         val otherPostComment = communityService.createComment(
             otherPostId, CommunityRequest.CommentCreate("다른 글 댓글", null), newMember().id
         ).id
@@ -312,11 +312,9 @@ class CommunityCommentTest @Autowired constructor(
         )
     }
 
-    private fun post(member: Member): CommunityPost =
-        CommunityPost.builder()
-            .member(member)
-            .category(CommunityCategory.FREE)
-            .title("댓글 테스트 글")
-            .content("<p>본문</p>")
-            .build()
+    /** 새 회원의 글을 저장하고 id를 돌려준다. */
+    private fun savedPost(): UUID {
+        val post = CommunityPost(member = newMember(), category = CommunityCategory.FREE, title = "댓글 테스트 글", content = "<p>본문</p>")
+        return checkNotNull(postRepository.save(post).id)
+    }
 }

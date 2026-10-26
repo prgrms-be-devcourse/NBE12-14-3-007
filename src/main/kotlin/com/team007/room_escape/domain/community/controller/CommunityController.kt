@@ -1,0 +1,121 @@
+package com.team007.room_escape.domain.community.controller
+
+import com.team007.room_escape.domain.community.dto.CommunityRequest
+import com.team007.room_escape.domain.community.dto.CommunityResponse
+import com.team007.room_escape.domain.community.service.CommunityService
+import com.team007.room_escape.domain.community.type.CommunityCategory
+import com.team007.room_escape.global.response.ApiResponse
+import com.team007.room_escape.global.security.CustomUserDetails
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
+import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+
+@Tag(name = "Community", description = "커뮤니티 게시글과 댓글 API")
+@RestController
+@RequestMapping("/api/v1/community")
+class CommunityController(
+    private val communityService: CommunityService,
+) {
+
+    @Operation(summary = "커뮤니티 글 목록")
+    @GetMapping("/posts")
+    fun getPosts(
+        @RequestParam(required = false) category: CommunityCategory?,
+        @RequestParam(required = false) keyword: String?,
+        @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+    ): ResponseEntity<ApiResponse<Page<CommunityResponse.PostListItem>>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.getPosts(category, keyword, pageable)))
+
+    @Operation(summary = "커뮤니티 글 상세")
+    @GetMapping("/posts/{postId}")
+    fun getPost(@PathVariable postId: UUID): ResponseEntity<ApiResponse<CommunityResponse.PostDetail>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.getPost(postId)))
+
+    @Operation(summary = "커뮤니티 글 작성")
+    @PostMapping("/posts")
+    @PreAuthorize("hasRole('UNVERIFIED')")
+    fun createPost(
+        @Valid @RequestBody request: CommunityRequest.PostUpsert,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<CommunityResponse.PostDetail>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.createPost(request, user.id)))
+
+    @Operation(summary = "커뮤니티 글 수정")
+    @PatchMapping("/posts/{postId}")
+    @PreAuthorize("hasRole('UNVERIFIED')")
+    fun updatePost(
+        @PathVariable postId: UUID,
+        @Valid @RequestBody request: CommunityRequest.PostUpsert,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<CommunityResponse.PostDetail>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.updatePost(postId, request, user.id)))
+
+    @Operation(summary = "커뮤니티 글 삭제", description = "작성자 본인만 삭제합니다. 관리자의 타인 글 삭제는 공통 관리자 조치 API를 사용합니다.")
+    @DeleteMapping("/posts/{postId}")
+    fun deletePost(
+        @PathVariable postId: UUID,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<Void?>> {
+        communityService.deletePost(postId, user.id)
+        return ResponseEntity.ok(ApiResponse.noContent())
+    }
+
+    @Operation(
+        summary = "커뮤니티 댓글 목록",
+        description = "댓글을 오래된 순으로 조회한다. " +
+            "페이지는 일반 댓글 기준이고, 대댓글은 각 댓글의 replies에 담긴다. 삭제된 댓글은 \"삭제된 댓글입니다\"로 내려간다.",
+    )
+    @GetMapping("/posts/{postId}/comments")
+    fun getComments(
+        @PathVariable postId: UUID,
+        @PageableDefault(size = 20) pageable: Pageable,
+    ): ResponseEntity<ApiResponse<Page<CommunityResponse.CommentInfo>>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.getComments(postId, pageable)))
+
+    @Operation(summary = "커뮤니티 댓글 작성", description = "parentId를 넣으면 그 댓글의 대댓글이 된다.")
+    @PostMapping("/posts/{postId}/comments")
+    @PreAuthorize("hasRole('UNVERIFIED')")
+    fun createComment(
+        @PathVariable postId: UUID,
+        @Valid @RequestBody request: CommunityRequest.CommentCreate,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<CommunityResponse.CommentInfo>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.createComment(postId, request, user.id)))
+
+    @Operation(summary = "커뮤니티 댓글 수정")
+    @PatchMapping("/comments/{commentId}")
+    @PreAuthorize("hasRole('UNVERIFIED')")
+    fun updateComment(
+        @PathVariable commentId: Long,
+        @Valid @RequestBody request: CommunityRequest.CommentUpsert,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<CommunityResponse.CommentInfo>> =
+        ResponseEntity.ok(ApiResponse.ok(communityService.updateComment(commentId, request, user.id)))
+
+    @Operation(summary = "커뮤니티 댓글 삭제", description = "작성자 본인만 삭제합니다. 관리자의 타인 댓글 삭제는 공통 관리자 조치 API를 사용합니다.")
+    @DeleteMapping("/comments/{commentId}")
+    fun deleteComment(
+        @PathVariable commentId: Long,
+        @AuthenticationPrincipal user: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<Void?>> {
+        communityService.deleteComment(commentId, user.id)
+        return ResponseEntity.ok(ApiResponse.noContent())
+    }
+}

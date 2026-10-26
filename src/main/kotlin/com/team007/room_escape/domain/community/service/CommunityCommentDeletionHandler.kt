@@ -18,14 +18,14 @@ class CommunityCommentDeletionHandler(
 ) : DeletionHandler {
 
     override fun restore(history: DeletionHistory) {
-        val target = comments.findForRestoration(history.targetId.toLong())
-            .orElseThrow { notFound() }
+        val target = comments.findForRestoration(history.targetId.toLong()) ?: throw notFound()
         if (!target.isDeleted()) {
             throw notFound()
         }
         histories.requireAdministratorDeletion(supports(), history.targetId)
-        val parent = parents.findForRestoration(target.post.id)
-            .orElseThrow { notFound() }
+        // DB에서 읽은 댓글이라 글 id는 항상 있다.
+        val postId = target.post.id ?: throw notFound()
+        val parent = parents.findForRestoration(postId) ?: throw notFound()
         if (parent.isDeleted()) {
             throw notFound()
         }
@@ -35,9 +35,7 @@ class CommunityCommentDeletionHandler(
     override fun supports(): DeletionTargetType = DeletionTargetType.COMMUNITY_COMMENT
 
     override fun delete(history: DeletionHistory) {
-        comments.findForDeletion(history.targetId.toLong())
-            .orElseThrow { notFound() }
-            .delete()
+        (comments.findForDeletion(history.targetId.toLong()) ?: throw notFound()).delete()
     }
 
     private fun notFound() = BusinessException(CommunityExceptionCode.COMMENT_NOT_FOUND)
