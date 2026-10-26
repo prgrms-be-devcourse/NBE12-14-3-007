@@ -32,7 +32,7 @@ class FestivalAccuracyVoteService(
         val member = memberReader.getActiveMember(memberId)
         val festival = findUserSubmittedFestival(festivalId)
 
-        if (festival.member != null && festival.member.id.equals(memberId)) {
+        if (festival.member?.id == memberId) {
             throw BusinessException(FestivalExceptionCode.SELF_ACCURACY_VOTE_NOT_ALLOWED)
         }
 

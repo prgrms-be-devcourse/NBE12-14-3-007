@@ -37,8 +37,8 @@ class PostResponse private constructor() {
                 return ListItem(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id,
-                    festivalTitle = festival.title,
+                    festivalId = festival.id!!,
+                    festivalTitle = festival.title!!,
                     title = post.title,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
                     date = post.updatedAt,
@@ -65,8 +65,8 @@ class PostResponse private constructor() {
                 return AdminListItem(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id,
-                    festivalTitle = festival.title,
+                    festivalId = festival.id!!,
+                    festivalTitle = festival.title!!,
                     title = post.title,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
                     date = post.updatedAt,
@@ -95,8 +95,8 @@ class PostResponse private constructor() {
                 return Detail(
                     id = savedId(post),
                     member = MemberResponse.MemberInfo.from(post.member, imageUrlResolver),
-                    festivalId = festival.id,
-                    festivalTitle = festival.title,
+                    festivalId = festival.id!!,
+                    festivalTitle = festival.title!!,
                     title = post.title,
                     content = post.content,
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),

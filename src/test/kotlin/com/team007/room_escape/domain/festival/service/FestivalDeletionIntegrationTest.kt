@@ -117,9 +117,9 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     @Test
     fun authorDeletionSurvivesReloadAndRemainsInOwnHistoryButNotPublicLookup() {
         val history = history()
-        val owner = history.festival.member.id
-        val id = history.id
-        val eventId = history.festival.id
+        val owner = history.festival!!.member!!.id
+        val id = history.id!!
+        val eventId = history.festival!!.id
 
         submissions.delete(owner, id)
         em.clear()
@@ -136,19 +136,19 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     @Test
     fun administratorCanRestoreMemberSubmittedEventAndGradeIsRecalculated() {
         val history = history()
-        val author = history.festival.member
+        val author = history.festival!!.member!!
         repeat(10) {
             val voter = members.save(
                 Member.builder().email("${UUID.randomUUID()}@example.com")
                     .password("test").nickname("평가자").role(MemberRole.ROLE_UNVERIFIED).build(),
             )
-            likes.save(Like.of(history.festival, voter))
-            votes.save(FestivalAccuracyVote.builder().member(voter).festival(history.festival)
+            likes.save(Like.of(history.festival!!, voter))
+            votes.save(FestivalAccuracyVote.builder().member(voter).festival(history.festival!!)
                 .voteType(FestivalAccuracyVoteType.ACCURATE).build())
         }
         em.flush()
         val operator = operator()
-        val id = history.festival.id
+        val id = history.festival!!.id!!
         deleteAsAdmin(id, operator, "  행사 취소 확인  ")
         assertThat(author.role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
 
@@ -167,19 +167,19 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val history = history()
         val operator = operator()
 
-        assertThrows<BusinessException> { deleteAsAdmin(history.festival.id, operator, " ") }
-        assertThat(history.festival.isDeleted()).isFalse()
+        assertThrows<BusinessException> { deleteAsAdmin(history.festival!!.id!!, operator, " ") }
+        assertThat(history.festival!!.isDeleted()).isFalse()
     }
 
     @Test
     fun restoreIsRejectedWhenActiveDuplicateExists() {
         val history = history()
-        val event = history.festival
+        val event = history.festival!!
         val operator = operator()
-        deleteAsAdmin(event.id, operator, "오등록")
+        deleteAsAdmin(event.id!!, operator, "오등록")
         festivals.saveAndFlush(Festival.builder().providerType(ProviderType.MEMBER)
             .url(event.url).region(event.region)
-            .beginDe(event.beginDe.plusHours(1)).endDe(event.endDe.plusHours(1)).build())
+            .beginDe(event.beginDe!!.plusHours(1)).endDe(event.endDe!!.plusHours(1)).build())
 
         assertThrows<BusinessException> { admin.restore(operator, DeletionTargetType.FESTIVAL, event.id.toString()) }
         assertThat(event.isDeleted()).isTrue()
@@ -188,10 +188,10 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     @Test
     fun deletedEventRejectsAccuracyVoteAndCancellation() {
         val history = history()
-        val owner = history.festival.member.id
-        val id = history.festival.id
+        val owner = history.festival!!.member!!.id
+        val id = history.festival!!.id!!
 
-        submissions.delete(owner, history.id)
+        submissions.delete(owner, history.id!!)
         val exception = assertThrows<BusinessException> {
             accuracy.vote(owner, id, FestivalAccuracyVoteRequest.Upsert(FestivalAccuracyVoteType.ACCURATE))
         }
@@ -201,23 +201,23 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
 
     @Test
     fun publicEventDeletedByAdminCanBeRestored() {
-        val event = history().festival
+        val event = checkNotNull(history().festival)
         // 공공행사는 작성자가 없어도 삭제·복구할 수 있다.
         val publicEvent = festivals.saveAndFlush(Festival.builder().providerType(ProviderType.PUBLIC)
             .beginDe(event.beginDe).endDe(event.endDe).build())
         val operator = operator()
-        deleteAsAdmin(publicEvent.id, operator, "중복 수집 확인")
+        deleteAsAdmin(publicEvent.id!!, operator, "중복 수집 확인")
         admin.restore(operator, DeletionTargetType.FESTIVAL, publicEvent.id.toString())
         assertThat(publicEvent.isDeleted()).isFalse()
     }
 
     @Test
     fun repeatedDeleteDoesNotOverwriteOriginalReason() {
-        val event = history().festival
+        val event = checkNotNull(history().festival)
         val operator = operator()
-        deleteAsAdmin(event.id, operator, "최초 사유")
+        deleteAsAdmin(event.id!!, operator, "최초 사유")
 
-        assertThrows<BusinessException> { deleteAsAdmin(event.id, operator, "다른 사유") }
+        assertThrows<BusinessException> { deleteAsAdmin(event.id!!, operator, "다른 사유") }
         assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, event.id.toString())?.reasonDetail())
             .isEqualTo("최초 사유")
     }

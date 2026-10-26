@@ -270,7 +270,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.clear()
         assertThat(submissions.findAllByMemberId(author.id).first().deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
-        assertThat(submissions.findById(author.id, submission.id).submission?.festival?.deletion?.reason)
+        assertThat(submissions.findById(author.id, submission.id!!).submission?.festival?.deletion?.reason)
             .contains("도배·스팸", "이력 상세 설명")
     }
 

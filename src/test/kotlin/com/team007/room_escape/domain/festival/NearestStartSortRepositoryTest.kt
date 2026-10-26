@@ -96,7 +96,7 @@ class NearestStartSortRepositoryTest @Autowired constructor(
 
     private fun title(name: String): String = "$token-$name"
 
-    private fun titles(page: Page<Festival>): List<String> = page.content.map { it.title }
+    private fun titles(page: Page<Festival>): List<String> = page.content.map { checkNotNull(it.title) }
 
     companion object {
         private val TODAY = LocalDateTime.of(2026, 9, 30, 0, 0)
