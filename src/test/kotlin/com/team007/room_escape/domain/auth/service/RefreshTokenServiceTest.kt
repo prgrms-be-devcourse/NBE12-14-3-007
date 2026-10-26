@@ -46,6 +46,8 @@ class RefreshTokenServiceTest {
     @Test
     fun `처음 저장하면 토큰 원문이 아니라 SHA-256 해시를 저장한다`() {
         `when`(repository.findByMemberId(memberId)).thenReturn(null)
+        // Kotlin 서비스가 save의 반환값 null을 허용하지 않아서, 저장한 객체를 그대로 돌려주도록 해 둔다.
+        `when`(repository.save(any(RefreshToken::class.java))).thenAnswer { it.arguments[0] }
         val expiresAt = LocalDateTime.now().plusDays(14)
 
         service.save(member, "raw-token", expiresAt)

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -42,6 +43,12 @@ class AuthServiceTest {
     private val service = AuthService(memberRepository, passwordEncoder, jwtProvider, jwtProperties, refreshTokenService)
 
     private val memberId = UUID.randomUUID()
+
+    // Kotlin 서비스의 non-null 파라미터에는 Mockito 매처가 돌려주는 null을 넣을 수 없어서, 자리표시 값을 대신 넘긴다.
+    private fun anyMember(): Member = any(Member::class.java) ?: member()
+    private fun anyUuid(): UUID = any(UUID::class.java) ?: UUID(0, 0)
+    private fun anyTime(): LocalDateTime = any(LocalDateTime::class.java) ?: LocalDateTime.MIN
+    private fun anyText(): String = anyString() ?: ""
 
     private fun member(role: MemberRole = MemberRole.ROLE_UNVERIFIED, nickname: String = "닉네임"): Member =
         Member.builder().email("user@example.com").password("ENCODED").nickname(nickname).role(role).build()
@@ -132,14 +139,14 @@ class AuthServiceTest {
 
             val pair = service.login("user@example.com", "Password1!")
 
-            val access = jwtProvider.parse(pair.accessToken())
+            val access = jwtProvider.parse(pair.accessToken)
             assertThat(access.subject).isEqualTo(memberId.toString())
             assertThat(access.get("role", String::class.java)).isEqualTo("ROLE_TRUSTED")
-            assertThat(jwtProvider.parseRefresh(pair.refreshToken()).subject).isEqualTo(memberId.toString())
+            assertThat(jwtProvider.parseRefresh(pair.refreshToken).subject).isEqualTo(memberId.toString())
 
             val expiry = ArgumentCaptor.forClass(LocalDateTime::class.java)
             verify(refreshTokenService).save(
-                org.mockito.ArgumentMatchers.eq(member), org.mockito.ArgumentMatchers.eq(pair.refreshToken()), expiry.capture(),
+                eq(member) ?: member, eq(pair.refreshToken) ?: "", expiry.capture() ?: LocalDateTime.MIN,
             )
             assertThat(expiry.value).isBetween(before.plusSeconds(7_200), LocalDateTime.now().plusSeconds(7_200))
         }
@@ -151,7 +158,7 @@ class AuthServiceTest {
 
             assertThatThrownBy { service.login("user@example.com", "wrong") }
                 .isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
-            verify(refreshTokenService, never()).save(any(Member::class.java), anyString(), any(LocalDateTime::class.java))
+            verify(refreshTokenService, never()).save(anyMember(), anyText(), anyTime())
         }
 
         @Test
@@ -226,14 +233,14 @@ class AuthServiceTest {
             service.logout("")
             service.logout("  ")
 
-            verify(refreshTokenService, never()).deleteByMemberId(any(UUID::class.java))
+            verify(refreshTokenService, never()).deleteByMemberId(anyUuid())
         }
 
         @Test
         fun `위조되거나 만료된 쿠키는 오류 없이 넘어가고 지우지 않는다`() {
             assertThatCode { service.logout("not-a-token") }.doesNotThrowAnyException()
 
-            verify(refreshTokenService, never()).deleteByMemberId(any(UUID::class.java))
+            verify(refreshTokenService, never()).deleteByMemberId(anyUuid())
         }
 
         @Test
