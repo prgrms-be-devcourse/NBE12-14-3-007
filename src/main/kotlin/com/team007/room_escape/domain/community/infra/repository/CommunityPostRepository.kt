@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.UUID
 
 // CommunityPost엔 @SQLRestriction이 있어서 JPQL·파생 쿼리는 삭제된 글을 자동으로 뺀다.

@@ -39,9 +39,7 @@ class FestivalAccuracyVoteService(
         val voteType = requireNotNull(request.voteType) { "평가 종류는 필수입니다." }
         val vote = accuracyVoteRepository
             .findByFestivalAndMember(festival, member)
-            .orElseGet {
-                FestivalAccuracyVote.create(festival, member, voteType)
-            }
+            ?: FestivalAccuracyVote(festival, member, voteType)
 
         vote.changeVote(voteType)
         accuracyVoteRepository.save(vote)
@@ -58,7 +56,7 @@ class FestivalAccuracyVoteService(
 
         accuracyVoteRepository
             .findByFestivalAndMember(festival, member)
-            .ifPresent(accuracyVoteRepository::delete)
+            ?.let { accuracyVoteRepository.delete(it) }
 
         val response = buildResponse(festival, null)
         memberTrustGradeService.refreshForFestival(festival)
@@ -87,7 +85,7 @@ class FestivalAccuracyVoteService(
         // 첫 투표는 잠글 투표 행이 없으므로 행사 행을 잠근다.
         // 투표·취소·삭제가 같은 잠금을 사용하며 트랜잭션 종료까지 유지한다.
         val festival = festivalRepository.findForDeletion(festivalId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         if (festival.providerType != ProviderType.MEMBER || festival.isDeleted()) {
             throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         }

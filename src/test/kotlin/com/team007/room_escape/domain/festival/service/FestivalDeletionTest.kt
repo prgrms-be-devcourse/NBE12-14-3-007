@@ -15,7 +15,7 @@ import java.util.UUID
 class FestivalDeletionTest {
     @Test
     fun festivalTracksOnlyCurrentDeletionState() {
-        val festival = Festival.builder().build()
+        val festival = Festival()
 
         festival.delete()
         assertThat(festival.isDeleted()).isTrue()
@@ -25,7 +25,7 @@ class FestivalDeletionTest {
 
     @Test
     fun repeatedDeletionCannotOverwriteDeletionTime() {
-        val festival = Festival.builder().build()
+        val festival = Festival()
         festival.delete()
         val deletedAt = festival.deletedAt
 
@@ -58,6 +58,6 @@ class FestivalDeletionTest {
 
     @Test
     fun activeEventCannotBeRestored() {
-        assertThrows<BusinessException> { Festival.builder().build().restore() }
+        assertThrows<BusinessException> { Festival().restore() }
     }
 }

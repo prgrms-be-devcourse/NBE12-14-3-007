@@ -164,13 +164,13 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
     }
 
     private fun saveFestival(): Festival = festivalRepository.saveAndFlush(
-        Festival.builder()
-            .providerType(ProviderType.PUBLIC)
-            .title("계약테스트 행사 ${UUID.randomUUID().toString().substring(0, 8)}")
-            .region(FestivalRegion.SEOUL)
-            .beginDe(LocalDateTime.of(2026, 10, 1, 10, 0))
-            .endDe(LocalDateTime.of(2026, 10, 5, 18, 0))
-            .build(),
+        Festival(
+            providerType = ProviderType.PUBLIC,
+            title = "계약테스트 행사 ${UUID.randomUUID().toString().substring(0, 8)}",
+            region = FestivalRegion.SEOUL,
+            beginDe = LocalDateTime.of(2026, 10, 1, 10, 0),
+            endDe = LocalDateTime.of(2026, 10, 5, 18, 0),
+        ),
     )
 
     private fun deleteBody(festivalId: Long, reasonCode: String, reasonDetail: String?): String {

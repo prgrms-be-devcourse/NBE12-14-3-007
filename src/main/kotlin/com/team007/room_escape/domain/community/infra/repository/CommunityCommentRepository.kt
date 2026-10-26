@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.UUID
 
 // CommunityComment엔 @SQLRestriction이 없어서 삭제된 댓글도 조회된다. 살아 있는 댓글만 볼 때는 DeletedAtIsNull 조건을 붙인다.

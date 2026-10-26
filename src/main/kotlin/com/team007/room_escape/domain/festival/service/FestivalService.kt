@@ -54,7 +54,7 @@ class FestivalService(
         // 종료일이 지난 기존 행사를 먼저 CLOSED로 갱신한다.
         val closedFestivals: List<FestivalResponse.SyncedFestival> = transactionTemplate.execute {
             closeExpiredFestivals()
-        } ?: emptyList()
+        }
 
         val currentYear = LocalDate.now().year
         val allRows = fetchAllRows("${currentYear}0101", "${currentYear}1231")
@@ -256,7 +256,7 @@ class FestivalService(
     @Transactional(readOnly = true)
     fun getFestival(festivalId: Long, memberId: UUID?): FestivalResponse.Detail {
         val festival = festivalRepository.findByIdAndDeletedAtIsNull(festivalId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
 
         var accurateCount = 0L
         var inaccurateCount = 0L
@@ -275,8 +275,7 @@ class FestivalService(
             if (memberId != null) {
                 myVote = accuracyVoteRepository
                     .findByFestivalIdAndMemberId(festivalId, memberId)
-                    .map { it.voteType }
-                    .orElse(null)
+                    ?.voteType
             }
         }
 

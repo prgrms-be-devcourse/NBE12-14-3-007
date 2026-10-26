@@ -67,7 +67,7 @@ class AdminFestivalService(
 
         // 삭제된 행사는 복구 후에 고칠 수 있다.
         val festival: Festival = festivalRepository.findByIdAndDeletedAtIsNull(festivalId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
 
         // 진행 상태(status)는 종료일에서 다시 계산된다.
         festival.updateDetails(

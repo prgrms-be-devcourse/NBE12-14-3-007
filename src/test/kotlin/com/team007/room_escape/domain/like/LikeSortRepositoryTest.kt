@@ -342,13 +342,13 @@ class LikeSortRepositoryTest @Autowired constructor(
 
     private fun festival(name: String, beginDe: LocalDateTime, region: FestivalRegion): Festival =
         persist(
-            Festival.builder()
-                .providerType(ProviderType.PUBLIC)
-                .title(title(name))
-                .beginDe(beginDe)
-                .endDe(beginDe.plusDays(3))
-                .region(region)
-                .build()
+            Festival(
+                providerType = ProviderType.PUBLIC,
+                title = title(name),
+                beginDe = beginDe,
+                endDe = beginDe.plusDays(3),
+                region = region,
+            )
         )
 
     private fun savePost(name: String, festival: Festival, content: String = "c"): Post =

@@ -8,7 +8,7 @@ import com.team007.room_escape.domain.member.infra.entity.Member
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.*
+import java.util.UUID
 
 interface FestivalAccuracyVoteRepository
 
@@ -16,12 +16,12 @@ interface FestivalAccuracyVoteRepository
     fun findByFestivalAndMember(
         festival: Festival,
         member: Member
-    ): Optional<FestivalAccuracyVote>
+    ): FestivalAccuracyVote?
 
     fun findByFestivalIdAndMemberId(
         festivalId: Long,
         memberId: UUID
-    ): Optional<FestivalAccuracyVote>
+    ): FestivalAccuracyVote?
 
     fun countByFestivalAndVoteType(
         festival: Festival,

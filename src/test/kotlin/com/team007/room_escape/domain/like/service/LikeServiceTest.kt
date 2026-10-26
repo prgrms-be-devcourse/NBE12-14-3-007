@@ -28,7 +28,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
-import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -51,8 +50,8 @@ class LikeServiceTest {
     @Test
     @DisplayName("본인이 제보한 행사에는 좋아요를 등록할 수 없다")
     fun rejectSelfFestivalLike() {
-        val festival = Festival.builder().id(1L).member(member).providerType(ProviderType.MEMBER).build()
-        `when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.of(festival))
+        val festival = Festival(id = 1L, member = member, providerType = ProviderType.MEMBER)
+        `when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(festival)
         `when`(memberReader.getUnrestrictedMember(memberId)).thenReturn(member)
 
         assertExceptionCode(LikeExceptionCode.SELF_FESTIVAL_LIKE_NOT_ALLOWED) {
@@ -64,7 +63,7 @@ class LikeServiceTest {
     @Test
     @DisplayName("삭제된 행사에는 좋아요를 새로 등록할 수 없다")
     fun rejectLikeOnDeletedFestival() {
-        `when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(Optional.empty())
+        `when`(festivalRepository.findByIdAndDeletedAtIsNull(1L)).thenReturn(null)
         `when`(memberReader.getUnrestrictedMember(memberId)).thenReturn(member)
 
         assertExceptionCode(FestivalExceptionCode.FESTIVAL_NOT_FOUND) {

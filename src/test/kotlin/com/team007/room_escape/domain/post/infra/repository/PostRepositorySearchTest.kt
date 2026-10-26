@@ -42,12 +42,12 @@ class PostRepositorySearchTest @Autowired constructor(
     @BeforeEach
     fun setUp() {
         festival = festivalRepository.save(
-            Festival.builder()
-                .providerType(ProviderType.PUBLIC)
-                .title("행사 $token")
-                .beginDe(LocalDateTime.now())
-                .endDe(LocalDateTime.now().plusDays(1))
-                .build()
+            Festival(
+                providerType = ProviderType.PUBLIC,
+                title = "행사 $token",
+                beginDe = LocalDateTime.now(),
+                endDe = LocalDateTime.now().plusDays(1),
+            )
         )
 
         val active = memberRepository.save(member("활동$token"))

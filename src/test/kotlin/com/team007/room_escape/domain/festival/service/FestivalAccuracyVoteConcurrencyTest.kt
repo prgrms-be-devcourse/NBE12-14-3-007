@@ -66,7 +66,7 @@ class FestivalAccuracyVoteConcurrencyTest @Autowired constructor(
             ))
             val author = member()
             val voter = member()
-            val festival = festivals.save(Festival.create(
+            val festival = festivals.save(Festival(
                 member = author, providerType = ProviderType.MEMBER, title = "동시 투표 검증"
             ))
             checkNotNull(festival.id) to voter.id
@@ -90,7 +90,7 @@ class FestivalAccuracyVoteConcurrencyTest @Autowired constructor(
                 val festival = festivals.findById(ids.first).orElseThrow()
                 assertThat(votes.countByFestivalAndVoteType(festival, FestivalAccuracyVoteType.ACCURATE))
                     .isEqualTo(1L)
-                assertThat(votes.findByFestivalIdAndMemberId(ids.first, ids.second)).isPresent()
+                assertThat(votes.findByFestivalIdAndMemberId(ids.first, ids.second)).isNotNull()
             }
         } finally {
             start.countDown()

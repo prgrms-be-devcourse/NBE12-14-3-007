@@ -125,7 +125,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         ).also(entityManager::persist)
 
     private fun publicFestival(title: String): Festival = festivals.saveAndFlush(
-        Festival.builder().providerType(ProviderType.PUBLIC).title(title).build(),
+        Festival(providerType = ProviderType.PUBLIC, title = title),
     )
 
     @Test
@@ -232,9 +232,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val communityComment = CommunityComment(post = community, member = author, content = "내 커뮤니티 댓글")
         entityManager.persist(comment)
         entityManager.persist(communityComment)
-        val festival = festivals.saveAndFlush(Festival.builder().member(author)
-            .providerType(ProviderType.MEMBER).title("내 제보").build())
-        entityManager.persist(FestivalSubmission.builder().festival(festival).build())
+        val festival = festivals.saveAndFlush(Festival(
+            member = author,
+            providerType = ProviderType.MEMBER,
+            title = "내 제보",
+        ))
+        entityManager.persist(FestivalSubmission(festival = festival))
         entityManager.flush()
         facade.delete(author.id, AdminDeletionRequest.Create(
             DeletionTargetType.POST, post.id.toString(), DeletionReason.SPAM, "마이페이지 사유", null,
@@ -262,9 +265,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     fun ownSubmissionListAndDetailReadTypedDeletionReasonFromHistory() {
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
-        val festival = festivals.saveAndFlush(Festival.builder().member(author)
-            .providerType(ProviderType.MEMBER).title("제보 이력 조회").build())
-        val submission = FestivalSubmission.builder().festival(festival).build()
+        val festival = festivals.saveAndFlush(Festival(
+            member = author,
+            providerType = ProviderType.MEMBER,
+            title = "제보 이력 조회",
+        ))
+        val submission = FestivalSubmission(festival = festival)
         entityManager.persist(submission)
         entityManager.flush()
         facade.delete(admin.id, AdminDeletionRequest.Create(
@@ -363,7 +369,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         val reloaded = entityManager.find(Inquiry::class.java, report.id)
         assertThat(reloaded.status).isEqualTo(InquiryStatus.ANSWERED)
         assertThat(reloaded.answer).contains("삭제", "잘못된 정보", "행사 장소가 다릅니다")
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isNull()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(
             DeletionTargetType.FESTIVAL, festival.id.toString(),
         )).hasSize(1)
@@ -408,7 +414,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         }
         TestTransaction.end()
         TestTransaction.start()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festivalId)).isPresent()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festivalId)).isNotNull()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festivalId.toString())).isEmpty()
         val unchanged = entityManager.find(Inquiry::class.java, reportId)
         assertThat(unchanged.answer).isEqualTo(originalAnswer)
@@ -426,7 +432,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         facade.restore(admin.id, DeletionTargetType.FESTIVAL, id)
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isPresent()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isNotNull()
         val records = histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, id)
         assertThat(records.map { it.action }).containsExactly(DeletionAction.RESTORE, DeletionAction.DELETE)
         assertThat(records[1].reasonDetail).isEqualTo("도배 확인")
@@ -466,12 +472,15 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     @Test
     fun authorFestivalDeletionRetainsAuthorHistory() {
         val author = member("작성자", MemberRole.ROLE_UNVERIFIED)
-        val festival = festivals.saveAndFlush(Festival.builder().member(author)
-            .providerType(ProviderType.MEMBER).title("작성자 삭제 대상").build())
+        val festival = festivals.saveAndFlush(Festival(
+            member = author,
+            providerType = ProviderType.MEMBER,
+            title = "작성자 삭제 대상",
+        ))
         festivalDeletionService.deleteByAuthor(festival, author.id)
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isNull()
         assertThat(histories.findAllByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString()))
             .singleElement().satisfies(Consumer<DeletionHistory> {
                 assertThat(it.actorId).isEqualTo(author.id)
@@ -632,7 +641,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         ))
         entityManager.flush()
         entityManager.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(festival.requiredId)).isNull()
         assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString())?.reason)
             .isEqualTo(DeletionReason.SPAM)
     }

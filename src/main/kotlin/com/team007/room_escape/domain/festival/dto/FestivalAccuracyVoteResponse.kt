@@ -19,34 +19,8 @@ class FestivalAccuracyVoteResponse private constructor() {
         val myVote: FestivalAccuracyVoteType?
     ) {
         companion object {
-            fun builder(): InfoBuilder = InfoBuilder()
-
             fun from(accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?): Info =
-                builder()
-                    .accurateCount(accurateCount)
-                    .inaccurateCount(inaccurateCount)
-                    .myVote(myVote)
-                    .build()
-        }
-
-        class InfoBuilder {
-            private var accurateCount: Long = 0
-            private var inaccurateCount: Long = 0
-            private var myVote: FestivalAccuracyVoteType? = null
-
-            fun accurateCount(accurateCount: Long): InfoBuilder = apply {
-                this.accurateCount = accurateCount
-            }
-
-            fun inaccurateCount(inaccurateCount: Long): InfoBuilder = apply {
-                this.inaccurateCount = inaccurateCount
-            }
-
-            fun myVote(myVote: FestivalAccuracyVoteType?): InfoBuilder = apply {
-                this.myVote = myVote
-            }
-
-            fun build(): Info = Info(accurateCount, inaccurateCount, myVote)
+                Info(accurateCount, inaccurateCount, myVote)
         }
     }
 }

@@ -35,7 +35,7 @@ class FestivalSubmissionService(
     fun create(memberId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
         val (normalizedReferenceUrl, district) = validateNotDuplicated(null, request)
-        val festival = Festival.create(
+        val festival = Festival(
             member = member, providerType = ProviderType.MEMBER,
             title = request.title, category = request.category,
             content = richTextSanitizer.sanitize(request.festivalContent), url = normalizedReferenceUrl,
@@ -45,7 +45,7 @@ class FestivalSubmissionService(
             status = FestivalStatus.from(request.endDe)
         )
         val savedFestival = saveFestival(festival)
-        val savedSubmission = festivalSubmissionRepository.save(FestivalSubmission.create(festival = savedFestival))
+        val savedSubmission = festivalSubmissionRepository.save(FestivalSubmission(festival = savedFestival))
         return FestivalSubmissionResponse.Create.from(savedFestival, savedSubmission)
     }
 
@@ -55,17 +55,17 @@ class FestivalSubmissionService(
             .findAllByFestival_Member_IdAndFestival_ProviderTypeOrderByCreatedAtDesc(memberId, ProviderType.MEMBER)
         val histories = deletionHistories.findLatestForTargets(
             DeletionTargetType.FESTIVAL,
-            submissions.map { it.requiredFestival }.filter { it.isDeleted() }.map { it.requiredId.toString() }
+            submissions.map { it.festival }.filter { it.isDeleted() }.map { it.requiredId.toString() }
         )
         return submissions.map {
-            FestivalSubmissionResponse.ListItem.from(it, histories[it.requiredFestival.requiredId.toString()])
+            FestivalSubmissionResponse.ListItem.from(it, histories[it.festival.requiredId.toString()])
         }
     }
 
     @Transactional(readOnly = true)
     fun findById(memberId: UUID, submissionId: UUID): FestivalSubmissionResponse.Detail {
         val submission = findSubmission(memberId, submissionId)
-        val festival = submission.requiredFestival
+        val festival = submission.festival
         val latest = if (festival.isDeleted()) {
             deletionHistories.findLatest(DeletionTargetType.FESTIVAL, festival.requiredId.toString())
         } else null
@@ -76,7 +76,7 @@ class FestivalSubmissionService(
     fun update(memberId: UUID, submissionId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Detail {
         memberReader.getUnrestrictedMember(memberId)
         val submission = findSubmission(memberId, submissionId)
-        val festival = submission.requiredFestival
+        val festival = submission.festival
         if (festival.isDeleted()) throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         val version = request.version
             ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
@@ -94,8 +94,8 @@ class FestivalSubmissionService(
     @Transactional
     fun delete(memberId: UUID, submissionId: UUID) {
         val submission = findSubmission(memberId, submissionId)
-        val festival = festivalRepository.findForDeletion(submission.requiredFestival.requiredId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+        val festival = festivalRepository.findForDeletion(submission.festival.requiredId)
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         festivalDeletionService.deleteByAuthor(festival, memberId)
     }
 
@@ -124,7 +124,7 @@ class FestivalSubmissionService(
 
     private fun findSubmission(memberId: UUID, submissionId: UUID): FestivalSubmission =
         festivalSubmissionRepository.findByIdAndFestival_Member_Id(submissionId, memberId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_SUBMISSION_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_SUBMISSION_NOT_FOUND)
 
     private fun saveFestival(festival: Festival): Festival {
         try {

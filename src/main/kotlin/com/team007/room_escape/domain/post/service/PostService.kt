@@ -41,7 +41,7 @@ class PostService(
     fun createPost(festivalId: Long, request: PostRequest, memberId: UUID): PostResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
         val festival = festivalRepository.findByIdAndDeletedAtIsNull(festivalId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         val content = sanitizeRequiredContent(request.content)
         val thumbnail = imageUrlResolver.toKey(request.thumbnail)
         r2StorageService.requireOwnedBy(thumbnail, null, memberId)

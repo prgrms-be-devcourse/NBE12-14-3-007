@@ -164,7 +164,7 @@ class PostServiceTest {
             nickname = "닉네임",
             id = UUID.randomUUID(),
         )
-        val festival = Festival.builder().id(3L).providerType(ProviderType.PUBLIC).title("행사").build()
+        val festival = Festival(id = 3L, providerType = ProviderType.PUBLIC, title = "행사")
         return Post(member = member, festival = festival, title = "후기", content = "내용").apply {
             ReflectionTestUtils.setField(this, "id", UUID.randomUUID())
             ReflectionTestUtils.setField(this, "likeCount", likeCount)

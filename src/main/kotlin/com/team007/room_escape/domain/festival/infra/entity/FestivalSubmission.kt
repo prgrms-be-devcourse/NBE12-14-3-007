@@ -12,45 +12,17 @@ import org.hibernate.annotations.UuidGenerator
 
 @Entity
 @Table(name = "festival_submission")
-class FestivalSubmission protected constructor() : BaseTimeEntity() {
+class FestivalSubmission(
+    festival: Festival,
+    id: UUID? = null,
+) : BaseTimeEntity() {
     @field:Id
     @field:UuidGenerator(style = UuidGenerator.Style.VERSION_7)
-    var id: UUID? = null
+    var id: UUID? = id
         protected set
 
     @field:ManyToOne(fetch = FetchType.LAZY, optional = false)
     @field:JoinColumn(name = "festival_id", nullable = false)
-    var festival: Festival? = null
+    var festival: Festival = festival
         protected set
-
-    /** 제보에는 항상 행사가 있다. DB에서 NOT NULL로 막혀 있다. */
-    val requiredFestival: Festival
-        get() = checkNotNull(festival) { "행사 없는 제보입니다: $id" }
-
-
-    companion object {
-        @Deprecated("Kotlin에서는 create()를 사용하세요. Java 호출 호환용입니다.")
-        fun builder(): FestivalSubmissionBuilder = FestivalSubmissionBuilder()
-
-        fun create(
-            id: UUID? = null,
-            festival: Festival? = null
-        ): FestivalSubmission = FestivalSubmission().also {
-            it.id = id
-            it.festival = festival
-        }
-    }
-
-    class FestivalSubmissionBuilder {
-        private var id: UUID? = null
-        private var festival: Festival? = null
-
-        fun id(id: UUID?): FestivalSubmissionBuilder = apply { this.id = id }
-        fun festival(festival: Festival?): FestivalSubmissionBuilder = apply { this.festival = festival }
-
-        fun build(): FestivalSubmission = FestivalSubmission().also {
-            it.id = id
-            it.festival = festival
-        }
-    }
 }

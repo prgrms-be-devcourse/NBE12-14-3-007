@@ -22,7 +22,7 @@ class FestivalSubmissionRequest private constructor() {
         val category: String?,
 
         @field:Schema(description = "공개할 행사 상세 내용")
-        val festivalContent: String?,
+        val festivalContent: String? = null,
 
         @field:NotBlank(message = "행사 참고 링크는 필수입니다.")
         @field:Size(max = 2048, message = "행사 참고 링크는 2,048자 이하여야 합니다.")
@@ -35,11 +35,11 @@ class FestivalSubmissionRequest private constructor() {
 
         @field:Size(max = 255, message = "행사 상세 주소는 255자 이하여야 합니다.")
         @field:Schema(description = "행사 상세 주소", example = "팔달구 효원로 1")
-        val regionDetail: String?,
+        val regionDetail: String? = null,
 
         @field:Size(max = 2048, message = "이미지 URL은 2,048자 이하여야 합니다.")
         @field:Schema(description = "행사 이미지 URL")
-        val imgUrl: String?,
+        val imgUrl: String? = null,
 
         @field:NotNull(message = "행사 시작 일시는 필수입니다.")
         @field:Schema(description = "행사 시작 일시", example = "2026-09-20T10:00:00")
@@ -50,10 +50,10 @@ class FestivalSubmissionRequest private constructor() {
         val endDe: LocalDateTime?,
 
         @field:Schema(description = "참가 비용 정보", example = "무료")
-        val partcptExpnInfo: String?,
+        val partcptExpnInfo: String? = null,
 
         @field:Schema(description = "전화번호", example = "010-1234-5678")
-        val telnoInfo: String?,
+        val telnoInfo: String? = null,
 
         @field:Schema(description = "상세 조회에서 받은 행사 버전. 수정 시 필수")
         val version: Long? = null,
@@ -64,51 +64,5 @@ class FestivalSubmissionRequest private constructor() {
     ) {
         @AssertTrue(message = "행사 종료 일시는 시작 일시보다 빠를 수 없습니다.")
         fun isValidPeriod(): Boolean = beginDe == null || endDe == null || !endDe.isBefore(beginDe)
-
-        companion object {
-            fun builder(): UpsertBuilder = UpsertBuilder()
-        }
-
-        class UpsertBuilder {
-            private var district: String? = null
-            fun district(district: String?): UpsertBuilder = apply { this.district = district }
-            private var version: Long? = null
-            fun version(version: Long?): UpsertBuilder = apply { this.version = version }
-            private var title: String? = null
-            private var category: String? = null
-            private var festivalContent: String? = null
-            private var referenceUrl: String? = null
-            private var region: FestivalRegion? = null
-            private var regionDetail: String? = null
-            private var imgUrl: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var partcptExpnInfo: String? = null
-            private var telnoInfo: String? = null
-
-            fun title(title: String?): UpsertBuilder = apply { this.title = title }
-
-            fun category(category: String?): UpsertBuilder = apply { this.category = category }
-
-            fun festivalContent(festivalContent: String?): UpsertBuilder = apply { this.festivalContent = festivalContent }
-
-            fun referenceUrl(referenceUrl: String?): UpsertBuilder = apply { this.referenceUrl = referenceUrl }
-
-            fun region(region: FestivalRegion?): UpsertBuilder = apply { this.region = region }
-
-            fun regionDetail(regionDetail: String?): UpsertBuilder = apply { this.regionDetail = regionDetail }
-
-            fun imgUrl(imgUrl: String?): UpsertBuilder = apply { this.imgUrl = imgUrl }
-
-            fun beginDe(beginDe: LocalDateTime?): UpsertBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): UpsertBuilder = apply { this.endDe = endDe }
-
-            fun partcptExpnInfo(partcptExpnInfo: String?): UpsertBuilder = apply { this.partcptExpnInfo = partcptExpnInfo }
-
-            fun telnoInfo(telnoInfo: String?): UpsertBuilder = apply { this.telnoInfo = telnoInfo }
-
-            fun build(): Upsert = Upsert(title, category, festivalContent, referenceUrl, region, regionDetail, imgUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, version, district)
-        }
     }
 }

@@ -1,7 +1,6 @@
 package com.team007.room_escape.domain.festival.service
 
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
-import java.util.Optional
 import java.util.concurrent.locks.ReentrantLock
 import org.springframework.stereotype.Component
 
@@ -12,13 +11,13 @@ class FestivalSyncExecutor(
 ) {
     private val lock = ReentrantLock()
 
-    /** 수동 동기화용: 이미 실행 중이면 기다리지 않고 empty를 돌려준다 (컨트롤러가 409로 응답). */
-    fun tryRun(): Optional<FestivalResponse.SyncResponse> {
+    /** 수동 동기화용: 이미 실행 중이면 기다리지 않고 null을 돌려준다 (컨트롤러가 409로 응답). */
+    fun tryRun(): FestivalResponse.SyncResponse? {
         if (!lock.tryLock()) {
-            return Optional.empty()
+            return null
         }
         try {
-            return Optional.of(festivalService.syncPublicFestivals())
+            return festivalService.syncPublicFestivals()
         } finally {
             lock.unlock() // 예외가 나도 반드시 풀어야 이후 동기화가 막히지 않는다
         }

@@ -42,16 +42,16 @@ class FestivalRepositoryQueryTest @Autowired constructor(
         imgUrl: String? = null,
         externalId: String? = null,
     ): Festival {
-        val festival = Festival.builder()
-            .providerType(providerType)
-            .title("$token-$name")
-            .beginDe(endDe.minusDays(3))
-            .endDe(endDe)
-            .status(status)
-            .imgUrl(imgUrl)
-            .externalId(externalId)
-            .region(FestivalRegion.values()[0])
-            .build()
+        val festival = Festival(
+            providerType = providerType,
+            title = "$token-$name",
+            beginDe = endDe.minusDays(3),
+            endDe = endDe,
+            status = status,
+            imgUrl = imgUrl,
+            externalId = externalId,
+            region = FestivalRegion.values()[0],
+        )
         em.persist(festival)
         return festival
     }
@@ -146,7 +146,7 @@ class FestivalRepositoryQueryTest @Autowired constructor(
 
         assertThat(festivals.existsByIdAndDeletedAtIsNull(visible.requiredId)).isTrue()
         assertThat(festivals.existsByIdAndDeletedAtIsNull(removed.requiredId)).isFalse()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(removed.requiredId)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(removed.requiredId)).isNull()
     }
 
     @Test

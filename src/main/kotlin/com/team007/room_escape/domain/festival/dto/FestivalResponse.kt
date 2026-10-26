@@ -27,8 +27,6 @@ class FestivalResponse private constructor() {
         val reason: String?
     ) {
         companion object {
-            fun builder(): DeletionInfoBuilder = DeletionInfoBuilder()
-
             fun from(festival: Festival, latest: DeletionHistory?): DeletionInfo? {
                 if (!festival.isDeleted()) return null
                 if (latest == null || latest.action != DeletionAction.DELETE) {
@@ -37,20 +35,6 @@ class FestivalResponse private constructor() {
                 val detail = latest.reasonDetail?.let { " — $it" }.orEmpty()
                 return DeletionInfo(festival.deletedAt, latest.actorType, latest.reason.description + detail)
             }
-        }
-
-        class DeletionInfoBuilder {
-            private var deletedAt: LocalDateTime? = null
-            private var type: DeletionActorType? = null
-            private var reason: String? = null
-
-            fun deletedAt(deletedAt: LocalDateTime?): DeletionInfoBuilder = apply { this.deletedAt = deletedAt }
-
-            fun type(type: DeletionActorType?): DeletionInfoBuilder = apply { this.type = type }
-
-            fun reason(reason: String?): DeletionInfoBuilder = apply { this.reason = reason }
-
-            fun build(): DeletionInfo = DeletionInfo(deletedAt, type, reason)
         }
     }
 
@@ -102,75 +86,24 @@ class FestivalResponse private constructor() {
         val district: String? = null
     ) {
         companion object {
-            fun builder(): ListItemBuilder = ListItemBuilder()
-
             fun from(festival: Festival, likeCount: Long, accurateCount: Long, inaccurateCount: Long, imageUrlResolver: ImageUrlResolver?): ListItem =
-                ListItem.builder()
-                    .festivalId(festival.id)
-                    .providerType(festival.providerType)
-                    .title(festival.title)
-                    .category(festival.category)
-                    .imgUrl(image(festival.imgUrl, imageUrlResolver))
-                    .beginDe(festival.beginDe)
-                    .endDe(festival.endDe)
-                    .region(festival.region)
-                    .district(festival.district)
-                    .regionDetail(festival.regionDetail)
-                    .status(FestivalStatus.from(festival.endDe))
-                    .likeCount(likeCount)
-                    .accurateCount(accurateCount)
-                    .inaccurateCount(inaccurateCount)
-                    .member(toMember(festival, imageUrlResolver))
-                    .build()
-        }
-
-        class ListItemBuilder {
-            private var district: String? = null
-            fun district(district: String?): ListItemBuilder = apply { this.district = district }
-            private var festivalId: Long? = null
-            private var providerType: ProviderType? = null
-            private var title: String? = null
-            private var category: String? = null
-            private var imgUrl: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var region: FestivalRegion? = null
-            private var regionDetail: String? = null
-            private var status: FestivalStatus? = null
-            private var likeCount: Long = 0
-            private var accurateCount: Long = 0
-            private var inaccurateCount: Long = 0
-            private var member: MemberResponse.MemberInfo? = null
-
-            fun festivalId(festivalId: Long?): ListItemBuilder = apply { this.festivalId = festivalId }
-
-            fun providerType(providerType: ProviderType?): ListItemBuilder = apply { this.providerType = providerType }
-
-            fun title(title: String?): ListItemBuilder = apply { this.title = title }
-
-            fun category(category: String?): ListItemBuilder = apply { this.category = category }
-
-            fun imgUrl(imgUrl: String?): ListItemBuilder = apply { this.imgUrl = imgUrl }
-
-            fun beginDe(beginDe: LocalDateTime?): ListItemBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): ListItemBuilder = apply { this.endDe = endDe }
-
-            fun region(region: FestivalRegion?): ListItemBuilder = apply { this.region = region }
-
-            fun regionDetail(regionDetail: String?): ListItemBuilder = apply { this.regionDetail = regionDetail }
-
-            fun status(status: FestivalStatus?): ListItemBuilder = apply { this.status = status }
-
-            fun likeCount(likeCount: Long): ListItemBuilder = apply { this.likeCount = likeCount }
-
-            fun accurateCount(accurateCount: Long): ListItemBuilder = apply { this.accurateCount = accurateCount }
-
-            fun inaccurateCount(inaccurateCount: Long): ListItemBuilder = apply { this.inaccurateCount = inaccurateCount }
-
-            fun member(member: MemberResponse.MemberInfo?): ListItemBuilder = apply { this.member = member }
-
-            fun build(): ListItem = ListItem(festivalId, providerType, title, category, imgUrl, beginDe, endDe, region, regionDetail, status, likeCount, accurateCount, inaccurateCount, member, district)
+                ListItem(
+                    festivalId = festival.id,
+                    providerType = festival.providerType,
+                    title = festival.title,
+                    category = festival.category,
+                    imgUrl = image(festival.imgUrl, imageUrlResolver),
+                    beginDe = festival.beginDe,
+                    endDe = festival.endDe,
+                    region = festival.region,
+                    district = festival.district,
+                    regionDetail = festival.regionDetail,
+                    status = FestivalStatus.from(festival.endDe),
+                    likeCount = likeCount,
+                    accurateCount = accurateCount,
+                    inaccurateCount = inaccurateCount,
+                    member = toMember(festival, imageUrlResolver),
+                )
         }
     }
 
@@ -243,103 +176,31 @@ class FestivalResponse private constructor() {
         val district: String? = null
     ) {
         companion object {
-            fun builder(): DetailBuilder = DetailBuilder()
-
             fun from(festival: Festival, accurateCount: Long, inaccurateCount: Long, myVote: FestivalAccuracyVoteType?, likeCount: Long, likedByMe: Boolean, imageUrlResolver: ImageUrlResolver?): Detail =
-                Detail.builder()
-                    .festivalId(festival.id)
-                    .providerType(festival.providerType)
-                    .title(festival.title)
-                    .category(festival.category)
-                    .festivalContent(festival.content)
-                    .imgUrl(image(festival.imgUrl, imageUrlResolver))
-                    .url(festival.url)
-                    .referenceUrl(festival.url)
-                    .beginDe(festival.beginDe)
-                    .endDe(festival.endDe)
-                    .partcptExpnInfo(festival.partcptExpnInfo)
-                    .telnoInfo(festival.telnoInfo)
-                    .region(festival.region)
-                    .district(festival.district)
-                    .regionDetail(festival.regionDetail)
-                    .status(FestivalStatus.from(festival.endDe))
-                    .accurateCount(accurateCount)
-                    .inaccurateCount(inaccurateCount)
-                    .myVote(myVote)
-                    .likeCount(likeCount)
-                    .likedByMe(likedByMe)
-                    .member(toMember(festival, imageUrlResolver))
-                    .build()
-        }
-
-        class DetailBuilder {
-            private var district: String? = null
-            fun district(district: String?): DetailBuilder = apply { this.district = district }
-            private var festivalId: Long? = null
-            private var providerType: ProviderType? = null
-            private var title: String? = null
-            private var category: String? = null
-            private var festivalContent: String? = null
-            private var imgUrl: String? = null
-            private var url: String? = null
-            private var referenceUrl: String? = null
-            private var beginDe: LocalDateTime? = null
-            private var endDe: LocalDateTime? = null
-            private var partcptExpnInfo: String? = null
-            private var telnoInfo: String? = null
-            private var region: FestivalRegion? = null
-            private var regionDetail: String? = null
-            private var status: FestivalStatus? = null
-            private var accurateCount: Long = 0
-            private var inaccurateCount: Long = 0
-            private var myVote: FestivalAccuracyVoteType? = null
-            private var likeCount: Long = 0
-            private var likedByMe: Boolean = false
-            private var member: MemberResponse.MemberInfo? = null
-
-            fun festivalId(festivalId: Long?): DetailBuilder = apply { this.festivalId = festivalId }
-
-            fun providerType(providerType: ProviderType?): DetailBuilder = apply { this.providerType = providerType }
-
-            fun title(title: String?): DetailBuilder = apply { this.title = title }
-
-            fun category(category: String?): DetailBuilder = apply { this.category = category }
-
-            fun festivalContent(festivalContent: String?): DetailBuilder = apply { this.festivalContent = festivalContent }
-
-            fun imgUrl(imgUrl: String?): DetailBuilder = apply { this.imgUrl = imgUrl }
-
-            fun url(url: String?): DetailBuilder = apply { this.url = url }
-
-            fun referenceUrl(referenceUrl: String?): DetailBuilder = apply { this.referenceUrl = referenceUrl }
-
-            fun beginDe(beginDe: LocalDateTime?): DetailBuilder = apply { this.beginDe = beginDe }
-
-            fun endDe(endDe: LocalDateTime?): DetailBuilder = apply { this.endDe = endDe }
-
-            fun partcptExpnInfo(partcptExpnInfo: String?): DetailBuilder = apply { this.partcptExpnInfo = partcptExpnInfo }
-
-            fun telnoInfo(telnoInfo: String?): DetailBuilder = apply { this.telnoInfo = telnoInfo }
-
-            fun region(region: FestivalRegion?): DetailBuilder = apply { this.region = region }
-
-            fun regionDetail(regionDetail: String?): DetailBuilder = apply { this.regionDetail = regionDetail }
-
-            fun status(status: FestivalStatus?): DetailBuilder = apply { this.status = status }
-
-            fun accurateCount(accurateCount: Long): DetailBuilder = apply { this.accurateCount = accurateCount }
-
-            fun inaccurateCount(inaccurateCount: Long): DetailBuilder = apply { this.inaccurateCount = inaccurateCount }
-
-            fun myVote(myVote: FestivalAccuracyVoteType?): DetailBuilder = apply { this.myVote = myVote }
-
-            fun likeCount(likeCount: Long): DetailBuilder = apply { this.likeCount = likeCount }
-
-            fun likedByMe(likedByMe: Boolean): DetailBuilder = apply { this.likedByMe = likedByMe }
-
-            fun member(member: MemberResponse.MemberInfo?): DetailBuilder = apply { this.member = member }
-
-            fun build(): Detail = Detail(festivalId, providerType, title, category, festivalContent, imgUrl, url, referenceUrl, beginDe, endDe, partcptExpnInfo, telnoInfo, region, regionDetail, status, accurateCount, inaccurateCount, myVote, likeCount, likedByMe, member, district)
+                Detail(
+                    festivalId = festival.id,
+                    providerType = festival.providerType,
+                    title = festival.title,
+                    category = festival.category,
+                    festivalContent = festival.content,
+                    imgUrl = image(festival.imgUrl, imageUrlResolver),
+                    url = festival.url,
+                    referenceUrl = festival.url,
+                    beginDe = festival.beginDe,
+                    endDe = festival.endDe,
+                    partcptExpnInfo = festival.partcptExpnInfo,
+                    telnoInfo = festival.telnoInfo,
+                    region = festival.region,
+                    district = festival.district,
+                    regionDetail = festival.regionDetail,
+                    status = FestivalStatus.from(festival.endDe),
+                    accurateCount = accurateCount,
+                    inaccurateCount = inaccurateCount,
+                    myVote = myVote,
+                    likeCount = likeCount,
+                    likedByMe = likedByMe,
+                    member = toMember(festival, imageUrlResolver),
+                )
         }
     }
 

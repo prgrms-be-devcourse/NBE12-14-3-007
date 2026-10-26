@@ -35,24 +35,24 @@ data class CultureInfoDetailRow(
         val begin = parseDate(startDate)
         val end = parseEndDate(endDate)
 
-        return Festival.builder()
-            .providerType(ProviderType.PUBLIC)
-            .externalId(seq)
-            .title(unescapeHtml(title))
-            .category(realmName)
-            .content(unescapeHtml(contents1))
-            .url(url)
-            .telnoInfo(phone)
-            .partcptExpnInfo(price)
-            .imgUrl(processedImgUrl)
-            .beginDe(begin)
-            .endDe(end)
-            .status(FestivalStatus.from(end))
-            .region(FestivalRegion.fromDisplayName(area))
-            .regionDetail(sigungu)
-            .place(unescapeHtml(place))
-            .placeAddress(placeAddr)
-            .build()
+        return Festival(
+            providerType = ProviderType.PUBLIC,
+            externalId = seq,
+            title = unescapeHtml(title),
+            category = realmName,
+            content = unescapeHtml(contents1),
+            url = url,
+            telnoInfo = phone,
+            partcptExpnInfo = price,
+            imgUrl = processedImgUrl,
+            beginDe = begin,
+            endDe = end,
+            status = FestivalStatus.from(end),
+            region = FestivalRegion.fromDisplayName(area),
+            regionDetail = sigungu,
+            place = unescapeHtml(place),
+            placeAddress = placeAddr,
+        )
     }
 
     companion object {

@@ -24,9 +24,15 @@ class SubmissionDuplicateRepositoryTest @Autowired constructor(
         val start = LocalDateTime.of(2026, 10, 2, 0, 0)
         val end = start.plusDays(1)
         val url = "https://example.com/${UUID.randomUUID()}"
-        val festival = Festival.builder().providerType(ProviderType.MEMBER)
-            .title(url).district("수원시").url("https://different.example.com").region(FestivalRegion.GYEONGGI)
-            .beginDe(start.plusHours(10)).endDe(end.plusHours(18)).build()
+        val festival = Festival(
+            providerType = ProviderType.MEMBER,
+            title = url,
+            district = "수원시",
+            url = "https://different.example.com",
+            region = FestivalRegion.GYEONGGI,
+            beginDe = start.plusHours(10),
+            endDe = end.plusHours(18),
+        )
         em.persist(festival)
         em.flush()
         assertThat(festivals.lockSubmissionDuplicateKey(123456789L)).isEqualTo(1)
@@ -48,7 +54,7 @@ class SubmissionDuplicateRepositoryTest @Autowired constructor(
     fun databaseRejectsSameNameDistrictDatesEvenWithDifferentUrlsAndTimes() {
         val start = LocalDateTime.of(2026, 10, 2, 10, 0)
         val title = UUID.randomUUID().toString()
-        fun event(url: String, hour: Long) = Festival.create(
+        fun event(url: String, hour: Long) = Festival(
             providerType = ProviderType.MEMBER, title = title,
             region = FestivalRegion.SEOUL, district = "강남구", url = url,
             beginDe = start.plusHours(hour), endDe = start.plusDays(1).plusHours(hour)

@@ -4,7 +4,7 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalSubmission
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
-import java.util.*
+import java.util.UUID
 
 interface FestivalSubmissionRepository : JpaRepository<FestivalSubmission, UUID> {
     @EntityGraph(attributePaths = ["festival"])
@@ -17,5 +17,5 @@ interface FestivalSubmissionRepository : JpaRepository<FestivalSubmission, UUID>
     fun findByIdAndFestival_Member_Id(
         submissionId: UUID,
         memberId: UUID
-    ): Optional<FestivalSubmission>
+    ): FestivalSubmission?
 }

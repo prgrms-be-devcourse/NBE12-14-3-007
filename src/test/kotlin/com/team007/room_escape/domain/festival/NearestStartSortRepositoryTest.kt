@@ -84,13 +84,13 @@ class NearestStartSortRepositoryTest @Autowired constructor(
 
     private fun festival(name: String, beginDe: LocalDateTime) {
         em.persist(
-            Festival.builder()
-                .providerType(ProviderType.PUBLIC)
-                .title(title(name))
-                .beginDe(beginDe)
-                .endDe(beginDe.plusDays(3))
-                .region(FestivalRegion.values()[0])
-                .build()
+            Festival(
+                providerType = ProviderType.PUBLIC,
+                title = title(name),
+                beginDe = beginDe,
+                endDe = beginDe.plusDays(3),
+                region = FestivalRegion.values()[0],
+            )
         )
     }
 

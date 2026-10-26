@@ -64,7 +64,7 @@ class FestivalController(
     @PostMapping("/sync")
     fun syncPublicFestivals(): ResponseEntity<ApiResponse<FestivalResponse.SyncResponse>> {
         val result: FestivalResponse.SyncResponse = festivalSyncExecutor.tryRun()
-            .orElseThrow { BusinessException(FestivalExceptionCode.SYNC_ALREADY_RUNNING) }
+            ?: throw BusinessException(FestivalExceptionCode.SYNC_ALREADY_RUNNING)
 
         return ResponseEntity.ok(ApiResponse.ok(result))
     }

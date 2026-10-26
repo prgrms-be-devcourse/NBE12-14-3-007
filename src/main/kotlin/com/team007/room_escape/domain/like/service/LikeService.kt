@@ -66,7 +66,7 @@ class LikeService(
     fun createFestivalLike(festivalId: Long, memberId: UUID): LikeResponse {
         val member = memberReader.getUnrestrictedMember(memberId)
         val festival = festivalRepository.findByIdAndDeletedAtIsNull(festivalId)
-            .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+            ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
 
         if (festival.member?.id == memberId) {
             throw BusinessException(LikeExceptionCode.SELF_FESTIVAL_LIKE_NOT_ALLOWED)
