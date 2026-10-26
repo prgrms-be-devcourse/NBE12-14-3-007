@@ -17,7 +17,7 @@ class OpenApiConfigTest {
 
     @Test
     fun `JWT Bearer 인증 방식을 Authorization 헤더로 등록한다`() {
-        val scheme = openApi.components.securitySchemes[OpenApiConfig.BEARER_SCHEME]!!
+        val scheme = requireNotNull(openApi.components.securitySchemes[OpenApiConfig.BEARER_SCHEME])
 
         assertThat(scheme.type).isEqualTo(SecurityScheme.Type.HTTP)
         assertThat(scheme.scheme).isEqualTo("bearer")

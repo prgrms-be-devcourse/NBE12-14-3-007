@@ -21,6 +21,8 @@ import com.team007.room_escape.global.util.RichTextSanitizer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import com.team007.room_escape.support.anyDateTime
+import com.team007.room_escape.support.anyText
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyLong
@@ -59,7 +61,7 @@ class FestivalSubmissionServiceTest {
 
     @Test
     fun duplicateCreateUsesDatesAndNormalizedUrlAndRejectsBeforeSaving() {
-        `when`(festivals.existsSubmissionDuplicate(isNull(), any(), any(), any(), any(), any(), any()))
+        `when`(festivals.existsSubmissionDuplicate(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText()))
             .thenReturn(true)
         assertDuplicate { service.create(memberId, request()) }
         verify(festivals).existsSubmissionDuplicate(
@@ -69,7 +71,7 @@ class FestivalSubmissionServiceTest {
         )
         val order = inOrder(festivals)
         order.verify(festivals).lockSubmissionDuplicateKey(anyLong())
-        order.verify(festivals).existsSubmissionDuplicate(isNull(), any(), any(), any(), any(), any(), any())
+        order.verify(festivals).existsSubmissionDuplicate(isNull(), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText())
         verify(festivals, never()).saveAndFlush(any<Festival>())
         verify(submissions, never()).save(any<FestivalSubmission>())
     }
@@ -79,7 +81,7 @@ class FestivalSubmissionServiceTest {
         val festival = Festival.builder().id(7L).build()
         `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
             .thenReturn(Optional.of(FestivalSubmission.builder().festival(festival).build()))
-        `when`(festivals.existsSubmissionDuplicate(eq(7L), any(), any(), any(), any(), any(), any()))
+        `when`(festivals.existsSubmissionDuplicate(eq(7L), anyDateTime(), anyDateTime(), anyDateTime(), anyDateTime(), anyText(), anyText()))
             .thenReturn(true)
         assertDuplicate { service.update(memberId, submissionId, request()) }
         assertThat(festival.title).isNull()

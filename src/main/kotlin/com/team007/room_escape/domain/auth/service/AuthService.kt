@@ -70,9 +70,10 @@ class AuthService(
     //  일정 횟수를 넘으면 429(TOO_MANY_REQUESTS)로 막을 것. (대입 공격과 BCrypt CPU 소모 대응,
     //  EmailVerificationService가 같은 방식으로 Caffeine을 쓴다.)
     @Transactional
-    fun login(email: String, password: String): TokenPair {
+    fun login(email: String?, password: String?): TokenPair {
+        // 이메일이나 비밀번호가 없으면(검증을 통과했다면 생기지 않는다) 일치하는 회원이 없는 것과 같게 처리한다.
         val member = memberRepository.findByEmailAndDeletedAtIsNull(email).orElse(null)
-            ?.takeIf { passwordEncoder.matches(password, it.password) }
+            ?.takeIf { password != null && passwordEncoder.matches(password, it.password) }
             ?: throw BusinessException(AuthExceptionCode.INVALID_CREDENTIALS)
         return issueTokens(member)
     }

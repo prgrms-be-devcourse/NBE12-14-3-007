@@ -162,6 +162,14 @@ class AuthServiceTest {
         }
 
         @Test
+        fun `이메일이나 비밀번호가 없으면 일치하는 회원이 없는 것과 같은 오류다`() {
+            `when`(memberRepository.findByEmailAndDeletedAtIsNull("user@example.com")).thenReturn(Optional.of(member()))
+
+            assertThatThrownBy { service.login("user@example.com", null) }.isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
+            assertThatThrownBy { service.login(null, "Password1!") }.isBusiness(AuthExceptionCode.INVALID_CREDENTIALS)
+        }
+
+        @Test
         fun `없는 이메일도 같은 오류로 알려서 존재 여부를 드러내지 않는다`() {
             `when`(memberRepository.findByEmailAndDeletedAtIsNull("none@example.com")).thenReturn(Optional.empty())
 
