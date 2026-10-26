@@ -27,7 +27,7 @@ class StringUtilTest {
      */
     @Test
     fun `줄바꿈 없는 공백(NBSP)만 있는 값은 공백으로 보지 않는다`() {
-        val nbsp = " "
+        val nbsp = "\u00A0"
 
         assertThat(StringUtil.emptyToNull(nbsp)).isEqualTo(nbsp)
     }
@@ -43,5 +43,15 @@ class StringUtilTest {
     @ValueSource(strings = ["a", " a ", "\u00A0"])
     fun `isNullOrBlankLikeJava는 글자가 있거나 NBSP면 false다`(value: String) {
         assertThat(value.isNullOrBlankLikeJava()).isFalse()
+    }
+
+    @Test
+    fun `trimLikeJava는 U+0020 이하의 앞뒤 공백을 자른다`() {
+        assertThat("  \t글자\n ".trimLikeJava()).isEqualTo("글자")
+    }
+
+    @Test
+    fun `trimLikeJava는 NBSP처럼 U+0020보다 큰 공백은 자르지 않는다`() {
+        assertThat("\u00A0글자\u00A0".trimLikeJava()).isEqualTo("\u00A0글자\u00A0")
     }
 }

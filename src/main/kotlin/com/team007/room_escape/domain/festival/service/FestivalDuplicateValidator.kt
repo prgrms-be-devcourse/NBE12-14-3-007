@@ -4,6 +4,7 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.util.trimLikeJava
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.*
@@ -15,7 +16,7 @@ class FestivalDuplicateValidator(
 ) {
     fun normalizeReferenceUrl(url: String): String {
         // Java String.trim()과 같은 문자 범위만 제거한다.
-        return url.trim { it <= ' ' }.replaceFirst(Regex("/+$"), "")
+        return url.trimLikeJava().replaceFirst(Regex("/+$"), "")
     }
 
     fun validate(

@@ -144,8 +144,8 @@ class AdminInquiryServiceTest {
             val post = mock(CommunityPost::class.java).also { `when`(it.id).thenReturn(postId) }
             `when`(inquiryRepository.findDetailById(inquiryId))
                 .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.COMMUNITY_COMMENT, "8"))
-            `when`(communityCommentRepository.findById(8L))
-                .thenReturn(Optional.of(CommunityComment(post, member, null, "댓글")))
+            `when`(communityCommentRepository.findWithMemberById(8L))
+                .thenReturn(CommunityComment(post, member, null, "댓글"))
 
             assertThat(service.findById(inquiryId).targetPostId).isEqualTo(postId)
         }

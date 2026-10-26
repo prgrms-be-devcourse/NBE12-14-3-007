@@ -305,7 +305,7 @@ class CommunityCommentTest @Autowired constructor(
                 )
             ).id
         )
-        val authorId = postRepository.findById(postId).orElseThrow().member.id
+        val authorId = requireNotNull(postRepository.findWithMemberById(postId)).member.id
         communityService.deletePost(postId, authorId)
         entityManager.flush()
         entityManager.clear()

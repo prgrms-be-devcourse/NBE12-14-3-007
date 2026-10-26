@@ -63,7 +63,7 @@ interface CommunityPostRepository : JpaRepository<CommunityPost, UUID> {
         pageable: Pageable,
     ): Page<CommunityPost>
 
-    /** 작성자를 함께 읽는다. JpaRepository의 메서드를 덮어써서 Optional을 그대로 쓴다. */
+    /** 작성자를 함께 읽는다. 삭제된 글은 @SQLRestriction 때문에 찾지 못한다. */
     @EntityGraph(attributePaths = ["member"])
-    override fun findById(id: UUID): Optional<CommunityPost>
+    fun findWithMemberById(id: UUID): CommunityPost?
 }

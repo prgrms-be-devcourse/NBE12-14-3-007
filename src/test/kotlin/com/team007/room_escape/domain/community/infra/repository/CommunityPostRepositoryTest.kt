@@ -72,7 +72,7 @@ class CommunityPostRepositoryTest @Autowired constructor(
         }
         try {
             TransactionTemplate(transactionManager).executeWithoutResult {
-                val post = postRepository.findById(postId).orElseThrow()
+                val post = requireNotNull(postRepository.findWithMemberById(postId))
                 newTransaction.executeWithoutResult { postRepository.increaseViewCount(postId) }
                 post.update(CommunityCategory.EVENT, "고친 제목", "<p>고친 본문</p>")
             }

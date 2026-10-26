@@ -6,6 +6,9 @@ import kotlin.contracts.contract
 /** Kotlin의 isBlank()는 NBSP 같은 공백도 공백으로 봐서, Java String.isBlank()와 같은 기준으로 맞춘다. */
 fun String.isBlankLikeJava(): Boolean = all { Character.isWhitespace(it) }
 
+/** Java String.trim()과 같은 기준(U+0020 이하)으로 앞뒤를 자른다. Kotlin trim()은 NBSP 같은 공백도 자른다. */
+fun String.trimLikeJava(): String = trim { it <= ' ' }
+
 /** null이거나 [isBlankLikeJava]면 true. false를 돌려주면 null이 아니라고 컴파일러가 알 수 있다. */
 @OptIn(ExperimentalContracts::class)
 fun String?.isNullOrBlankLikeJava(): Boolean {
