@@ -21,7 +21,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions"), admin)
             .contentType("application/json")
-            .content(deleteBody(festival.id, "DUPLICATE", null)))
+            .content(deleteBody(festival.id!!, "DUPLICATE", null)))
             .andExpect(status().isOk)
 
         mvc.perform(`as`(get("/api/v1/admin/deletions/latest?targetType=FESTIVAL&targetId=${festival.id}"), admin))
@@ -48,7 +48,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions"), tokenOf(MemberRole.ROLE_ADMIN))
             .contentType("application/json")
-            .content(deleteBody(festival.id, "OTHER", null)))
+            .content(deleteBody(festival.id!!, "OTHER", null)))
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("DELETION004"))
     }
@@ -59,7 +59,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions"), tokenOf(MemberRole.ROLE_ADMIN))
             .contentType("application/json")
-            .content(deleteBody(festival.id, "AUTHOR_REQUEST", null)))
+            .content(deleteBody(festival.id!!, "AUTHOR_REQUEST", null)))
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("DELETION005"))
     }
@@ -71,12 +71,12 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions"), admin)
             .contentType("application/json")
-            .content(deleteBody(festival.id, "SPAM", null)))
+            .content(deleteBody(festival.id!!, "SPAM", null)))
             .andExpect(status().isOk)
 
         mvc.perform(`as`(post("/api/v1/admin/deletions/restore"), admin)
             .contentType("application/json")
-            .content(restoreBody(festival.id)))
+            .content(restoreBody(festival.id!!)))
             .andExpect(status().isOk)
 
         mvc.perform(`as`(get("/api/v1/admin/deletions/latest?targetType=FESTIVAL&targetId=${festival.id}"), admin))
@@ -89,7 +89,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions/restore"), tokenOf(MemberRole.ROLE_ADMIN))
             .contentType("application/json")
-            .content(restoreBody(festival.id)))
+            .content(restoreBody(festival.id!!)))
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.code").value("FESTIVAL007"))
     }
@@ -102,7 +102,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions/restore"), tokenOf(MemberRole.ROLE_ADMIN))
             .contentType("application/json")
-            .content(restoreBody(festival.id)))
+            .content(restoreBody(festival.id!!)))
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.code").value("DELETION006"))
     }
@@ -122,7 +122,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions"), tokenOf(MemberRole.ROLE_UNVERIFIED))
             .contentType("application/json")
-            .content(deleteBody(festival.id, "SPAM", null)))
+            .content(deleteBody(festival.id!!, "SPAM", null)))
             .andExpect(status().isForbidden)
     }
 
@@ -132,7 +132,7 @@ class AdminDeletionApiContractTest : ApiContractSupport() {
 
         mvc.perform(`as`(post("/api/v1/admin/deletions/restore"), tokenOf(MemberRole.ROLE_UNVERIFIED))
             .contentType("application/json")
-            .content(restoreBody(festival.id)))
+            .content(restoreBody(festival.id!!)))
             .andExpect(status().isForbidden)
     }
 

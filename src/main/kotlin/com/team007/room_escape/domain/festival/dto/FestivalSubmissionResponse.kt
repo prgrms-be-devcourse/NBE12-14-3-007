@@ -90,7 +90,7 @@ class FestivalSubmissionResponse private constructor() {
 
             @JvmStatic
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): ListItem {
-                val festival = festivalSubmission.festival
+                val festival = festivalSubmission.festival!!
 
                 return ListItem.builder()
                     .festivalSubmissionId(festivalSubmission.id)
@@ -195,7 +195,7 @@ class FestivalSubmissionResponse private constructor() {
                     .festivalSubmissionId(festivalSubmission.id)
                     .createdAt(festivalSubmission.createdAt)
                     .updatedAt(festivalSubmission.updatedAt)
-                    .festival(FestivalInfo.from(festivalSubmission.festival, latest))
+                    .festival(FestivalInfo.from(festivalSubmission.festival!!, latest))
                     .build()
             }
         }

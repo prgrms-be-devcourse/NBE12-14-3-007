@@ -83,7 +83,7 @@ class MemberTrustGradeConcurrencyTest @Autowired constructor(
                 .member(author)
                 .providerType(ProviderType.MEMBER)
                 .title("등급 검증 행사")
-                .build()).id
+                .build()).id!!
         }
     }
 
