@@ -19,7 +19,6 @@ class EmailVerificationServiceTest {
         resendCooldownSeconds: Long = 60,
         verifiedValidMinutes: Long = 30,
     ) = EmailVerificationService(AuthMailProperties(expireMinutes, resendCooldownSeconds, verifiedValidMinutes))
-        .apply { initCache() }
 
     private val member = UUID.randomUUID()
     private val purpose = Purpose.PASSWORD_CHANGE
