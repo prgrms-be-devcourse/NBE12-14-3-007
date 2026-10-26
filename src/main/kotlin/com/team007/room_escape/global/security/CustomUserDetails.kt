@@ -15,38 +15,22 @@ class CustomUserDetails(
     val nickname: String,
     val role: String,
     val profileImg: String?,
-    private val password: String?
+    private val password: String?,
 ) : UserDetails {
 
-    fun isAdmin(): Boolean {
-        return "ROLE_ADMIN" == role
-    }
+    val isAdmin: Boolean get() = role == "ROLE_ADMIN"
 
-    override fun getAuthorities(): Collection<GrantedAuthority> {
-        return listOf(SimpleGrantedAuthority(role))
-    }
+    override fun getAuthorities(): Collection<GrantedAuthority> = listOf(SimpleGrantedAuthority(role))
 
-    override fun getPassword(): String? {
-        return password
-    }
+    override fun getPassword(): String? = password
 
-    override fun getUsername(): String {
-        return nickname
-    }
+    override fun getUsername(): String = nickname
 
-    override fun isAccountNonExpired(): Boolean {
-        return true
-    }
+    override fun isAccountNonExpired(): Boolean = true
 
-    override fun isAccountNonLocked(): Boolean {
-        return true
-    }
+    override fun isAccountNonLocked(): Boolean = true
 
-    override fun isCredentialsNonExpired(): Boolean {
-        return true
-    }
+    override fun isCredentialsNonExpired(): Boolean = true
 
-    override fun isEnabled(): Boolean {
-        return true
-    }
+    override fun isEnabled(): Boolean = true
 }
