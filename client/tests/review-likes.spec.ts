@@ -62,14 +62,16 @@ test("review detail shows the like count from the detail response and updates it
   });
 
   await page.goto(`/reviews/${postId}`);
-  const button = page.getByRole("button", { name: /도움돼요|도움이 됐어요/ });
-  await expect(button).toHaveText(/도움돼요\s*5/);
+  const button = page.getByRole("button", { name: /^후기 좋아요/ });
+  await expect(button).toHaveText(/좋아요\s*5/);
+  await expect(button).toHaveAttribute("aria-pressed", "false");
 
   await button.click();
-  await expect(button).toHaveText(/도움이 됐어요\s*6/);
+  await expect(button).toHaveText(/좋아요\s*6/);
   await expect(button).toHaveAttribute("aria-pressed", "true");
 
   await button.click();
-  await expect(button).toHaveText(/도움돼요\s*5/);
+  await expect(button).toHaveText(/좋아요\s*5/);
+  await expect(button).toHaveAttribute("aria-pressed", "false");
   expect(countRequests).toEqual([]);
 });

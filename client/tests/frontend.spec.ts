@@ -333,14 +333,14 @@ test("preview review, comment and like lifecycle works", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "검증용 산책 후기", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /도움돼요/ }).click();
+  await page.getByRole("button", { name: /^후기 좋아요 \d/ }).click();
   await expect(
-    page.getByRole("button", { name: /도움이 됐어요/ }),
+    page.getByRole("button", { name: /^후기 좋아요 취소/ }),
   ).toContainText("1");
-  await page.getByRole("button", { name: /도움이 됐어요/ }).click();
-  await expect(page.getByRole("button", { name: /도움돼요/ })).toContainText(
-    "0",
-  );
+  await page.getByRole("button", { name: /^후기 좋아요 취소/ }).click();
+  await expect(
+    page.getByRole("button", { name: /^후기 좋아요 \d/ }),
+  ).toContainText("0");
   await page.getByLabel("댓글 내용").fill("직접 확인한 댓글");
   await page.getByRole("button", { name: "댓글 남기기" }).click();
   const root = page.locator(".comment-thread > .comment-row").first();

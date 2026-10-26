@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ImageOff, ThumbsUp } from "lucide-react";
+import { ArrowRight, Heart, ImageOff } from "lucide-react";
 import { dateText, dateTimeText } from "../lib/format";
 import type { PostSummary } from "../lib/types";
 import { Badge, Photo } from "./ui";
@@ -37,7 +37,7 @@ export function ReviewRow({
               className="post-like-count"
               aria-label={`좋아요 ${post.likeCount}개`}
             >
-              <ThumbsUp size={13} />
+              <Heart size={13} />
               {post.likeCount}
             </span>
           )}
