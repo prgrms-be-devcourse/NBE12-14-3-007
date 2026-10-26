@@ -67,7 +67,7 @@ class FestivalSubmissionService(
         val submission = findSubmission(memberId, submissionId)
         val festival = submission.festival!!
         val latest = if (festival.isDeleted()) {
-            deletionHistories.findLatest(DeletionTargetType.FESTIVAL, festival.id!!.toString()).orElse(null)
+            deletionHistories.findLatest(DeletionTargetType.FESTIVAL, festival.id!!.toString())
         } else null
         return FestivalSubmissionResponse.Detail.from(submission, latest)
     }

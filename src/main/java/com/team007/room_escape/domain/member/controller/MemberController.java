@@ -41,7 +41,7 @@ public class MemberController {
 	) {
 		MemberResponse.MyPageInfo response = memberService.getMyPage(principal.getId());
 
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(ApiResponse.ok(response));
 	}
 
 	@Operation(summary = "마이페이지 수정", description = "닉네임·연락처·프로필 이미지를 수정한다. 보낸 필드만 반영된다.")
@@ -53,7 +53,7 @@ public class MemberController {
 	) {
 		MemberResponse.MyPageInfo response = memberService.updateMyPage(principal.getId(), request);
 
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(ApiResponse.ok(response));
 	}
 
 	@Operation(summary = "비밀번호 변경 인증 코드 발송", description = "가입 이메일로 6자리 인증 코드를 보낸다.")
@@ -64,7 +64,7 @@ public class MemberController {
 	) {
 		memberService.sendPasswordChangeCode(principal.getId());
 
-		return ResponseEntity.ok(ApiResponse.noContentSuccess("인증 코드를 메일로 보냈습니다."));
+		return ResponseEntity.ok(ApiResponse.noContent("인증 코드를 메일로 보냈습니다."));
 	}
 
 	@Operation(summary = "비밀번호 변경 인증 코드 확인", description = "메일로 받은 6자리 코드가 맞는지 확인한다.")
@@ -76,7 +76,7 @@ public class MemberController {
 	) {
 		memberService.verifyPasswordChangeCode(principal.getId(), request);
 
-		return ResponseEntity.ok(ApiResponse.noContentSuccess("인증되었습니다. 새 비밀번호를 입력해 주세요."));
+		return ResponseEntity.ok(ApiResponse.noContent("인증되었습니다. 새 비밀번호를 입력해 주세요."));
 	}
 
 	@Operation(summary = "비밀번호 변경", description = "인증을 통과한 상태에서 새 비밀번호를 설정한다.")
@@ -88,7 +88,7 @@ public class MemberController {
 	) {
 		memberService.changePassword(principal.getId(), request);
 
-		return ResponseEntity.ok(ApiResponse.noContentSuccess("비밀번호가 변경되었습니다. 다시 로그인해 주세요."));
+		return ResponseEntity.ok(ApiResponse.noContent("비밀번호가 변경되었습니다. 다시 로그인해 주세요."));
 	}
 
 	@Operation(summary = "[ME] 회원 탈퇴", description = "현재 비밀번호로 본인 확인 후 탈퇴한다.")
@@ -103,6 +103,6 @@ public class MemberController {
 		// 브라우저에 남은 리프레시 쿠키도 지운다.
 		cookieUtil.clearRefreshCookie(response);
 
-		return ResponseEntity.ok(ApiResponse.noContentSuccess("탈퇴가 완료되었습니다."));
+		return ResponseEntity.ok(ApiResponse.noContent("탈퇴가 완료되었습니다."));
 	}
 }

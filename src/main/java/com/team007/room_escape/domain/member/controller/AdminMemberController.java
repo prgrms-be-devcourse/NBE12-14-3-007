@@ -48,7 +48,7 @@ public class AdminMemberController {
 	) {
 		Page<MemberResponse.AdminInfo> response = adminMemberService.search(request, pageable);
 
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(ApiResponse.ok(response));
 	}
 
 	@Operation(summary = "[ADMIN] 회원 단건 조회", description = "탈퇴 회원도 조회된다.")
@@ -57,7 +57,7 @@ public class AdminMemberController {
 	public ResponseEntity<ApiResponse<MemberResponse.AdminInfo>> get(
 		@PathVariable("memberId") UUID memberId
 	) {
-		return ResponseEntity.ok(ApiResponse.success(adminMemberService.get(memberId)));
+		return ResponseEntity.ok(ApiResponse.ok(adminMemberService.get(memberId)));
 	}
 
 	@Operation(summary = "[ADMIN] 회원 등급 변경", description = "회원의 신뢰 등급을 변경한다. 관리자 관련 변경은 막는다.")
@@ -71,6 +71,6 @@ public class AdminMemberController {
 		MemberResponse.AdminInfo response =
 			adminMemberService.changeRole(principal.getId(), memberId, request);
 
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(ApiResponse.ok(response));
 	}
 }

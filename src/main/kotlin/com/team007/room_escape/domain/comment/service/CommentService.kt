@@ -15,6 +15,7 @@ import com.team007.room_escape.global.response.code.PostExceptionCode
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Pageable
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
@@ -35,8 +36,7 @@ class CommentService(
         if (memberReader.getActiveMember(adminId).role != MemberRole.ROLE_ADMIN) {
             throw AccessDeniedException("관리자만 삭제된 댓글을 조회할 수 있습니다.")
         }
-        val post = postRepository.findById(postId)
-            .orElseThrow { BusinessException(PostExceptionCode.POST_NOT_FOUND) }
+        val post = postRepository.findByIdOrNull(postId) ?: throw BusinessException(PostExceptionCode.POST_NOT_FOUND)
         val roots = commentRepository.findRootsByPostId(postId, PageRequest.of(page.pageNumber, page.pageSize))
         val replies = if (roots.isEmpty) emptyList() else commentRepository.findRepliesByParentIds(roots.idList())
         val histories = deletionHistoryService.findLatestForTargets(
@@ -115,7 +115,7 @@ class CommentService(
     @Transactional
     fun deleteComment(id: Long, memberId: UUID) {
         val comment = commentRepository.findForDeletion(id)
-            .orElseThrow { BusinessException(CommentExceptionCode.COMMENT_NOT_FOUND) }
+            ?: throw BusinessException(CommentExceptionCode.COMMENT_NOT_FOUND)
 
         val isAuthor = comment.member.id == memberId
 
@@ -147,7 +147,7 @@ class CommentService(
 
     private fun getActiveComment(id: Long): Comment =
         commentRepository.findByIdAndDeletedAtIsNull(id)
-            .orElseThrow { BusinessException(CommentExceptionCode.COMMENT_NOT_FOUND) }
+            ?: throw BusinessException(CommentExceptionCode.COMMENT_NOT_FOUND)
 
     private fun Page<Comment>.idList(): List<Long> = content.mapNotNull { it.id }
 

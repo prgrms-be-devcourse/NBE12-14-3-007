@@ -16,7 +16,6 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
-import java.util.stream.Collectors
 
 @Service
 class AdminDeletionFacade(
@@ -25,8 +24,9 @@ class AdminDeletionFacade(
     private val members: MemberReader,
     private val inquiries: InquiryDeletionProcessor
 ) {
-    private val handlers: Map<DeletionTargetType, DeletionHandler> = handlers.stream()
-        .collect(Collectors.toMap({ it.supports() }, { it }))
+    private val handlers: Map<DeletionTargetType, DeletionHandler> = handlers.associateBy { it.supports() }
+        // 같은 대상 종류를 두 핸들러가 맡으면 하나가 조용히 사라지므로 시작할 때 막는다.
+        .also { check(it.size == handlers.size) { "대상 종류마다 삭제 핸들러는 하나여야 합니다." } }
 
     @Transactional
     fun restore(adminId: UUID, type: DeletionTargetType?, targetId: String?) {
@@ -47,8 +47,7 @@ class AdminDeletionFacade(
         if (type == null) {
             throw BusinessException(DeletionExceptionCode.INVALID_TARGET_TYPE)
         }
-        return histories.findLatest(type, targetId)
-            .map { DeletionHistoryResponse.Latest.from(it) }.orElse(null)
+        return histories.findLatest(type, targetId)?.let { DeletionHistoryResponse.Latest.from(it) }
     }
 
     @Transactional
