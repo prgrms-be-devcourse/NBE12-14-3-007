@@ -29,7 +29,7 @@ class FestivalAccuracyVote protected constructor() : BaseTimeEntity() {
     var voteType: FestivalAccuracyVoteType? = null
         protected set
 
-    fun changeVote(voteType: FestivalAccuracyVoteType?) {
+    fun changeVote(voteType: FestivalAccuracyVoteType) {
         this.voteType = voteType
     }
 
@@ -39,9 +39,9 @@ class FestivalAccuracyVote protected constructor() : BaseTimeEntity() {
         fun builder(): FestivalAccuracyVoteBuilder = FestivalAccuracyVoteBuilder()
 
         fun create(
-            festival: Festival? = null,
-            member: Member? = null,
-            voteType: FestivalAccuracyVoteType? = null
+            festival: Festival,
+            member: Member,
+            voteType: FestivalAccuracyVoteType
         ): FestivalAccuracyVote = FestivalAccuracyVote().also {
             it.festival = festival
             it.member = member
@@ -58,10 +58,10 @@ class FestivalAccuracyVote protected constructor() : BaseTimeEntity() {
         fun member(member: Member?): FestivalAccuracyVoteBuilder = apply { this.member = member }
         fun voteType(voteType: FestivalAccuracyVoteType?): FestivalAccuracyVoteBuilder = apply { this.voteType = voteType }
 
-        fun build(): FestivalAccuracyVote = FestivalAccuracyVote().also {
-            it.festival = festival
-            it.member = member
-            it.voteType = voteType
-        }
+        fun build(): FestivalAccuracyVote = create(
+            festival = requireNotNull(festival) { "투표할 행사는 필수입니다." },
+            member = requireNotNull(member) { "투표 회원은 필수입니다." },
+            voteType = requireNotNull(voteType) { "평가 종류는 필수입니다." }
+        )
     }
 }

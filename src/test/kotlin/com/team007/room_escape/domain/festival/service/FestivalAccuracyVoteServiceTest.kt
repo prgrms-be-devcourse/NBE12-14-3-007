@@ -21,6 +21,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.never
+import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
@@ -46,6 +47,77 @@ class FestivalAccuracyVoteServiceTest {
     private lateinit var accuracyVoteService: FestivalAccuracyVoteService
 
     @Test
+    fun repeatedVoteUpdatesExistingVoteAfterLockingFestival() {
+        val memberId = UUID.randomUUID()
+        val member = Member.builder().id(memberId).build()
+        val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
+        val vote = FestivalAccuracyVote.create(festival, member, FestivalAccuracyVoteType.ACCURATE)
+        `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
+        `when`(festivalRepository.findForDeletion(1L)).thenReturn(Optional.of(festival))
+        `when`(accuracyVoteRepository.findByFestivalAndMember(festival, member))
+            .thenReturn(Optional.of(vote))
+
+        accuracyVoteService.vote(memberId, 1L,
+            FestivalAccuracyVoteRequest.Upsert(FestivalAccuracyVoteType.INACCURATE))
+
+        assertThat(vote.voteType).isEqualTo(FestivalAccuracyVoteType.INACCURATE)
+        val order = inOrder(festivalRepository, accuracyVoteRepository)
+        order.verify(festivalRepository).findForDeletion(1L)
+        order.verify(accuracyVoteRepository).findByFestivalAndMember(festival, member)
+        order.verify(accuracyVoteRepository).save(vote)
+    }
+
+    @Test
+    fun deletedFestivalRejectsVotingAfterLocking() {
+        val memberId = UUID.randomUUID()
+        val member = Member.builder().id(memberId).build()
+        val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
+        festival.delete()
+        `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
+        `when`(festivalRepository.findForDeletion(1L)).thenReturn(Optional.of(festival))
+
+        assertThatThrownBy {
+            accuracyVoteService.vote(memberId, 1L,
+                FestivalAccuracyVoteRequest.Upsert(FestivalAccuracyVoteType.ACCURATE))
+        }.isInstanceOfSatisfying(BusinessException::class.java) {
+            assertThat(it.exceptionCode).isEqualTo(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
+        }
+        verify(accuracyVoteRepository, never()).save(any(FestivalAccuracyVote::class.java))
+    }
+
+    @Test
+    fun legacyBuilderRejectsMissingRequiredValues() {
+        val festival = Festival.create(id = 1L)
+        val member = Member.builder().id(UUID.randomUUID()).build()
+        assertThatThrownBy { FestivalAccuracyVote.builder().build() }
+            .isInstanceOf(IllegalArgumentException::class.java)
+        assertThatThrownBy { FestivalAccuracyVote.builder().festival(festival).build() }
+            .isInstanceOf(IllegalArgumentException::class.java)
+        assertThatThrownBy {
+            FestivalAccuracyVote.builder().festival(festival).member(member).build()
+        }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun cancelVoteLocksFestivalBeforeReadingVote() {
+        val memberId = UUID.randomUUID()
+        val member = Member.builder().id(memberId).build()
+        val festival = Festival.create(id = 1L, providerType = ProviderType.MEMBER)
+        val vote = FestivalAccuracyVote.create(festival, member, FestivalAccuracyVoteType.ACCURATE)
+        `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
+        `when`(festivalRepository.findForDeletion(1L)).thenReturn(Optional.of(festival))
+        `when`(accuracyVoteRepository.findByFestivalAndMember(festival, member))
+            .thenReturn(Optional.of(vote))
+
+        accuracyVoteService.cancelVote(memberId, 1L)
+
+        val order = inOrder(festivalRepository, accuracyVoteRepository)
+        order.verify(festivalRepository).findForDeletion(1L)
+        order.verify(accuracyVoteRepository).findByFestivalAndMember(festival, member)
+        order.verify(accuracyVoteRepository).delete(vote)
+    }
+
+    @Test
     @DisplayName("본인이 제보한 행사의 정확도는 평가할 수 없다")
     fun rejectSelfAccuracyVote() {
         val memberId = UUID.randomUUID()
@@ -59,7 +131,7 @@ class FestivalAccuracyVoteServiceTest {
 
         `when`(memberReader.getActiveMember(memberId)).thenReturn(member)
         `when`(
-            festivalRepository.findByIdAndProviderTypeAndDeletedAtIsNull(1L, ProviderType.MEMBER)
+            festivalRepository.findForDeletion(1L)
         ).thenReturn(Optional.of(festival))
 
         assertThatThrownBy { accuracyVoteService.vote(memberId, 1L, request) }
