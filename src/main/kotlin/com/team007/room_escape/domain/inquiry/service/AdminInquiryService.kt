@@ -86,9 +86,7 @@ class AdminInquiryService(
         val commentId = inquiry.targetId?.toLongOrNull() ?: return null
         return when (inquiry.targetType) {
             InquiryTargetType.COMMENT -> commentRepository.findByIdOrNull(commentId)?.post?.id
-            // 커뮤니티 댓글 저장소는 findById를 직접 다시 선언해서, findByIdOrNull 대신 Optional을 그대로 쓴다.
-            InquiryTargetType.COMMUNITY_COMMENT ->
-                communityCommentRepository.findById(commentId).map { it.post.id }.orElse(null)
+            InquiryTargetType.COMMUNITY_COMMENT -> communityCommentRepository.findWithMemberById(commentId)?.post?.id
             else -> null
         }
     }

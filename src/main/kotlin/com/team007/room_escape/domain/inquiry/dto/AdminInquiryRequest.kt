@@ -3,6 +3,7 @@ package com.team007.room_escape.domain.inquiry.dto
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryCategory
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryStatus
 import com.team007.room_escape.global.util.isBlankLikeJava
+import com.team007.room_escape.global.util.trimLikeJava
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -33,7 +34,7 @@ class AdminInquiryRequest private constructor() {
          */
         fun titleOrEmpty(): String =
             // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
-            title?.takeUnless { it.isBlankLikeJava() }?.trim { it <= ' ' }?.lowercase(Locale.ROOT).orEmpty()
+            title?.takeUnless { it.isBlankLikeJava() }?.trimLikeJava()?.lowercase(Locale.ROOT).orEmpty()
 
         fun includeDeletedOrFalse(): Boolean = includeDeleted == true
     }
@@ -55,6 +56,6 @@ class AdminInquiryRequest private constructor() {
     ) {
 
         /** 앞뒤 공백은 저장하지 않는다. (Java String.trim()과 같은 기준: U+0020 이하) */
-        fun trimmed(): String = requireNotNull(answer).trim { it <= ' ' }
+        fun trimmed(): String = requireNotNull(answer).trimLikeJava()
     }
 }

@@ -9,6 +9,7 @@ import com.team007.room_escape.domain.member.infra.repository.MemberRepository
 import com.team007.room_escape.domain.post.infra.repository.PostRepository
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.InquiryExceptionCode
+import com.team007.room_escape.global.util.trimLikeJava
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -44,10 +45,10 @@ class InquiryTargetValidator(
     // 대상 종류가 있는데 ID가 없는 요청은 요청 검증이 먼저 막는다. 여기까지 오면 프로그래밍 오류다.
     // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
     private fun String?.asLong(): Long =
-        requireNotNull(this).trim { it <= ' ' }.toLongOrNull() ?: throw targetNotFound()
+        requireNotNull(this).trimLikeJava().toLongOrNull() ?: throw targetNotFound()
 
     private fun String?.asUuid(): UUID {
-        val text = requireNotNull(this).trim { it <= ' ' }
+        val text = requireNotNull(this).trimLikeJava()
         return try {
             UUID.fromString(text)
         } catch (e: IllegalArgumentException) {

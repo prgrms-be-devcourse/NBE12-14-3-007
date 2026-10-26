@@ -83,7 +83,7 @@ class CommunityServiceTest {
         val authorId = UUID.randomUUID()
         val otherId = UUID.randomUUID()
         givenActiveMember(otherId)
-        `when`(postRepository.findById(anyValue())).thenReturn(Optional.of(post(author = member(authorId))))
+        `when`(postRepository.findWithMemberById(anyValue())).thenReturn(post(author = member(authorId)))
         val request = CommunityRequest.PostUpsert(
             CommunityCategory.FREE,
             "수정할 제목",
@@ -134,11 +134,30 @@ class CommunityServiceTest {
     }
 
     @Test
+    fun 없는_글에는_댓글을_달거나_댓글을_조회할_수_없다() {
+        val memberId = UUID.randomUUID()
+        val postId = UUID.randomUUID()
+        givenActiveMember(memberId)
+        `when`(postRepository.findWithMemberById(postId)).thenReturn(null)
+
+        assertThatThrownBy {
+            communityService.createComment(postId, CommunityRequest.CommentCreate("새 댓글", null), memberId)
+        }.isInstanceOfSatisfying(BusinessException::class.java) { exception ->
+            assertThat(exception.exceptionCode).isEqualTo(CommunityExceptionCode.POST_NOT_FOUND)
+        }
+        assertThatThrownBy {
+            communityService.getComments(postId, org.springframework.data.domain.PageRequest.of(0, 10))
+        }.isInstanceOfSatisfying(BusinessException::class.java) { exception ->
+            assertThat(exception.exceptionCode).isEqualTo(CommunityExceptionCode.POST_NOT_FOUND)
+        }
+    }
+
+    @Test
     fun 댓글은_5초_안에_연속으로_등록할_수_없다() {
         val memberId = UUID.randomUUID()
         val postId = UUID.randomUUID()
         givenActiveMember(memberId)
-        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post(author = member(UUID.randomUUID()))))
+        `when`(postRepository.findWithMemberById(postId)).thenReturn(post(author = member(UUID.randomUUID())))
         `when`(commentRepository.existsByMemberIdAndDeletedAtIsNullAndCreatedAtAfter(anyValue(), anyValue()))
             .thenReturn(true)
 
@@ -154,7 +173,7 @@ class CommunityServiceTest {
         val memberId = UUID.randomUUID()
         val postId = UUID.randomUUID()
         givenActiveMember(memberId)
-        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post(author = member(UUID.randomUUID()))))
+        `when`(postRepository.findWithMemberById(postId)).thenReturn(post(author = member(UUID.randomUUID())))
         `when`(
             commentRepository.existsByMemberIdAndContentAndDeletedAtIsNullAndCreatedAtAfter(
                 anyValue(), anyValue(), anyValue(),

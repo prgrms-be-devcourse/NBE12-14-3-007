@@ -18,6 +18,7 @@ import com.team007.room_escape.global.response.code.MemberExceptionCode
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.global.util.escapeLikePattern
+import com.team007.room_escape.global.util.trimLikeJava
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -143,8 +144,8 @@ class CommunityService(
     }
 
     private fun getActiveMember(memberId: UUID): Member {
-        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
-            .orElseThrow { BusinessException(MemberExceptionCode.MEMBER_NOT_FOUND) }
+        val member = memberRepository.findByIdAndDeletedAtIsNull(memberId).orElse(null)
+            ?: throw BusinessException(MemberExceptionCode.MEMBER_NOT_FOUND)
         if (member.isRestricted) {
             throw BusinessException(MemberExceptionCode.MEMBER_RESTRICTED)
         }
@@ -153,7 +154,7 @@ class CommunityService(
 
     /** 삭제되지 않은 글. 삭제된 글은 @SQLRestriction 때문에 조회되지 않는다. */
     private fun getPostEntity(postId: UUID): CommunityPost =
-        postRepository.findById(postId).orElseThrow { BusinessException(CommunityExceptionCode.POST_NOT_FOUND) }
+        postRepository.findWithMemberById(postId) ?: throw BusinessException(CommunityExceptionCode.POST_NOT_FOUND)
 
     /**
      * 답글을 달 부모 댓글. 대댓글에 답글을 달면 그 대댓글의 부모 아래에 붙여 한 단계를 유지한다.
@@ -225,8 +226,5 @@ class CommunityService(
             requireNotNull(request.category) { "검증을 통과한 요청에는 카테고리가 있다." }
 
         fun savedId(post: CommunityPost): UUID = requireNotNull(post.id) { "DB에서 읽은 글에는 id가 있다." }
-
-        /** Java String.trim()과 같은 기준(U+0020 이하)으로 자른다. Kotlin trim()은 NBSP 등도 자른다. */
-        fun String.trimLikeJava(): String = trim { it <= ' ' }
     }
 }

@@ -3,6 +3,7 @@ package com.team007.room_escape.global.jwt
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.AuthExceptionCode
 import com.team007.room_escape.global.security.CustomUserDetails
+import com.team007.room_escape.global.util.trimLikeJava
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
@@ -70,7 +71,7 @@ class JwtAuthenticationFilter(
         request.getHeader(HEADER)
             ?.takeIf { it.startsWith(PREFIX) }
             // Java String.trim()과 같게 U+0020 이하만 자른다. (Kotlin trim()은 NBSP 등도 자른다)
-            ?.removePrefix(PREFIX)?.trim { it <= ' ' }
+            ?.removePrefix(PREFIX)?.trimLikeJava()
             ?.takeUnless { it.isEmpty() || it in IGNORED_TOKENS }
 
     private fun Claims.toPrincipal() = CustomUserDetails(

@@ -6,6 +6,7 @@ import com.team007.room_escape.domain.weather.dto.WeatherResponse
 import com.team007.room_escape.domain.weather.infra.client.KmaWeatherApiClient
 import com.team007.room_escape.domain.weather.infra.client.WeatherRegionMapping
 import com.team007.room_escape.domain.weather.infra.dto.ShortTermForecastItem
+import com.team007.room_escape.global.util.trimLikeJava
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -98,7 +99,7 @@ class WeatherService(
         }
         try {
             // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
-            return value.trim { it <= ' ' }.toInt()
+            return value.trimLikeJava().toInt()
         } catch (e: NumberFormatException) {
             return null
         }

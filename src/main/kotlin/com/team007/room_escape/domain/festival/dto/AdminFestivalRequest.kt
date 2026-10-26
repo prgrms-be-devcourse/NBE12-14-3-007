@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import com.team007.room_escape.global.util.isBlankLikeJava
+import com.team007.room_escape.global.util.trimLikeJava
 
 class AdminFestivalRequest private constructor() {
     /** 관리자 행사 검색 조건. 모든 항목이 선택이며, 비우면 전체를 조회한다. */
@@ -30,7 +31,7 @@ class AdminFestivalRequest private constructor() {
         /** 검색어가 없으면 null 대신 빈 문자열을 돌려준다. */
         fun keywordOrEmpty(): String {
             if (keyword == null || keyword.isBlankLikeJava()) return ""
-            return keyword.trim { it <= ' ' }.lowercase(Locale.ROOT)
+            return keyword.trimLikeJava().lowercase(Locale.ROOT)
         }
 
         fun excludeClosedOrFalse(): Boolean = excludeClosed == true

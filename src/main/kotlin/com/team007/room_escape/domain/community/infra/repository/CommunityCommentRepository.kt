@@ -88,7 +88,7 @@ interface CommunityCommentRepository : JpaRepository<CommunityComment, Long> {
      * 글 ID는 댓글의 외래 키만으로 알 수 있다.
      */
     @EntityGraph(attributePaths = ["member"])
-    override fun findById(id: Long): Optional<CommunityComment>
+    fun findWithMemberById(id: Long): CommunityComment?
 
     /** 삭제되지 않은 댓글. 수정·삭제·답글 달기처럼 살아 있는 댓글만 다루는 곳에서 쓴다. */
     @EntityGraph(attributePaths = ["member", "post"])
