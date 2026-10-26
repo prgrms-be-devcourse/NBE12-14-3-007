@@ -43,7 +43,7 @@ public class AuthController {
 		@Valid @RequestBody AuthRequest.Login request,
 		HttpServletResponse response
 	) {
-		AuthService.TokenPair pair = authService.login(request.email(), request.password());
+		AuthService.TokenPair pair = authService.login(request.getEmail(), request.getPassword());
 		cookieUtil.addRefreshCookie(response, pair.refreshToken());
 		return ResponseEntity.ok(
 			ApiResponse.success(AuthResponse.Token.bearer(pair.accessToken()))

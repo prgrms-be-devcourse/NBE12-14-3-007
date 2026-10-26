@@ -34,29 +34,29 @@ public class AuthService {
 	@Transactional
 	public void signup(AuthRequest.Signup request) {
 		log.info("[가입] 요청 email={} nickname={} phone={}",
-			request.email(), request.nickname(), request.phone());
+			request.getEmail(), request.getNickname(), request.getPhone());
 
 		// 탈퇴 회원까지 본다. 탈퇴 직후 같은 이메일로 다시 가입하는 것을 막기 위함이다.
-		if (memberRepository.existsByEmail(request.email())) {
+		if (memberRepository.existsByEmail(request.getEmail())) {
 			// 쓰는 중인지 탈퇴한 것인지 구분해서 알려준다. 둘 다 "이 이메일이 존재한다"는
 			// 사실은 같으므로 노출되는 정보의 양은 다르지 않고, 안내만 정확해진다.
-			boolean inUse = memberRepository.existsByEmailAndDeletedAtIsNull(request.email());
-			log.warn("[가입] 이메일 중복 email={} inUse={}", request.email(), inUse);
+			boolean inUse = memberRepository.existsByEmailAndDeletedAtIsNull(request.getEmail());
+			log.warn("[가입] 이메일 중복 email={} inUse={}", request.getEmail(), inUse);
 			throw new BusinessException(inUse
 				? MemberExceptionCode.EMAIL_DUPLICATED
 				: MemberExceptionCode.EMAIL_WITHDRAWN);
 		}
-		if (memberRepository.existsByNicknameAndDeletedAtIsNull(request.nickname())) {
-			log.warn("[가입] 닉네임 중복 nickname={}", request.nickname());
+		if (memberRepository.existsByNicknameAndDeletedAtIsNull(request.getNickname())) {
+			log.warn("[가입] 닉네임 중복 nickname={}", request.getNickname());
 			throw new BusinessException(MemberExceptionCode.NICKNAME_DUPLICATED);
 		}
 		Member saved = memberRepository.save(
 			Member.builder()
-				.email(request.email())
-				.password(passwordEncoder.encode(request.password()))
-				.nickname(request.nickname())
+				.email(request.getEmail())
+				.password(passwordEncoder.encode(request.getPassword()))
+				.nickname(request.getNickname())
 				// 빈 문자열이 그대로 저장되면 "번호 없음"과 구분이 안 되고 DB 제약에도 걸린다.
-				.phone(emptyToNull(request.phone()))
+				.phone(emptyToNull(request.getPhone()))
 				.role(MemberRole.ROLE_UNVERIFIED)
 				.build()
 		);
@@ -64,6 +64,9 @@ public class AuthService {
 		log.info("[가입] 완료 id={} email={}", saved.getId(), saved.getEmail());
 	}
 
+	// TODO(login-rate-limit): 로그인 시도 횟수 제한이 없다. 이메일+IP별 실패 횟수를 Caffeine 캐시로 세어
+	//  일정 횟수를 넘으면 429(TOO_MANY_REQUESTS)로 막을 것. (대입 공격과 BCrypt CPU 소모 대응,
+	//  EmailVerificationService가 같은 방식으로 Caffeine을 쓴다.) 서비스를 Kotlin으로 옮길 때 함께 넣는다.
 	@Transactional
 	public TokenPair login(String email, String password) {
 		Member member = memberRepository.findByEmailAndDeletedAtIsNull(email)

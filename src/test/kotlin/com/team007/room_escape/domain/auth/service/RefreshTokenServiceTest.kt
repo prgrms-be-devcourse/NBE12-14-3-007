@@ -20,7 +20,6 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.util.HexFormat
-import java.util.Optional
 import java.util.UUID
 
 class RefreshTokenServiceTest {
@@ -46,7 +45,7 @@ class RefreshTokenServiceTest {
 
     @Test
     fun `처음 저장하면 토큰 원문이 아니라 SHA-256 해시를 저장한다`() {
-        `when`(repository.findByMember_Id(memberId)).thenReturn(Optional.empty())
+        `when`(repository.findByMemberId(memberId)).thenReturn(null)
         val expiresAt = LocalDateTime.now().plusDays(14)
 
         service.save(member, "raw-token", expiresAt)
@@ -61,7 +60,7 @@ class RefreshTokenServiceTest {
     @Test
     fun `이미 있으면 새로 만들지 않고 기존 행의 해시와 만료 시각을 바꾼다`() {
         val existing = stored(sha256("old"), LocalDateTime.now().plusDays(1))
-        `when`(repository.findByMember_Id(memberId)).thenReturn(Optional.of(existing))
+        `when`(repository.findByMemberId(memberId)).thenReturn(existing)
         val expiresAt = LocalDateTime.now().plusDays(14)
 
         service.save(member, "new-token", expiresAt)
@@ -73,31 +72,31 @@ class RefreshTokenServiceTest {
 
     @Test
     fun `저장된 토큰과 같으면 통과한다`() {
-        `when`(repository.findByMember_Id(memberId))
-            .thenReturn(Optional.of(stored(sha256("raw"), LocalDateTime.now().plusDays(1))))
+        `when`(repository.findByMemberId(memberId))
+            .thenReturn(stored(sha256("raw"), LocalDateTime.now().plusDays(1)))
 
         assertThatCode { service.verify(memberId, "raw") }.doesNotThrowAnyException()
     }
 
     @Test
     fun `저장된 토큰이 없으면 유효하지 않은 토큰이다`() {
-        `when`(repository.findByMember_Id(memberId)).thenReturn(Optional.empty())
+        `when`(repository.findByMemberId(memberId)).thenReturn(null)
 
         assertThatThrownBy { service.verify(memberId, "raw") }.isBusiness(AuthExceptionCode.TOKEN_INVALID)
     }
 
     @Test
     fun `해시가 다르면 유효하지 않은 토큰이다`() {
-        `when`(repository.findByMember_Id(memberId))
-            .thenReturn(Optional.of(stored(sha256("raw"), LocalDateTime.now().plusDays(1))))
+        `when`(repository.findByMemberId(memberId))
+            .thenReturn(stored(sha256("raw"), LocalDateTime.now().plusDays(1)))
 
         assertThatThrownBy { service.verify(memberId, "other") }.isBusiness(AuthExceptionCode.TOKEN_INVALID)
     }
 
     @Test
     fun `만료되었으면 해시가 달라도 만료로 알린다`() {
-        `when`(repository.findByMember_Id(memberId))
-            .thenReturn(Optional.of(stored(sha256("raw"), LocalDateTime.now().minusSeconds(1))))
+        `when`(repository.findByMemberId(memberId))
+            .thenReturn(stored(sha256("raw"), LocalDateTime.now().minusSeconds(1)))
 
         assertThatThrownBy { service.verify(memberId, "other") }.isBusiness(AuthExceptionCode.TOKEN_EXPIRED)
     }
@@ -106,6 +105,6 @@ class RefreshTokenServiceTest {
     fun `회원 ID로 토큰을 지운다`() {
         service.deleteByMemberId(memberId)
 
-        verify(repository).deleteByMember_Id(memberId)
+        verify(repository).deleteByMemberId(memberId)
     }
 }
