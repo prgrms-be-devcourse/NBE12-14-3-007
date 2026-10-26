@@ -2,6 +2,7 @@ package com.team007.room_escape.domain.inquiry.dto
 
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryCategory
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryStatus
+import com.team007.room_escape.global.util.isBlankLikeJava
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -30,18 +31,11 @@ class AdminInquiryRequest private constructor() {
          * 앞뒤 공백을 지우고 소문자로 맞춘다.
          * 검색어가 없으면 빈 문자열을 돌려준다. LIKE '%%' 가 되어 전체가 조회된다.
          */
-        fun titleOrEmpty(): String {
-            if (title == null || title.all { Character.isWhitespace(it) }) {
-                return ""
-            }
-
+        fun titleOrEmpty(): String =
             // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
-            return title.trim { it <= ' ' }.lowercase(Locale.ROOT)
-        }
+            title?.takeUnless { it.isBlankLikeJava() }?.trim { it <= ' ' }?.lowercase(Locale.ROOT).orEmpty()
 
-        fun includeDeletedOrFalse(): Boolean {
-            return includeDeleted == true
-        }
+        fun includeDeletedOrFalse(): Boolean = includeDeleted == true
     }
 
     /**
@@ -60,10 +54,7 @@ class AdminInquiryRequest private constructor() {
         val answer: String?
     ) {
 
-        /** 앞뒤 공백은 저장하지 않는다. */
-        fun trimmed(): String {
-            // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
-            return requireNotNull(answer).trim { it <= ' ' }
-        }
+        /** 앞뒤 공백은 저장하지 않는다. (Java String.trim()과 같은 기준: U+0020 이하) */
+        fun trimmed(): String = requireNotNull(answer).trim { it <= ' ' }
     }
 }

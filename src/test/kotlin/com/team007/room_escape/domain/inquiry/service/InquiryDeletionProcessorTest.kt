@@ -15,7 +15,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import java.util.Optional
 import java.util.UUID
 
 class InquiryDeletionProcessorTest {
@@ -31,9 +30,10 @@ class InquiryDeletionProcessorTest {
         targetId: String? = "7f1e3c6e-1111-4222-8333-444455556666",
         status: InquiryStatus? = InquiryStatus.PENDING,
         answer: String? = null,
-    ): Inquiry = Inquiry.builder()
-        .id(inquiryId).category(category).targetType(targetType).targetId(targetId)
-        .title("신고").content("내용").status(status).answer(answer).build()
+    ) = Inquiry(
+        id = inquiryId, member = null, category = category, title = "신고", content = "내용",
+        targetType = targetType, targetId = targetId, status = status, answer = answer,
+    )
 
     private fun deletion(
         type: DeletionTargetType = DeletionTargetType.POST,
@@ -54,7 +54,7 @@ class InquiryDeletionProcessorTest {
     }
 
     private fun stub(inquiry: Inquiry?) {
-        `when`(inquiries.findForProcessing(inquiryId)).thenReturn(Optional.ofNullable(inquiry))
+        `when`(inquiries.findForProcessing(inquiryId)).thenReturn(inquiry)
     }
 
     @Test

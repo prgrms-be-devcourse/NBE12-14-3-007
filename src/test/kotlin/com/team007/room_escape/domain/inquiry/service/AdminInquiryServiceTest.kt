@@ -53,9 +53,10 @@ class AdminInquiryServiceTest {
         targetType: InquiryTargetType? = null,
         targetId: String? = null,
         owner: Member? = member,
-    ): Inquiry = Inquiry.builder()
-        .id(inquiryId).member(owner).category(category).targetType(targetType).targetId(targetId)
-        .title("제목").content("내용").img("inquiries/x.png").status(InquiryStatus.PENDING).build()
+    ) = Inquiry(
+        id = inquiryId, member = owner, category = category, title = "제목", content = "내용",
+        targetType = targetType, targetId = targetId, img = "inquiries/x.png", status = InquiryStatus.PENDING,
+    )
 
     private fun org.assertj.core.api.AbstractThrowableAssert<*, *>.isBusiness(code: Enum<*>) {
         isInstanceOfSatisfying(BusinessException::class.java) {
@@ -110,7 +111,7 @@ class AdminInquiryServiceTest {
 
         @Test
         fun `삭제 여부와 상관없이 상세를 돌려주고 첨부와 프로필을 공개 URL로 바꾼다`() {
-            `when`(inquiryRepository.findDetailById(inquiryId)).thenReturn(Optional.of(stored()))
+            `when`(inquiryRepository.findDetailById(inquiryId)).thenReturn(stored())
 
             val detail = service.findById(inquiryId)
 
@@ -121,7 +122,7 @@ class AdminInquiryServiceTest {
 
         @Test
         fun `없는 문의는 찾을 수 없다`() {
-            `when`(inquiryRepository.findDetailById(inquiryId)).thenReturn(Optional.empty())
+            `when`(inquiryRepository.findDetailById(inquiryId)).thenReturn(null)
 
             assertThatThrownBy { service.findById(inquiryId) }.isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
         }
@@ -131,7 +132,7 @@ class AdminInquiryServiceTest {
             val postId = UUID.randomUUID()
             val post = mock(Post::class.java).also { `when`(it.id).thenReturn(postId) }
             `when`(inquiryRepository.findDetailById(inquiryId))
-                .thenReturn(Optional.of(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "7")))
+                .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "7"))
             `when`(commentRepository.findById(7L)).thenReturn(Optional.of(Comment(post, member, null, "댓글")))
 
             assertThat(service.findById(inquiryId).targetPostId).isEqualTo(postId)
@@ -142,7 +143,7 @@ class AdminInquiryServiceTest {
             val postId = UUID.randomUUID()
             val post = mock(CommunityPost::class.java).also { `when`(it.id).thenReturn(postId) }
             `when`(inquiryRepository.findDetailById(inquiryId))
-                .thenReturn(Optional.of(stored(InquiryCategory.REPORT, InquiryTargetType.COMMUNITY_COMMENT, "8")))
+                .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.COMMUNITY_COMMENT, "8"))
             `when`(communityCommentRepository.findById(8L))
                 .thenReturn(Optional.of(CommunityComment(post, member, null, "댓글")))
 
@@ -152,16 +153,16 @@ class AdminInquiryServiceTest {
         @Test
         fun `댓글이 없거나 ID가 숫자가 아니거나 댓글 신고가 아니면 null이다`() {
             `when`(inquiryRepository.findDetailById(inquiryId))
-                .thenReturn(Optional.of(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "7")))
+                .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "7"))
             `when`(commentRepository.findById(7L)).thenReturn(Optional.empty())
             assertThat(service.findById(inquiryId).targetPostId).isNull()
 
             `when`(inquiryRepository.findDetailById(inquiryId))
-                .thenReturn(Optional.of(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "abc")))
+                .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.COMMENT, "abc"))
             assertThat(service.findById(inquiryId).targetPostId).isNull()
 
             `when`(inquiryRepository.findDetailById(inquiryId))
-                .thenReturn(Optional.of(stored(InquiryCategory.REPORT, InquiryTargetType.POST, "7")))
+                .thenReturn(stored(InquiryCategory.REPORT, InquiryTargetType.POST, "7"))
             assertThat(service.findById(inquiryId).targetPostId).isNull()
         }
     }
@@ -172,7 +173,7 @@ class AdminInquiryServiceTest {
         @Test
         fun `앞뒤 공백을 지운 답변을 달고 답변 완료로 바꾼다`() {
             val inquiry = stored()
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             val detail = service.answer(inquiryId, AdminInquiryRequest.Answer("  확인했습니다  "))
 
@@ -184,7 +185,7 @@ class AdminInquiryServiceTest {
         @Test
         fun `이미 답변이 있으면 덮어쓴다`() {
             val inquiry = stored().also { it.answer("첫 답변") }
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             service.answer(inquiryId, AdminInquiryRequest.Answer("고친 답변"))
 
@@ -193,7 +194,7 @@ class AdminInquiryServiceTest {
 
         @Test
         fun `없는 문의에는 답변할 수 없다`() {
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.empty())
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(null)
 
             assertThatThrownBy { service.answer(inquiryId, AdminInquiryRequest.Answer("답")) }
                 .isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
@@ -202,7 +203,7 @@ class AdminInquiryServiceTest {
         @Test
         fun `삭제된 문의에는 답변하지 않는다`() {
             val inquiry = stored().also { it.delete() }
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             assertThatThrownBy { service.answer(inquiryId, AdminInquiryRequest.Answer("답")) }
                 .isBusiness(InquiryExceptionCode.INQUIRY_ALREADY_DELETED)

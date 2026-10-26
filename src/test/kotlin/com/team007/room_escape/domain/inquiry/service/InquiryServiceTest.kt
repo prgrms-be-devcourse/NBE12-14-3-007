@@ -25,7 +25,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.test.util.ReflectionTestUtils
-import java.util.Optional
 import java.util.UUID
 
 class InquiryServiceTest {
@@ -51,9 +50,10 @@ class InquiryServiceTest {
         img: String? = null,
         answer: String? = null,
         status: InquiryStatus? = InquiryStatus.PENDING,
-    ): Inquiry = Inquiry.builder()
-        .id(inquiryId).member(owner).category(category).title("제목").content("내용")
-        .img(img).answer(answer).status(status).build()
+    ) = Inquiry(
+        id = inquiryId, member = owner, category = category, title = "제목", content = "내용",
+        img = img, answer = answer, status = status,
+    )
 
     private fun org.assertj.core.api.AbstractThrowableAssert<*, *>.isBusiness(code: InquiryExceptionCode) {
         isInstanceOfSatisfying(BusinessException::class.java) {
@@ -132,7 +132,7 @@ class InquiryServiceTest {
 
         @Test
         fun `내 문의 목록을 저장소가 돌려준 순서 그대로 항목으로 바꾼다`() {
-            `when`(inquiryRepository.findAllByMember_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId))
+            `when`(inquiryRepository.findAllByMemberIdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId))
                 .thenReturn(listOf(stored(), stored()))
 
             val list = service.findMine(memberId)
@@ -144,7 +144,7 @@ class InquiryServiceTest {
         @Test
         fun `내 문의 상세를 첨부 공개 URL과 함께 돌려준다`() {
             `when`(inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId))
-                .thenReturn(Optional.of(stored(img = "inquiries/a.png")))
+                .thenReturn(stored(img = "inquiries/a.png"))
 
             val detail = service.findMineById(inquiryId, memberId)
 
@@ -154,10 +154,10 @@ class InquiryServiceTest {
 
         @Test
         fun `없는 문의와 남의 문의는 같은 오류로 가린다`() {
-            `when`(inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId)).thenReturn(Optional.empty())
+            `when`(inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId)).thenReturn(null)
             assertThatThrownBy { service.findMineById(inquiryId, memberId) }.isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
-            `when`(inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId)).thenReturn(Optional.of(stored()))
+            `when`(inquiryRepository.findByIdAndDeletedAtIsNull(inquiryId)).thenReturn(stored())
             assertThatThrownBy { service.findMineById(inquiryId, UUID.randomUUID()) }
                 .isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
         }
@@ -167,7 +167,7 @@ class InquiryServiceTest {
     inner class `수정` {
 
         private fun stubFound(inquiry: Inquiry) {
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
         }
 
         private fun update(title: String? = "새 제목", img: String? = null) =
@@ -185,7 +185,7 @@ class InquiryServiceTest {
 
         @Test
         fun `없거나 삭제된 문의는 찾을 수 없다`() {
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.empty())
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(null)
             assertThatThrownBy { service.update(inquiryId, memberId, update()) }.isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
             stubFound(stored().also { it.delete() })
@@ -245,7 +245,7 @@ class InquiryServiceTest {
         @Test
         fun `작성자는 삭제한다`() {
             val inquiry = stored()
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             service.delete(inquiryId, memberId, false)
 
@@ -255,7 +255,7 @@ class InquiryServiceTest {
         @Test
         fun `관리자는 남의 문의도 삭제한다`() {
             val inquiry = stored()
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             service.delete(inquiryId, UUID.randomUUID(), true)
 
@@ -265,7 +265,7 @@ class InquiryServiceTest {
         @Test
         fun `작성자도 관리자도 아니면 삭제할 수 없다`() {
             val inquiry = stored()
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(inquiry))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(inquiry)
 
             assertThatThrownBy { service.delete(inquiryId, UUID.randomUUID(), false) }
                 .isBusiness(InquiryExceptionCode.INQUIRY_DELETE_FORBIDDEN)
@@ -274,10 +274,10 @@ class InquiryServiceTest {
 
         @Test
         fun `없거나 이미 삭제된 문의는 찾을 수 없다`() {
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.empty())
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(null)
             assertThatThrownBy { service.delete(inquiryId, memberId, false) }.isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
-            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(Optional.of(stored().also { it.delete() }))
+            `when`(inquiryRepository.findForProcessing(inquiryId)).thenReturn(stored().also { it.delete() })
             assertThatThrownBy { service.delete(inquiryId, memberId, true) }.isBusiness(InquiryExceptionCode.INQUIRY_NOT_FOUND)
         }
     }

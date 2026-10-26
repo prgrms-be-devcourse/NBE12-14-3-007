@@ -107,12 +107,12 @@ class AdminInquiryApiContractTest : ApiContractSupport() {
     }
 
     private fun saveInquiry(): Inquiry = inquiryRepository.saveAndFlush(
-        Inquiry.builder()
-            .member(saveMember(MemberRole.ROLE_UNVERIFIED))
-            .category(InquiryCategory.QUESTION)
-            .title("계약테스트 문의 ${UUID.randomUUID().toString().substring(0, 8)}")
-            .content("문의 내용")
-            .build()
+        Inquiry(
+            member = saveMember(MemberRole.ROLE_UNVERIFIED),
+            category = InquiryCategory.QUESTION,
+            title = "계약테스트 문의 ${UUID.randomUUID().toString().substring(0, 8)}",
+            content = "문의 내용",
+        )
     )
 
     private fun MockHttpServletRequestDsl.auth(bearerToken: String) {

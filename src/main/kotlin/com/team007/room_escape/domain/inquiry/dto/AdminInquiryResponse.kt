@@ -47,15 +47,13 @@ class AdminInquiryResponse private constructor() {
 
             @JvmStatic
             fun from(inquiry: Inquiry, writerProfileImgUrl: String?): ListItem {
-                val writer = inquiry.member
-
                 return ListItem(
                     id = inquiry.id,
                     category = inquiry.category,
                     targetType = inquiry.targetType,
                     targetId = inquiry.targetId,
                     title = inquiry.title,
-                    writer = if (writer == null) null else MemberResponse.AdminInfo.from(writer, writerProfileImgUrl),
+                    writer = inquiry.member?.let { MemberResponse.AdminInfo.from(it, writerProfileImgUrl) },
                     status = inquiry.status,
                     createdAt = inquiry.createdAt,
                     deletedAt = inquiry.deletedAt
@@ -120,8 +118,6 @@ class AdminInquiryResponse private constructor() {
                 writerProfileImgUrl: String?,
                 targetPostId: UUID?
             ): Detail {
-                val writer = inquiry.member
-
                 return Detail(
                     id = inquiry.id,
                     category = inquiry.category,
@@ -131,7 +127,7 @@ class AdminInquiryResponse private constructor() {
                     title = inquiry.title,
                     content = inquiry.content,
                     img = imgUrl,
-                    writer = if (writer == null) null else MemberResponse.AdminInfo.from(writer, writerProfileImgUrl),
+                    writer = inquiry.member?.let { MemberResponse.AdminInfo.from(it, writerProfileImgUrl) },
                     status = inquiry.status,
                     answer = inquiry.answer,
                     createdAt = inquiry.createdAt,

@@ -1,8 +1,13 @@
 package com.team007.room_escape.domain.inquiry.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.team007.room_escape.domain.inquiry.infra.entity.Inquiry
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryCategory
+import com.team007.room_escape.domain.inquiry.infra.entity.InquiryStatus
 import com.team007.room_escape.domain.inquiry.infra.entity.InquiryTargetType
+import com.team007.room_escape.domain.member.infra.entity.Member
+import com.team007.room_escape.global.util.StringUtil.emptyToNull
+import com.team007.room_escape.global.util.isNullOrBlankLikeJava
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotBlank
@@ -41,15 +46,24 @@ class InquiryRequest private constructor() {
         @JsonIgnore
         @AssertTrue(message = "신고·제보 대상 종류와 대상 ID는 함께 입력해야 합니다.")
         fun isTargetValid(): Boolean {
-            val targetIdMissing = targetId == null || targetId.all { Character.isWhitespace(it) }
-            val noTarget = targetType == null && targetIdMissing
-            val completeTarget = targetType != null && !targetIdMissing
+            val noTargetId = targetId.isNullOrBlankLikeJava()
+            val noTarget = targetType == null && noTargetId
+            val completeTarget = targetType != null && !noTargetId
 
-            if (category == InquiryCategory.QUESTION) {
-                return noTarget
-            }
-            return noTarget || completeTarget
+            return if (category == InquiryCategory.QUESTION) noTarget else noTarget || completeTarget
         }
+
+        /** 검증을 통과한 요청으로 새 문의를 만든다. 비어 있는 대상 ID와 첨부는 null로 맞춘다. */
+        fun toEntity(member: Member): Inquiry = Inquiry(
+            member = member,
+            category = requireNotNull(category),
+            title = requireNotNull(title),
+            content = requireNotNull(content),
+            targetType = targetType,
+            targetId = emptyToNull(targetId),
+            img = emptyToNull(img),
+            status = InquiryStatus.PENDING,
+        )
     }
 
     /** 문의 수정 요청. 보낸 필드만 반영한다. */

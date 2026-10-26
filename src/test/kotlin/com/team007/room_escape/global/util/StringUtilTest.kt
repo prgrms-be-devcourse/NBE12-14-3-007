@@ -31,4 +31,17 @@ class StringUtilTest {
 
         assertThat(StringUtil.emptyToNull(nbsp)).isEqualTo(nbsp)
     }
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @NullSource
+    @ValueSource(strings = ["", " ", "\t", " \n "])
+    fun `isNullOrBlankLikeJava는 null이거나 공백뿐이면 true다`(value: String?) {
+        assertThat(value.isNullOrBlankLikeJava()).isTrue()
+    }
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @ValueSource(strings = ["a", " a ", "\u00A0"])
+    fun `isNullOrBlankLikeJava는 글자가 있거나 NBSP면 false다`(value: String) {
+        assertThat(value.isNullOrBlankLikeJava()).isFalse()
+    }
 }

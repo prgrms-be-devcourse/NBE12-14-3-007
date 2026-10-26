@@ -23,10 +23,10 @@ class InquiryTest {
         answer: String? = null,
         status: InquiryStatus? = InquiryStatus.PENDING,
         member: Member? = writer,
-    ): Inquiry = Inquiry.builder()
-        .member(member).category(category).targetType(targetType).targetId(targetId)
-        .title("제목").content("내용").img(img).answer(answer).status(status)
-        .build()
+    ) = Inquiry(
+        member = member, category = category, title = "제목", content = "내용",
+        targetType = targetType, targetId = targetId, img = img, answer = answer, status = status,
+    )
 
     @Nested
     inner class `작성자 확인` {
@@ -141,12 +141,5 @@ class InquiryTest {
             inquiry.update(null, null, null, "")
             assertThat(inquiry.img).isNull()
         }
-    }
-
-    @Test
-    fun `카테고리 제목 내용 없이는 만들 수 없다`() {
-        org.assertj.core.api.Assertions.assertThatThrownBy {
-            Inquiry.builder().title("제목").content("내용").build()
-        }.isInstanceOf(IllegalArgumentException::class.java).hasMessageContaining("category")
     }
 }
