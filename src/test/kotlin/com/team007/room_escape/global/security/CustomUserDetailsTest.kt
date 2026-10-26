@@ -22,7 +22,7 @@ class CustomUserDetailsTest {
     @ParameterizedTest(name = "{0} -> 관리자 {1}")
     @CsvSource("ROLE_ADMIN,true", "ROLE_TRUSTED,false", "ROLE_RECOGNIZED,false", "ROLE_UNVERIFIED,false", "ROLE_WARNING,false")
     fun `ROLE_ADMIN일 때만 관리자다`(role: String, admin: Boolean) {
-        assertThat(userOf(role).isAdmin()).isEqualTo(admin)
+        assertThat(userOf(role).isAdmin).isEqualTo(admin)
     }
 
     @Test

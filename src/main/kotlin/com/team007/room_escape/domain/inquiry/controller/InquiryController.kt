@@ -87,7 +87,7 @@ class InquiryController(
         @PathVariable("inquiryId") inquiryId: UUID,
         @AuthenticationPrincipal principal: CustomUserDetails
     ): ResponseEntity<ApiResponse<Void?>> {
-        inquiryService.delete(inquiryId, principal.id, principal.isAdmin())
+        inquiryService.delete(inquiryId, principal.id, principal.isAdmin)
 
         return ResponseEntity.ok(ApiResponse.noContent())
     }

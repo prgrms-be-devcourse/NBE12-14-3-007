@@ -34,17 +34,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val authenticationEntryPoint: JwtAuthenticationEntryPoint,
-    private val accessDeniedHandler: JwtAccessDeniedHandler
+    private val accessDeniedHandler: JwtAccessDeniedHandler,
 ) {
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http
+    fun filterChain(http: HttpSecurity): SecurityFilterChain = http
             .csrf { it.disable() }
             .cors(Customizer.withDefaults())
-            .sessionManagement { session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/api/v1/auth/**").permitAll()
@@ -56,30 +53,21 @@ class SecurityConfig(
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                     // 비회원의 R2 용량 남용을 막고, 제재(ROLE_WARNING) 회원은 글쓰기와 같은 기준으로 막는다.
                     .requestMatchers(HttpMethod.POST, "/api/v1/images").hasRole("UNVERIFIED")
-                    .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                    ).permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                     // Prometheus가 토큰 없이 긁어갈 수 있어야 한다.
                     // TODO 운영 배포 시에는 관리 포트 분리나 IP 제한으로 외부 노출을 막을 것.
                     .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                     .anyRequest().authenticated()
             }
-            .exceptionHandling { ex ->
-                ex
-                    .authenticationEntryPoint(authenticationEntryPoint)
+            .exceptionHandling {
+                it.authenticationEntryPoint(authenticationEntryPoint)
                     .accessDeniedHandler(accessDeniedHandler)
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-
-        return http.build()
-    }
+            .build()
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     /**
      * 허용 출처는 app.cors.allowed-origins 로 받는다. 값은 프로필 파일에 있다.
@@ -87,18 +75,16 @@ class SecurityConfig(
      */
     @Bean
     fun corsConfigurationSource(
-        @Value("\${app.cors.allowed-origins}") allowedOrigins: List<String>
+        @Value("\${app.cors.allowed-origins}") allowedOrigins: List<String>,
     ): CorsConfigurationSource {
-        val config = CorsConfiguration()
-        config.allowedOrigins = allowedOrigins
-        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-        config.allowedHeaders = listOf("*")
-        config.exposedHeaders = listOf("Authorization")
-        config.allowCredentials = true
-
-        val source = UrlBasedCorsConfigurationSource()
-        source.registerCorsConfiguration("/**", config)
-        return source
+        val config = CorsConfiguration().apply {
+            this.allowedOrigins = allowedOrigins
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+            allowedHeaders = listOf("*")
+            exposedHeaders = listOf("Authorization")
+            allowCredentials = true
+        }
+        return UrlBasedCorsConfigurationSource().apply { registerCorsConfiguration("/**", config) }
     }
 
     companion object {
@@ -109,13 +95,11 @@ class SecurityConfig(
          */
         @Bean
         @JvmStatic
-        fun roleHierarchy(): RoleHierarchy {
-            return RoleHierarchyImpl.withDefaultRolePrefix()
-                .role("ADMIN").implies("TRUSTED")
-                .role("TRUSTED").implies("RECOGNIZED")
-                .role("RECOGNIZED").implies("UNVERIFIED")
-                .role("UNVERIFIED").implies("WARNING")
-                .build()
-        }
+        fun roleHierarchy(): RoleHierarchy = RoleHierarchyImpl.withDefaultRolePrefix()
+            .role("ADMIN").implies("TRUSTED")
+            .role("TRUSTED").implies("RECOGNIZED")
+            .role("RECOGNIZED").implies("UNVERIFIED")
+            .role("UNVERIFIED").implies("WARNING")
+            .build()
     }
 }
