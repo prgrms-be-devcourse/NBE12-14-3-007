@@ -64,7 +64,7 @@ function commentPage(store: StoredComment[], page: number, size: number) {
   };
 }
 
-async function setup(page: Page) {
+async function setup(page: Page, author = neighbor) {
   // 이미 삭제된 부모 댓글(답글 있음), 내가 쓴 댓글 순서로 오래된 것부터 저장돼 있다.
   const store: StoredComment[] = [
     {
@@ -94,6 +94,7 @@ async function setup(page: Page) {
   ];
   const created: unknown[] = [];
   const listQueries: URLSearchParams[] = [];
+  const postQueries: string[] = [];
   await page.addInitScript(() => sessionStorage.setItem("eventus.mode", "api"));
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request();
@@ -103,18 +104,20 @@ async function setup(page: Page) {
       return respond(route, { accessToken: "community-comment-token" });
     if (url.pathname === "/api/v1/members/me")
       return respond(route, { ...me, email: "me@example.com" });
-    if (url.pathname === `/api/v1/community/posts/${postId}`)
+    if (url.pathname === `/api/v1/community/posts/${postId}`) {
+      postQueries.push(url.search);
       return respond(route, {
         id: postId,
         category: "FREE",
         title: "댓글 확인용 글",
-        member: neighbor,
+        member: author,
         viewCount: 1,
         commentCount: store.filter((c) => !c.deleted).length,
         content: "<p>본문</p>",
         createdAt: "2026-09-30T10:00:00",
         updatedAt: "2026-09-30T10:00:00",
       });
+    }
     if (
       url.pathname === `/api/v1/community/posts/${postId}/comments` &&
       method === "GET"
@@ -164,8 +167,27 @@ async function setup(page: Page) {
     }
     return respond(route, "예상하지 않은 요청", 404);
   });
-  return { created, listQueries };
+  return { created, listQueries, postQueries };
 }
+
+test("community detail counts a view but the edit form does not", async ({
+  page,
+}) => {
+  const { postQueries } = await setup(page, me);
+  await page.goto(`/community/${postId}`);
+  await expect(
+    page.getByRole("heading", { name: "댓글 확인용 글" }),
+  ).toBeVisible();
+  // 개발 서버의 StrictMode는 같은 요청을 두 번 보낼 수 있어서 어떤 요청이었는지만 본다.
+  expect(new Set(postQueries)).toEqual(new Set([""]));
+
+  postQueries.length = 0;
+  await page.goto(`/community/${postId}/edit`);
+  await expect(
+    page.getByPlaceholder("이야기의 제목을 적어주세요."),
+  ).toHaveValue("댓글 확인용 글");
+  expect(new Set(postQueries)).toEqual(new Set(["?countView=false"]));
+});
 
 test("community comments show oldest first, keep deleted comments as placeholders and post replies", async ({
   page,

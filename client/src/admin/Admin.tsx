@@ -2048,7 +2048,7 @@ function InquiryTargetActions({
     try {
       return kind === "reviews"
         ? await api.adminPost(id)
-        : await api.communityPost(id);
+        : await api.communityPost(id, { countView: false });
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) return null;
       throw error;

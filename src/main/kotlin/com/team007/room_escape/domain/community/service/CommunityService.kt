@@ -51,9 +51,10 @@ class CommunityService(
         }
     }
 
+    /** countView가 false면 조회수를 올리지 않는다. 수정 화면처럼 글을 읽으려는 게 아닌 곳에서 쓴다. */
     @Transactional
-    fun getPost(postId: UUID): CommunityResponse.PostDetail {
-        if (postRepository.increaseViewCount(postId) == 0) {
+    fun getPost(postId: UUID, countView: Boolean = true): CommunityResponse.PostDetail {
+        if (countView && postRepository.increaseViewCount(postId) == 0) {
             throw BusinessException(CommunityExceptionCode.POST_NOT_FOUND)
         }
         val post = getPostEntity(postId)

@@ -791,9 +791,10 @@ export function createApi(mode: Mode) {
         `/community/posts?${params}`,
       );
     },
-    async communityPost(postId: string) {
+    /** 서버는 부를 때마다 조회수를 올린다. 수정 화면·관리자 화면처럼 글을 읽는 게 아니면 countView를 끈다. */
+    async communityPost(postId: string, { countView = true } = {}) {
       return transport<CommunityPostDetail>(
-        `/community/posts/${encodeURIComponent(postId)}`,
+        `/community/posts/${encodeURIComponent(postId)}${countView ? "" : "?countView=false"}`,
       );
     },
     async createCommunityPost(input: CommunityPostInput) {
