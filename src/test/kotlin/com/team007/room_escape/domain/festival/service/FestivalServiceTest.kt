@@ -3,6 +3,11 @@ package com.team007.room_escape.domain.festival.service
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.groups.Tuple.tuple
+import com.team007.room_escape.support.anyDateTime
+import com.team007.room_escape.support.anyOf
+import com.team007.room_escape.support.anyStrings
+import com.team007.room_escape.support.capture
+import com.team007.room_escape.support.eqOf
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
@@ -114,7 +119,7 @@ class FestivalServiceTest {
 	fun setUpDefaultStubs() {
 		lenient().`when`(festivalImageProcessor.process(any())).thenAnswer { it.getArgument<String?>(0) }
 		lenient().`when`(accuracyVoteRepository.countByFestivalIds(anyList())).thenReturn(listOf())
-		lenient().`when`(festivalRepository.findExistingExternalIds(any(), any())).thenReturn(listOf())
+		lenient().`when`(festivalRepository.findExistingExternalIds(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())).thenReturn(listOf())
 		// 실제 트랜잭션 매니저는 항상 TransactionStatus를 돌려준다. mock은 스텁 없으면 null이라 Kotlin 람다에서 NPE가 난다.
 		lenient().`when`(transactionManager.getTransaction(any())).thenReturn(Mockito.mock(TransactionStatus::class.java))
 	}
@@ -144,7 +149,7 @@ class FestivalServiceTest {
 	fun doesNotSaveWhenNoNewFestivals() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
 				.thenReturn(listOf("seq-1")) // 이미 저장돼 있음
 
 		festivalService.syncPublicFestivals()
@@ -162,7 +167,7 @@ class FestivalServiceTest {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(2), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-last")))
 		// 전부 이미 저장된 것으로 처리해서, 상세조회 루프(호출 간 대기 포함)는 안 타게 하고 페이지네이션만 확인한다.
-		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
 				.thenReturn(listOf("seq-full", "seq-last"))
 
 		festivalService.syncPublicFestivals()
@@ -266,7 +271,7 @@ class FestivalServiceTest {
 	fun savesLatestRawSourceOnly() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
 				.thenReturn(listOf("seq-1")) // 신규 없음, 원본 저장 순서만 확인
 		`when`(objectMapper.writeValueAsString(Mockito.any<List<CultureInfoPeriodRow>>())).thenReturn("[]")
 
@@ -292,7 +297,7 @@ class FestivalServiceTest {
 	@Test
 	@DisplayName("동기화 결과에 종료 처리된 행사 목록과 새로 저장한 행사 목록이 담긴다")
 	fun returnsClosedAndSavedFestivals() {
-		`when`(festivalRepository.findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), any(LocalDateTime::class.java)))
+		`when`(festivalRepository.findByStatusAndEndDeBefore(eqOf(FestivalStatus.OPEN), anyDateTime()))
 			.thenReturn(listOf(expiredOpenFestival(3L, "지난 음악회"), expiredOpenFestival(4L, "지난 전시회")))
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1"), periodRow("seq-2")))
@@ -317,7 +322,7 @@ class FestivalServiceTest {
 	fun closesExpiredFestivalsWithSameNowAsLookup() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
 				.thenReturn(listOf("seq-1"))
 
 		festivalService.syncPublicFestivals()
@@ -325,8 +330,8 @@ class FestivalServiceTest {
 		val lookupNow = ArgumentCaptor.forClass(LocalDateTime::class.java)
 		val updateNow = ArgumentCaptor.forClass(LocalDateTime::class.java)
 		val inOrder = Mockito.inOrder(festivalRepository)
-		inOrder.verify(festivalRepository).findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), lookupNow.capture())
-		inOrder.verify(festivalRepository).closeExpiredFestivals(updateNow.capture())
+		inOrder.verify(festivalRepository).findByStatusAndEndDeBefore(eqOf(FestivalStatus.OPEN), capture(lookupNow, LocalDateTime.MIN))
+		inOrder.verify(festivalRepository).closeExpiredFestivals(capture(updateNow, LocalDateTime.MIN))
 		assertThat(updateNow.value).isEqualTo(lookupNow.value)
 	}
 
@@ -334,11 +339,11 @@ class FestivalServiceTest {
 	@Test
 	@DisplayName("새 행사가 없으면 저장 목록은 비고 종료 처리 목록만 담긴다")
 	fun returnsEmptySavedWhenNoNewFestivals() {
-		`when`(festivalRepository.findByStatusAndEndDeBefore(eq(FestivalStatus.OPEN), any(LocalDateTime::class.java)))
+		`when`(festivalRepository.findByStatusAndEndDeBefore(eqOf(FestivalStatus.OPEN), anyDateTime()))
 			.thenReturn(listOf(expiredOpenFestival(3L, "지난 음악회")))
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eq(ProviderType.PUBLIC), any()))
+		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
 				.thenReturn(listOf("seq-1"))
 
 		val result = festivalService.syncPublicFestivals()
@@ -698,7 +703,7 @@ class FestivalServiceTest {
 				.containsExactly(10L)
 		verify(festivalRepository, never()).searchFestivals(
 				anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(),
-				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), any())
+				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), anyOf(Pageable::class.java, Pageable.unpaged()))
 	}
 
 	@Test
@@ -734,6 +739,6 @@ class FestivalServiceTest {
 		assertThat(result.totalElements).isEqualTo(11)
 		verify(festivalRepository, never()).searchFestivals(
 				anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(), anyBoolean(), any(),
-				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), any())
+				anyBoolean(), any(), anyBoolean(), any(), any(), anyBoolean(), anyOf(Pageable::class.java, Pageable.unpaged()))
 	}
 }

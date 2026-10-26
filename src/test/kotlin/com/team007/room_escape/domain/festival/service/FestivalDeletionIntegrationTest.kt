@@ -123,7 +123,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
 
         submissions.delete(owner, id)
         em.clear()
-        assertThat(festivals.findByIdAndDeletedAtIsNull(eventId)).isEmpty()
+        assertThat(festivals.findByIdAndDeletedAtIsNull(eventId!!)).isEmpty()
         val item = submissions.findAllByMemberId(owner).first()
         assertThat(item.deletion?.type).isEqualTo(DeletionActorType.AUTHOR)
         assertThat(submissions.findById(owner, id).submission?.festival?.deletion?.reason)

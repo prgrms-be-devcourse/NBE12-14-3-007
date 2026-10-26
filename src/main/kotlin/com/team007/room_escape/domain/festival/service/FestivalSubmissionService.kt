@@ -92,7 +92,7 @@ class FestivalSubmissionService(
     @Transactional
     fun delete(memberId: UUID, submissionId: UUID) {
         val submission = findSubmission(memberId, submissionId)
-        val festival = festivalRepository.findForDeletion(submission.festival!!.id)
+        val festival = festivalRepository.findForDeletion(submission.festival!!.id!!)
             .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
         festivalDeletionService.deleteByAuthor(festival, memberId)
     }
