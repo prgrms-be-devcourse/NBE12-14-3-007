@@ -19,7 +19,8 @@ class RefreshTokenCleanupSchedulerTest {
         RefreshTokenCleanupScheduler(repository).purgeExpired()
 
         val captor = ArgumentCaptor.forClass(LocalDateTime::class.java)
-        verify(repository).deleteByExpiresAtBefore(captor.capture())
+        // Kotlin의 non-null 파라미터에는 캡처터가 돌려주는 null을 넣을 수 없어서 자리표시 값을 둔다.
+        verify(repository).deleteByExpiresAtBefore(captor.capture() ?: LocalDateTime.MIN)
         assertThat(captor.value).isBetween(before, LocalDateTime.now())
     }
 }

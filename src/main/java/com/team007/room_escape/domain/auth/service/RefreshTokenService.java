@@ -24,16 +24,20 @@ public class RefreshTokenService {
 	@Transactional
 	public void save(Member member, String rawToken, LocalDateTime expiresAt) {
 		String hash = sha256(rawToken);
-		refreshTokenRepository.findByMember_Id(member.getId()).ifPresentOrElse(
-			existing -> existing.rotate(hash, expiresAt),
-			() -> refreshTokenRepository.save(new RefreshToken(member, hash, expiresAt))
-		);
+		RefreshToken existing = refreshTokenRepository.findByMemberId(member.getId());
+		if (existing != null) {
+			existing.rotate(hash, expiresAt);
+		} else {
+			refreshTokenRepository.save(new RefreshToken(member, hash, expiresAt));
+		}
 	}
 
 	@Transactional(readOnly = true)
 	public void verify(UUID memberId, String rawToken) {
-		RefreshToken stored = refreshTokenRepository.findByMember_Id(memberId)
-			.orElseThrow(() -> new BusinessException(AuthExceptionCode.TOKEN_INVALID));
+		RefreshToken stored = refreshTokenRepository.findByMemberId(memberId);
+		if (stored == null) {
+			throw new BusinessException(AuthExceptionCode.TOKEN_INVALID);
+		}
 
 		if (stored.isExpired()) {
 			throw new BusinessException(AuthExceptionCode.TOKEN_EXPIRED);
@@ -45,7 +49,7 @@ public class RefreshTokenService {
 
 	@Transactional
 	public void deleteByMemberId(UUID memberId) {
-		refreshTokenRepository.deleteByMember_Id(memberId);
+		refreshTokenRepository.deleteByMemberId(memberId);
 	}
 
 	private String sha256(String raw) {
