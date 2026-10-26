@@ -20,6 +20,5 @@ fun String?.isNullOrBlankLikeJava(): Boolean {
 object StringUtil {
 
     /** null이거나 공백뿐이면 null, 아니면 그대로 돌려준다. */
-    @JvmStatic
     fun emptyToNull(value: String?): String? = value?.takeUnless { it.isBlankLikeJava() }
 }

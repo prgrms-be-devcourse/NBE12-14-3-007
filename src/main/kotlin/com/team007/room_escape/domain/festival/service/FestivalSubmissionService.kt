@@ -34,8 +34,7 @@ class FestivalSubmissionService(
     @Transactional
     fun create(memberId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
-        val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(request.referenceUrl!!)
-        duplicateValidator.validate(null, request.beginDe!!, request.endDe!!, request.region!!, normalizedReferenceUrl)
+        val normalizedReferenceUrl = validateNotDuplicated(null, request)
         val festival = Festival.create(
             member = member, providerType = ProviderType.MEMBER,
             title = request.title, category = request.category,
@@ -56,19 +55,19 @@ class FestivalSubmissionService(
             .findAllByFestival_Member_IdAndFestival_ProviderTypeOrderByCreatedAtDesc(memberId, ProviderType.MEMBER)
         val histories = deletionHistories.findLatestForTargets(
             DeletionTargetType.FESTIVAL,
-            submissions.map { it.festival!! }.filter { it.isDeleted() }.map { it.id!!.toString() }
+            submissions.map { it.requiredFestival }.filter { it.isDeleted() }.map { it.requiredId.toString() }
         )
         return submissions.map {
-            FestivalSubmissionResponse.ListItem.from(it, histories[it.festival!!.id!!.toString()])
+            FestivalSubmissionResponse.ListItem.from(it, histories[it.requiredFestival.requiredId.toString()])
         }
     }
 
     @Transactional(readOnly = true)
     fun findById(memberId: UUID, submissionId: UUID): FestivalSubmissionResponse.Detail {
         val submission = findSubmission(memberId, submissionId)
-        val festival = submission.festival!!
+        val festival = submission.requiredFestival
         val latest = if (festival.isDeleted()) {
-            deletionHistories.findLatest(DeletionTargetType.FESTIVAL, festival.id!!.toString())
+            deletionHistories.findLatest(DeletionTargetType.FESTIVAL, festival.requiredId.toString())
         } else null
         return FestivalSubmissionResponse.Detail.from(submission, latest)
     }
@@ -77,13 +76,12 @@ class FestivalSubmissionService(
     fun update(memberId: UUID, submissionId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Detail {
         memberReader.getUnrestrictedMember(memberId)
         val submission = findSubmission(memberId, submissionId)
-        val festival = submission.festival!!
+        val festival = submission.requiredFestival
         if (festival.isDeleted()) throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
         val version = request.version
             ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
         if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
-        val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(request.referenceUrl!!)
-        duplicateValidator.validate(festival.id, request.beginDe!!, request.endDe!!, request.region!!, normalizedReferenceUrl)
+        val normalizedReferenceUrl = validateNotDuplicated(festival.id, request)
         festival.updateDetails(
             request.title, request.category, richTextSanitizer.sanitize(request.festivalContent),
             normalizedReferenceUrl, request.region, request.regionDetail, request.imgUrl,
@@ -96,10 +94,27 @@ class FestivalSubmissionService(
     @Transactional
     fun delete(memberId: UUID, submissionId: UUID) {
         val submission = findSubmission(memberId, submissionId)
-        val festivalId = submission.festival?.id ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
-        val festival = festivalRepository.findForDeletion(festivalId)
+        val festival = festivalRepository.findForDeletion(submission.requiredFestival.requiredId)
             .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
         festivalDeletionService.deleteByAuthor(festival, memberId)
+    }
+
+    /**
+     * 같은 기간·지역·주소의 행사가 이미 있는지 확인하고, 비교에 쓴 정규화된 주소를 돌려준다.
+     * 요청 검증(@NotNull)을 통과했다면 이 값들은 항상 있다.
+     */
+    private fun validateNotDuplicated(currentFestivalId: Long?, request: FestivalSubmissionRequest.Upsert): String {
+        val normalizedReferenceUrl = duplicateValidator.normalizeReferenceUrl(
+            requireNotNull(request.referenceUrl) { "검증을 통과한 요청에는 참고 주소가 있다." },
+        )
+        duplicateValidator.validate(
+            currentFestivalId,
+            requireNotNull(request.beginDe) { "검증을 통과한 요청에는 시작 일시가 있다." },
+            requireNotNull(request.endDe) { "검증을 통과한 요청에는 종료 일시가 있다." },
+            requireNotNull(request.region) { "검증을 통과한 요청에는 지역이 있다." },
+            normalizedReferenceUrl,
+        )
+        return normalizedReferenceUrl
     }
 
     private fun findSubmission(memberId: UUID, submissionId: UUID): FestivalSubmission =

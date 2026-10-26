@@ -31,6 +31,10 @@ class Festival protected constructor() : SoftDeletableEntity() {
     var id: Long? = null
         protected set
 
+    /** 저장된 행사의 ID. 저장 전이면 어떤 행사인지 알려주는 예외를 던진다. */
+    val requiredId: Long
+        get() = checkNotNull(id) { "저장되지 않은 행사입니다: $title" }
+
     @field:ManyToOne(fetch = FetchType.LAZY)
     @field:JoinColumn(name = "member_id")
     var member: Member? = null
@@ -142,7 +146,6 @@ class Festival protected constructor() : SoftDeletableEntity() {
 
     companion object {
         @Deprecated("Kotlin에서는 create()를 사용하세요. Java 호출 호환용입니다.")
-        @JvmStatic
         fun builder(): FestivalBuilder = FestivalBuilder()
 
         fun create(

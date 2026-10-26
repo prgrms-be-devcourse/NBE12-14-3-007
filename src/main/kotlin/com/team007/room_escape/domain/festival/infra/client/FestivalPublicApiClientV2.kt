@@ -66,8 +66,8 @@ class FestivalPublicApiClientV2(
     }
 
     /** item이 1건뿐이면 배열이 아니라 단일 객체로 오기도 해서, 배열/단일 둘 다 받아들이게 처리한다. */
-    private fun <T> parseItems(xml: String?, rowType: Class<T>): List<T> {
-        return try {
+    private fun <T> parseItems(xml: String?, rowType: Class<T>): List<T> =
+        try {
             val root = xmlMapper.readTree(xml)
             val itemNode = root.findPath("item")
             if (itemNode.isMissingNode) {
@@ -84,10 +84,9 @@ class FestivalPublicApiClientV2(
             log.error("[{}] 전국 문화정보 API 응답 파싱 실패", FestivalExceptionCode.PUBLIC_API_PARSE_FAILED.code, e)
             throw BusinessException(FestivalExceptionCode.PUBLIC_API_PARSE_FAILED)
         }
-    }
 
-    private fun buildPeriodUri(pageNo: Int, numOfRows: Int, from: String, to: String): URI {
-        return UriComponentsBuilder.fromUriString(properties.url)
+    private fun buildPeriodUri(pageNo: Int, numOfRows: Int, from: String, to: String): URI =
+        UriComponentsBuilder.fromUriString(properties.url)
             .path("/period2")
             .queryParam("serviceKey", properties.serviceKey)
             .queryParam("PageNo", pageNo)
@@ -96,16 +95,14 @@ class FestivalPublicApiClientV2(
             .queryParam("to", to)
             .build()
             .toUri()
-    }
 
-    private fun buildDetailUri(seq: String): URI {
-        return UriComponentsBuilder.fromUriString(properties.url)
+    private fun buildDetailUri(seq: String): URI =
+        UriComponentsBuilder.fromUriString(properties.url)
             .path("/detail2")
             .queryParam("serviceKey", properties.serviceKey)
             .queryParam("seq", seq)
             .build()
             .toUri()
-    }
 
     companion object {
         /** 요청 응답 시간이 30초 이상일 경우 포기 */

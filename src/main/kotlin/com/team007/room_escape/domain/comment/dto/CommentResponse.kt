@@ -26,7 +26,6 @@ class CommentResponse private constructor() {
     ) {
         companion object {
 
-            @JvmStatic
             fun from(
                 comment: Comment,
                 imageUrlResolver: ImageUrlResolver,
@@ -77,11 +76,9 @@ class CommentResponse private constructor() {
     ) {
         companion object {
 
-            @JvmStatic
             fun from(comment: Comment, imageUrlResolver: ImageUrlResolver): Info =
                 of(comment, emptyList(), imageUrlResolver)
 
-            @JvmStatic
             fun of(comment: Comment, replies: List<Comment>, imageUrlResolver: ImageUrlResolver): Info {
                 val deleted = comment.isDeleted()
                 return Info(

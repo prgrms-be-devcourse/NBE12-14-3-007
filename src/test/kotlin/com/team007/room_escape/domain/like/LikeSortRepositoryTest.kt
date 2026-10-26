@@ -177,7 +177,7 @@ class LikeSortRepositoryTest @Autowired constructor(
             likePost(others, 3)
             flushAndClear()
 
-            val page = postRepository.findAllByFestivalIdOrderByLikeCount(festival.id!!, PageRequest.of(0, 10))
+            val page = postRepository.findAllByFestivalIdOrderByLikeCount(festival.requiredId, PageRequest.of(0, 10))
 
             assertThat(titles(page)).containsExactly(title("mine"))
             assertThat(page.totalElements).isEqualTo(1)
@@ -193,7 +193,7 @@ class LikeSortRepositoryTest @Autowired constructor(
             deleted.delete()
             flushAndClear()
 
-            val page = postRepository.findAllByFestivalIdOrderByLikeCount(festival.id!!, PageRequest.of(0, 10))
+            val page = postRepository.findAllByFestivalIdOrderByLikeCount(festival.requiredId, PageRequest.of(0, 10))
 
             assertThat(titles(page)).containsExactly(title("alive"))
             assertThat(page.totalElements).isEqualTo(1)
@@ -318,7 +318,7 @@ class LikeSortRepositoryTest @Autowired constructor(
             likePost(post, 4)
             flushAndClear()
 
-            val counts = likeRepository.countByFestivalIds(listOf(festival.id!!))
+            val counts = likeRepository.countByFestivalIds(listOf(festival.requiredId))
                 .associate { it.festivalId to it.likeCount }
 
             assertThat(counts).containsExactly(entry(checkNotNull(festival.id), 1L))

@@ -51,12 +51,10 @@ class AdminFestivalResponse private constructor() {
         val deletion: FestivalResponse.DeletionInfo?
     ) {
         companion object {
-            @JvmStatic
             fun builder(): ListItemBuilder = ListItemBuilder()
 
-            @JvmStatic
-            fun from(festival: Festival, latest: DeletionHistory?): ListItem {
-                return ListItem.builder()
+            fun from(festival: Festival, latest: DeletionHistory?): ListItem =
+                ListItem.builder()
                     .festivalId(festival.id)
                     .providerType(festival.providerType)
                     .title(festival.title)
@@ -70,7 +68,6 @@ class AdminFestivalResponse private constructor() {
                     .deletedAt(festival.deletedAt)
                     .deletion(deletionFromHistory(festival, latest))
                     .build()
-            }
 
             private fun deletionFromHistory(festival: Festival, latest: DeletionHistory?): FestivalResponse.DeletionInfo? {
                 if (!festival.isDeleted() || latest == null || latest.action != DeletionAction.DELETE) return null
