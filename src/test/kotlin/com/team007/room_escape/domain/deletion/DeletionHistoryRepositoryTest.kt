@@ -325,12 +325,12 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         ))
         val deleted = facade.latest(admin.id, DeletionTargetType.FESTIVAL, id)
         assertThat(deleted).isNotNull()
-        assertThat(deleted.action()).isEqualTo(DeletionAction.DELETE)
-        assertThat(deleted.actorType()).isEqualTo(DeletionActorType.ADMIN)
-        assertThat(deleted.reasonLabel()).isEqualTo("도배·스팸")
-        assertThat(deleted.reasonDetail()).isEqualTo("도배 확인")
+        assertThat(deleted?.action()).isEqualTo(DeletionAction.DELETE)
+        assertThat(deleted?.actorType()).isEqualTo(DeletionActorType.ADMIN)
+        assertThat(deleted?.reasonLabel()).isEqualTo("도배·스팸")
+        assertThat(deleted?.reasonDetail()).isEqualTo("도배 확인")
         facade.restore(admin.id, DeletionTargetType.FESTIVAL, id)
-        assertThat(facade.latest(admin.id, DeletionTargetType.FESTIVAL, id).action()).isEqualTo(DeletionAction.RESTORE)
+        assertThat(facade.latest(admin.id, DeletionTargetType.FESTIVAL, id)?.action()).isEqualTo(DeletionAction.RESTORE)
     }
 
     @Test
@@ -628,7 +628,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         entityManager.clear()
         assertThat(festivals.findByIdAndDeletedAtIsNull(festival.id)).isEmpty()
         assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, festival.id.toString()))
-            .get().extracting(DeletionHistory::getReason).isEqualTo(DeletionReason.SPAM)
+            .get().extracting(DeletionHistory::reason).isEqualTo(DeletionReason.SPAM)
     }
 
     @Test
@@ -644,7 +644,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
         assertThat(records.map { it.action }).containsExactly(DeletionAction.RESTORE, DeletionAction.DELETE)
         assertThat(records[1].reasonDetail).isEqualTo("도배 삭제")
         assertThat(histories.findFirstByTargetTypeAndTargetIdOrderByIdDesc(DeletionTargetType.FESTIVAL, "12"))
-            .get().extracting(DeletionHistory::getId).isEqualTo(restored.id)
+            .get().extracting(DeletionHistory::id).isEqualTo(restored.id)
         assertThat(deleted.id).isNotEqualTo(restored.id)
     }
 }
