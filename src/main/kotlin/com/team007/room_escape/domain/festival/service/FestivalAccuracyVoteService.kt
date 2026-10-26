@@ -36,17 +36,14 @@ class FestivalAccuracyVoteService(
             throw BusinessException(FestivalExceptionCode.SELF_ACCURACY_VOTE_NOT_ALLOWED)
         }
 
+        val voteType = requireNotNull(request.voteType) { "평가 종류는 필수입니다." }
         val vote = accuracyVoteRepository
             .findByFestivalAndMember(festival, member)
             .orElseGet {
-                FestivalAccuracyVote.builder()
-                    .festival(festival)
-                    .member(member)
-                    .voteType(request.voteType)
-                    .build()
+                FestivalAccuracyVote.create(festival, member, voteType)
             }
 
-        vote.changeVote(request.voteType)
+        vote.changeVote(voteType)
         accuracyVoteRepository.save(vote)
 
         val response = buildResponse(festival, vote.voteType)
@@ -86,8 +83,14 @@ class FestivalAccuracyVoteService(
         return FestivalAccuracyVoteResponse.Info.from(accurateCount, inaccurateCount, myVote)
     }
 
-    private fun findUserSubmittedFestival(festivalId: Long): Festival =
-        festivalRepository
-            .findByIdAndProviderTypeAndDeletedAtIsNull(festivalId, ProviderType.MEMBER)
+    private fun findUserSubmittedFestival(festivalId: Long): Festival {
+        // 첫 투표는 잠글 투표 행이 없으므로 행사 행을 잠근다.
+        // 투표·취소·삭제가 같은 잠금을 사용하며 트랜잭션 종료까지 유지한다.
+        val festival = festivalRepository.findForDeletion(festivalId)
             .orElseThrow { BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND) }
+        if (festival.providerType != ProviderType.MEMBER || festival.isDeleted()) {
+            throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
+        }
+        return festival
+    }
 }
