@@ -344,9 +344,10 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     fun deletionCompletesMatchingPendingReportWithReason() {
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val festival = publicFestival("신고 대상")
-        val report = Inquiry.builder().member(admin).category(InquiryCategory.REPORT)
-            .targetType(InquiryTargetType.FESTIVAL).targetId(festival.id.toString())
-            .title("신고").content("잘못된 정보").status(InquiryStatus.PENDING).build()
+        val report = Inquiry(
+            member = admin, category = InquiryCategory.REPORT, title = "신고", content = "잘못된 정보",
+            targetType = InquiryTargetType.FESTIVAL, targetId = festival.id.toString(), status = InquiryStatus.PENDING,
+        )
         entityManager.persist(report)
         entityManager.flush()
         facade.delete(admin.id, AdminDeletionRequest.Create(
@@ -369,17 +370,20 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
     fun invalidReportRollsBackDeletionAndHistory(scenario: String) {
         val admin = member("관리자", MemberRole.ROLE_ADMIN)
         val festival = publicFestival("취소 검증")
-        val report = Inquiry.builder().member(admin)
-            .category(when (scenario) {
+        val report = Inquiry(
+            member = admin,
+            category = when (scenario) {
                 "QUESTION" -> InquiryCategory.QUESTION
                 "TIP" -> InquiryCategory.TIP
                 else -> InquiryCategory.REPORT
-            })
-            .targetType(if (scenario == "OTHER_TYPE") InquiryTargetType.COMMENT else InquiryTargetType.FESTIVAL)
-            .targetId(if (scenario == "OTHER_TARGET") "999999999" else festival.id.toString())
-            .title("연결 불가 신고").content("내용")
-            .status(if (scenario == "ANSWERED") InquiryStatus.ANSWERED else InquiryStatus.PENDING)
-            .answer(if (scenario == "ANSWER_ONLY") "기존 답변" else null).build()
+            },
+            title = "연결 불가 신고",
+            content = "내용",
+            targetType = if (scenario == "OTHER_TYPE") InquiryTargetType.COMMENT else InquiryTargetType.FESTIVAL,
+            targetId = if (scenario == "OTHER_TARGET") "999999999" else festival.id.toString(),
+            answer = if (scenario == "ANSWER_ONLY") "기존 답변" else null,
+            status = if (scenario == "ANSWERED") InquiryStatus.ANSWERED else InquiryStatus.PENDING,
+        )
         if (scenario == "DELETED") report.delete()
         entityManager.persist(report)
         entityManager.flush()

@@ -23,7 +23,7 @@ class AdminInquiryService(
     private val inquiryRepository: InquiryRepository,
     private val commentRepository: CommentRepository,
     private val communityCommentRepository: CommunityCommentRepository,
-    private val imageUrlResolver: ImageUrlResolver
+    private val imageUrlResolver: ImageUrlResolver,
 ) {
 
     /** 관리자 문의 검색. 조건을 비우면 전체를 조회한다. */
@@ -36,12 +36,9 @@ class AdminInquiryService(
             request.status,
             request.category,
             request.includeDeletedOrFalse(),
-            pageable
+            pageable,
         ).map { inquiry ->
-            AdminInquiryResponse.ListItem.from(
-                inquiry,
-                inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) }
-            )
+            AdminInquiryResponse.ListItem.from(inquiry, inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) })
         }
     }
 
@@ -49,9 +46,7 @@ class AdminInquiryService(
      * 관리자 문의 상세. 삭제된 문의도 열어볼 수 있다.
      */
     @Transactional(readOnly = true)
-    fun findById(inquiryId: UUID): AdminInquiryResponse.Detail {
-        return toDetail(findOrThrow(inquiryId))
-    }
+    fun findById(inquiryId: UUID): AdminInquiryResponse.Detail = toDetail(findOrThrow(inquiryId))
 
     /**
      * 관리자 답변을 등록한다. 이미 답변이 있으면 덮어쓴다.
@@ -60,32 +55,26 @@ class AdminInquiryService(
      */
     @Transactional
     fun answer(inquiryId: UUID, request: AdminInquiryRequest.Answer): AdminInquiryResponse.Detail {
-        val inquiry = inquiryRepository.findForProcessing(inquiryId).orElse(null)
+        val inquiry = inquiryRepository.findForProcessing(inquiryId)
             ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
-        if (inquiry.isDeleted()) {
-            throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_DELETED)
-        }
+        if (inquiry.isDeleted()) throw BusinessException(InquiryExceptionCode.INQUIRY_ALREADY_DELETED)
 
         inquiry.answer(request.trimmed())
 
         return toDetail(inquiry)
     }
 
-    private fun findOrThrow(inquiryId: UUID): Inquiry {
-        return inquiryRepository.findDetailById(inquiryId).orElse(null)
-            ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
-    }
+    private fun findOrThrow(inquiryId: UUID): Inquiry =
+        inquiryRepository.findDetailById(inquiryId) ?: throw BusinessException(InquiryExceptionCode.INQUIRY_NOT_FOUND)
 
     /** 저장된 key를 공개 URL로 바꿔 채운다. 회원이 없으면 프로필 URL도 없다. */
-    private fun toDetail(inquiry: Inquiry): AdminInquiryResponse.Detail {
-        return AdminInquiryResponse.Detail.from(
-            inquiry,
-            imageUrlResolver.resolve(inquiry.img),
-            inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) },
-            findCommentPostId(inquiry)
-        )
-    }
+    private fun toDetail(inquiry: Inquiry): AdminInquiryResponse.Detail = AdminInquiryResponse.Detail.from(
+        inquiry,
+        imageUrlResolver.resolve(inquiry.img),
+        inquiry.member?.let { imageUrlResolver.resolve(it.profileImg) },
+        findCommentPostId(inquiry),
+    )
 
     /**
      * 댓글에는 따로 볼 화면이 없어서, 관리자가 신고된 댓글을 확인하려면 댓글이 달린 글로 가야 한다.
@@ -93,34 +82,21 @@ class AdminInquiryService(
      * 목록은 한 번에 여러 건이라 상세에서만 조회한다.
      */
     private fun findCommentPostId(inquiry: Inquiry): UUID? {
-        val type = inquiry.targetType
-        if (type != InquiryTargetType.COMMENT && type != InquiryTargetType.COMMUNITY_COMMENT) {
-            return null
-        }
-        try {
-            val commentId = inquiry.targetId?.toLong() ?: return null
-            return if (type == InquiryTargetType.COMMENT)
-                commentRepository.findById(commentId)
-                    .map { comment -> comment.post.id }
-                    .orElse(null)
-            else
-                communityCommentRepository.findById(commentId)
-                    .map { comment -> comment.post.id }
-                    .orElse(null)
-        } catch (e: NumberFormatException) {
-            return null
+        val commentId = inquiry.targetId?.toLongOrNull() ?: return null
+        return when (inquiry.targetType) {
+            InquiryTargetType.COMMENT ->
+                commentRepository.findById(commentId).map { it.post.id }.orElse(null)
+            InquiryTargetType.COMMUNITY_COMMENT ->
+                communityCommentRepository.findById(commentId).map { it.post.id }.orElse(null)
+            else -> null
         }
     }
 
     private fun validateSort(sort: Sort) {
-        val hasUnknownField = sort.any { it.property !in SORTABLE }
-
-        if (hasUnknownField) {
-            throw BusinessException(CommonExceptionCode.INVALID_INPUT)
-        }
+        if (sort.any { it.property !in SORTABLE }) throw BusinessException(CommonExceptionCode.INVALID_INPUT)
     }
 
-    companion object {
-        private val SORTABLE: Set<String> = setOf("createdAt", "status", "category")
+    private companion object {
+        val SORTABLE = setOf("createdAt", "status", "category")
     }
 }

@@ -20,51 +20,40 @@ class InquiryTargetValidator(
     private val commentRepository: CommentRepository,
     private val memberRepository: MemberRepository,
     private val communityPostRepository: CommunityPostRepository,
-    private val communityCommentRepository: CommunityCommentRepository
+    private val communityCommentRepository: CommunityCommentRepository,
 ) {
 
     /** 대상이 없는 일반 문의는 통과시킨다. */
     fun validate(type: InquiryTargetType?, targetId: String?) {
-        if (type == null) {
-            return
-        }
+        if (type == null) return
 
         val exists = when (type) {
-            InquiryTargetType.FESTIVAL -> festivalRepository.existsByIdAndDeletedAtIsNull(parseLong(targetId))
-            InquiryTargetType.POST -> postRepository.existsByIdAndDeletedAtIsNull(parseUuid(targetId))
+            InquiryTargetType.FESTIVAL -> festivalRepository.existsByIdAndDeletedAtIsNull(targetId.asLong())
+            InquiryTargetType.POST -> postRepository.existsByIdAndDeletedAtIsNull(targetId.asUuid())
             // 커뮤니티 글은 @SQLRestriction으로 삭제된 행이 자동으로 빠진다.
-            InquiryTargetType.COMMENT -> commentRepository.existsByIdAndDeletedAtIsNull(parseLong(targetId))
-            InquiryTargetType.MEMBER -> memberRepository.existsByIdAndDeletedAtIsNull(parseUuid(targetId))
-            InquiryTargetType.COMMUNITY_POST -> communityPostRepository.existsById(parseUuid(targetId))
+            InquiryTargetType.COMMENT -> commentRepository.existsByIdAndDeletedAtIsNull(targetId.asLong())
+            InquiryTargetType.MEMBER -> memberRepository.existsByIdAndDeletedAtIsNull(targetId.asUuid())
+            InquiryTargetType.COMMUNITY_POST -> communityPostRepository.existsById(targetId.asUuid())
             InquiryTargetType.COMMUNITY_COMMENT ->
-                communityCommentRepository.existsByIdAndDeletedAtIsNull(parseLong(targetId))
+                communityCommentRepository.existsByIdAndDeletedAtIsNull(targetId.asLong())
         }
 
-        if (!exists) {
-            throw targetNotFound()
-        }
+        if (!exists) throw targetNotFound()
     }
 
-    private fun parseLong(targetId: String?): Long {
-        // Java에서는 targetId가 null이면 trim()에서 NPE가 났다. 같은 시점에 예외를 낸다.
-        requireNotNull(targetId)
-        try {
-            return targetId.trim().toLong()
-        } catch (e: NumberFormatException) {
-            throw targetNotFound()
-        }
-    }
+    // 대상 종류가 있는데 ID가 없는 요청은 요청 검증이 먼저 막는다. 여기까지 오면 프로그래밍 오류다.
+    // Java String.trim()과 같은 기준(U+0020 이하)으로 자른다.
+    private fun String?.asLong(): Long =
+        requireNotNull(this).trim { it <= ' ' }.toLongOrNull() ?: throw targetNotFound()
 
-    private fun parseUuid(targetId: String?): UUID {
-        requireNotNull(targetId)
-        try {
-            return UUID.fromString(targetId.trim())
+    private fun String?.asUuid(): UUID {
+        val text = requireNotNull(this).trim { it <= ' ' }
+        return try {
+            UUID.fromString(text)
         } catch (e: IllegalArgumentException) {
             throw targetNotFound()
         }
     }
 
-    private fun targetNotFound(): BusinessException {
-        return BusinessException(InquiryExceptionCode.INQUIRY_TARGET_NOT_FOUND)
-    }
+    private fun targetNotFound() = BusinessException(InquiryExceptionCode.INQUIRY_TARGET_NOT_FOUND)
 }

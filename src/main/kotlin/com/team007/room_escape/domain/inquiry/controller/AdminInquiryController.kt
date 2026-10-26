@@ -27,7 +27,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/v1/admin/inquiries")
 class AdminInquiryController(
-    private val adminInquiryService: AdminInquiryService
+    private val adminInquiryService: AdminInquiryService,
 ) {
 
     @Operation(summary = "[ADMIN] 문의·신고·제보 목록 조회", description = "제목, 답변 상태, 문의 종류로 검색한다. 조건을 비우면 전체를 조회한다")
@@ -37,36 +37,27 @@ class AdminInquiryController(
         @ParameterObject @ModelAttribute request: AdminInquiryRequest.Search,
         @ParameterObject
         @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
-        pageable: Pageable
-    ): ResponseEntity<ApiResponse<Page<AdminInquiryResponse.ListItem>>> {
-        val response = adminInquiryService.search(request, pageable)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        pageable: Pageable,
+    ): ResponseEntity<ApiResponse<Page<AdminInquiryResponse.ListItem>>> =
+        ResponseEntity.ok(ApiResponse.ok(adminInquiryService.search(request, pageable)))
 
     @Operation(summary = "[ADMIN] 문의·신고·제보 상세 조회", description = "본문, 첨부, 작성자, 답변까지 함께 조회한다")
     @GetMapping("/{inquiryId}")
     @PreAuthorize("hasRole('ADMIN')")
     fun findById(
-        @PathVariable("inquiryId") inquiryId: UUID
-    ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> {
-        val response = adminInquiryService.findById(inquiryId)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        @PathVariable("inquiryId") inquiryId: UUID,
+    ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> =
+        ResponseEntity.ok(ApiResponse.ok(adminInquiryService.findById(inquiryId)))
 
     @Operation(
         summary = "[ADMIN] 문의·신고·제보 답변 등록",
-        description = "답변을 등록하고 상태를 ANSWERED로 바꾼다."
+        description = "답변을 등록하고 상태를 ANSWERED로 바꾼다.",
     )
     @PatchMapping("/{inquiryId}/answer")
     @PreAuthorize("hasRole('ADMIN')")
     fun answer(
         @PathVariable("inquiryId") inquiryId: UUID,
-        @Valid @RequestBody request: AdminInquiryRequest.Answer
-    ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> {
-        val response = adminInquiryService.answer(inquiryId, request)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        @Valid @RequestBody request: AdminInquiryRequest.Answer,
+    ): ResponseEntity<ApiResponse<AdminInquiryResponse.Detail>> =
+        ResponseEntity.ok(ApiResponse.ok(adminInquiryService.answer(inquiryId, request)))
 }

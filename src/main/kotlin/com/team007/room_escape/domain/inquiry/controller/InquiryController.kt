@@ -26,7 +26,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/v1/inquiries")
 class InquiryController(
-    private val inquiryService: InquiryService
+    private val inquiryService: InquiryService,
 ) {
 
     @Operation(summary = "문의 등록", description = "문의, 신고 또는 제보를 등록한다 첨부 이미지는 업로드 API가 돌려준 key를 넣는다.")
@@ -34,38 +34,29 @@ class InquiryController(
     @PreAuthorize("isAuthenticated()")
     fun create(
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @Valid @RequestBody request: InquiryRequest.Create
-    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
-        val response = inquiryService.create(principal.id, request)
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response))
-    }
+        @Valid @RequestBody request: InquiryRequest.Create,
+    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> =
+        ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(inquiryService.create(principal.id, request)))
 
     @Operation(summary = "[ME] 내 문의 목록 조회", description = "로그인한 사용자가 등록한 문의를 최신순으로 조회한다. 남의 문의는 조회할 수 없다.")
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     fun findMine(
-        @AuthenticationPrincipal principal: CustomUserDetails
-    ): ResponseEntity<ApiResponse<List<InquiryResponse.ListItem>>> {
-        val response = inquiryService.findMine(principal.id)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<List<InquiryResponse.ListItem>>> =
+        ResponseEntity.ok(ApiResponse.ok(inquiryService.findMine(principal.id)))
 
     @Operation(
         summary = "[ME] 내 문의 상세 조회",
-        description = "본인이 등록한 문의를 상세 조회한다. 남의 문의를 조회하면 404로 응답한다."
+        description = "본인이 등록한 문의를 상세 조회한다. 남의 문의를 조회하면 404로 응답한다.",
     )
     @GetMapping("/{inquiryId}")
     @PreAuthorize("isAuthenticated()")
     fun findMineById(
         @PathVariable("inquiryId") inquiryId: UUID,
-        @AuthenticationPrincipal principal: CustomUserDetails
-    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
-        val response = inquiryService.findMineById(inquiryId, principal.id)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        @AuthenticationPrincipal principal: CustomUserDetails,
+    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> =
+        ResponseEntity.ok(ApiResponse.ok(inquiryService.findMineById(inquiryId, principal.id)))
 
     @Operation(summary = "문의 수정", description = "본인이 작성한 문의를 수정한다. 보낸 필드만 반영된다. ")
     @PatchMapping("/{inquiryId}")
@@ -73,22 +64,18 @@ class InquiryController(
     fun update(
         @PathVariable("inquiryId") inquiryId: UUID,
         @AuthenticationPrincipal principal: CustomUserDetails,
-        @Valid @RequestBody request: InquiryRequest.Update
-    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> {
-        val response = inquiryService.update(inquiryId, principal.id, request)
-
-        return ResponseEntity.ok(ApiResponse.ok(response))
-    }
+        @Valid @RequestBody request: InquiryRequest.Update,
+    ): ResponseEntity<ApiResponse<InquiryResponse.Detail>> =
+        ResponseEntity.ok(ApiResponse.ok(inquiryService.update(inquiryId, principal.id, request)))
 
     @Operation(summary = "문의 삭제", description = "본인이 작성한 문의를 삭제한다. 관리자는 모든 문의를 삭제할 수 있다. ")
     @DeleteMapping("/{inquiryId}")
     @PreAuthorize("isAuthenticated()")
     fun delete(
         @PathVariable("inquiryId") inquiryId: UUID,
-        @AuthenticationPrincipal principal: CustomUserDetails
+        @AuthenticationPrincipal principal: CustomUserDetails,
     ): ResponseEntity<ApiResponse<Void?>> {
         inquiryService.delete(inquiryId, principal.id, principal.isAdmin)
-
         return ResponseEntity.ok(ApiResponse.noContent())
     }
 }

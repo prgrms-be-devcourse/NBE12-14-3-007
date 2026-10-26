@@ -10,22 +10,21 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.Optional
 import java.util.UUID
 
 interface InquiryRepository : JpaRepository<Inquiry, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select i from Inquiry i where i.id = :id")
-    fun findForProcessing(@Param("id") id: UUID): Optional<Inquiry>
+    fun findForProcessing(@Param("id") id: UUID): Inquiry?
 
     /**
      * 내가 쓴 문의 목록. 최신순.
      * 엔티티에 @SQLRestriction 이 없으므로 삭제 제외 조건을 직접 적는다.
      */
-    fun findAllByMember_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId: UUID): List<Inquiry>
+    fun findAllByMemberIdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId: UUID): List<Inquiry>
 
     /** 삭제되지 않은 문의 단건. */
-    fun findByIdAndDeletedAtIsNull(id: UUID): Optional<Inquiry>
+    fun findByIdAndDeletedAtIsNull(id: UUID): Inquiry?
 
     /**
      * 관리자용 문의 단건. 작성자까지 함께 가져온다.
@@ -39,7 +38,7 @@ interface InquiryRepository : JpaRepository<Inquiry, UUID> {
         WHERE i.id = :id
         """
     )
-    fun findDetailById(@Param("id") id: UUID): Optional<Inquiry>
+    fun findDetailById(@Param("id") id: UUID): Inquiry?
 
     /**
      * 관리자용 문의 검색. 모든 조건은 선택이며, 비우면 그 조건을 걸지 않는다.
