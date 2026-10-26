@@ -183,7 +183,10 @@ class FestivalSubmissionResponse private constructor() {
         val updatedAt: LocalDateTime?,
 
         @field:Schema(description = "행사 정보")
-        val festival: FestivalInfo?
+        val festival: FestivalInfo?,
+
+        @field:Schema(description = "수정 요청에 전달할 행사 버전")
+        val version: Long = 0
     ) {
         companion object {
             @JvmStatic
@@ -191,16 +194,20 @@ class FestivalSubmissionResponse private constructor() {
 
             @JvmStatic
             fun from(festivalSubmission: FestivalSubmission, latest: DeletionHistory?): SubmissionInfo {
-                return SubmissionInfo.builder()
-                    .festivalSubmissionId(festivalSubmission.id)
-                    .createdAt(festivalSubmission.createdAt)
-                    .updatedAt(festivalSubmission.updatedAt)
-                    .festival(FestivalInfo.from(festivalSubmission.festival!!, latest))
-                    .build()
+                val festival = checkNotNull(festivalSubmission.festival)
+                return SubmissionInfo(
+                    festivalSubmissionId = festivalSubmission.id,
+                    createdAt = festivalSubmission.createdAt,
+                    updatedAt = festival.updatedAt,
+                    festival = FestivalInfo.from(festival, latest),
+                    version = festival.version
+                )
             }
         }
 
         class SubmissionInfoBuilder {
+            private var version: Long = 0
+            fun version(version: Long): SubmissionInfoBuilder = apply { this.version = version }
             private var festivalSubmissionId: UUID? = null
             private var createdAt: LocalDateTime? = null
             private var updatedAt: LocalDateTime? = null
@@ -214,7 +221,7 @@ class FestivalSubmissionResponse private constructor() {
 
             fun festival(festival: FestivalInfo?): SubmissionInfoBuilder = apply { this.festival = festival }
 
-            fun build(): SubmissionInfo = SubmissionInfo(festivalSubmissionId, createdAt, updatedAt, festival)
+            fun build(): SubmissionInfo = SubmissionInfo(festivalSubmissionId, createdAt, updatedAt, festival, version)
         }
     }
 

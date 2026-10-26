@@ -122,6 +122,7 @@ export interface WeatherView {
   date: string;
 }
 export interface SubmissionInput {
+  version?: number;
   title: string;
   category: string;
   festivalContent?: string;
@@ -156,6 +157,7 @@ export interface FestivalDeletion {
 }
 export interface SubmissionDetail {
   submission: {
+    version?: number;
     festivalSubmissionId: string;
     createdAt: string;
     updatedAt: string;
