@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.team007.room_escape.domain.member.infra.entity.Member;
 import com.team007.room_escape.domain.member.infra.entity.MemberRole;
+import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -29,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 class SnapshotRecorderTest extends ApiContractSupport {
 
 	private final StringBuilder out = new StringBuilder();
+	private MvcResult lastResult;
 
 	@Test
 	void record() throws Exception {
@@ -118,6 +121,56 @@ class SnapshotRecorderTest extends ApiContractSupport {
 		record("이미지 업로드 - 파일 없음", as(post("/api/v1/images"), meToken)
 			.contentType("multipart/form-data"));
 
+		// ---- 인증 (회원가입, 로그인, 재발급, 로그아웃) ----
+		String authEmail = "snapshot-" + UUID.randomUUID() + "@example.com";
+		String authNickname = "스냅샷" + UUID.randomUUID().toString().substring(0, 8);
+		record("회원가입", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(authEmail, "Password1!", authNickname, null)));
+		record("회원가입 - 이메일 중복", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(authEmail, "Password1!", "다른" + authNickname.substring(3), null)));
+		record("회원가입 - 닉네임 중복", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Password1!", authNickname, null)));
+		record("회원가입 - 이메일 형식 오류", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody("not-an-email", "Password1!", uniqueNickname(), null)));
+		// 위반이 둘 이상이면 메시지 순서가 실행마다 달라져서(검증 결과가 Set), 항목당 위반 하나만 만든다.
+		record("회원가입 - 비밀번호 특수문자 없음", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Password12", uniqueNickname(), null)));
+		record("회원가입 - 비밀번호 너무 짧음", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Pw1!", uniqueNickname(), null)));
+		record("회원가입 - 닉네임 짧음", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Password1!", "a", null)));
+		record("회원가입 - 전화번호 형식 오류", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Password1!", uniqueNickname(), "010-1234-5678")));
+		record("회원가입 - 전화번호 빈 문자열", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(uniqueEmail(), "Password1!", uniqueNickname(), "")));
+		record("회원가입 - 닉네임 누락", post("/api/v1/auth/signup").contentType("application/json")
+			.content("{\"email\":\"" + uniqueEmail() + "\",\"password\":\"Password1!\"}"));
+		Member withdrawn = saveMember(MemberRole.ROLE_UNVERIFIED);
+		withdrawn.delete();
+		entityManager.flush();
+		record("회원가입 - 탈퇴한 이메일", post("/api/v1/auth/signup").contentType("application/json")
+			.content(signupBody(withdrawn.getEmail(), "Password1!", uniqueNickname(), null)));
+
+		record("로그인", post("/api/v1/auth/login").contentType("application/json")
+			.content(loginBody(authEmail, "Password1!")));
+		recordCookies("로그인 - 쿠키");
+		Cookie refresh = lastResult.getResponse().getCookie("refreshToken");
+		record("로그인 - 비밀번호 틀림", post("/api/v1/auth/login").contentType("application/json")
+			.content(loginBody(authEmail, "WrongPass1!")));
+		record("로그인 - 없는 이메일", post("/api/v1/auth/login").contentType("application/json")
+			.content(loginBody(uniqueEmail(), "Password1!")));
+		record("로그인 - 비밀번호 누락", post("/api/v1/auth/login").contentType("application/json")
+			.content("{\"email\":\"" + uniqueEmail() + "\"}"));
+
+		record("토큰 재발급", post("/api/v1/auth/refresh").cookie(refresh));
+		record("토큰 재발급 - 쿠키 없음", post("/api/v1/auth/refresh"));
+		record("토큰 재발급 - 위조 토큰", post("/api/v1/auth/refresh").cookie(new Cookie("refreshToken", "not-a-token")));
+
+		record("로그아웃", post("/api/v1/auth/logout").cookie(refresh));
+		recordCookies("로그아웃 - 쿠키");
+		record("로그아웃 - 쿠키 없음", post("/api/v1/auth/logout"));
+		record("로그아웃 후 재발급", post("/api/v1/auth/refresh").cookie(refresh));
+
 		// ---- 문서 ----
 		record("OpenAPI 문서", get("/v3/api-docs"));
 
@@ -129,8 +182,36 @@ class SnapshotRecorderTest extends ApiContractSupport {
 		Files.writeString(Path.of(path), "# label: " + label + "\n\n" + out, StandardCharsets.UTF_8);
 	}
 
+	private String signupBody(String email, String password, String nickname, String phone) {
+		String phoneField = phone == null ? "" : ",\"phone\":\"" + phone + "\"";
+		return "{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"nickname\":\"" + nickname
+			+ "\"" + phoneField + "}";
+	}
+
+	private String loginBody(String email, String password) {
+		return "{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}";
+	}
+
+	private String uniqueEmail() {
+		return "snapshot-" + UUID.randomUUID() + "@example.com";
+	}
+
+	private String uniqueNickname() {
+		return "스냅샷" + UUID.randomUUID().toString().substring(0, 8);
+	}
+
+	/** 직전 응답의 Set-Cookie 헤더를 별도 항목으로 남긴다. 본문과 달리 헤더라서 따로 둔다. */
+	private void recordCookies(String name) {
+		List<String> cookies = lastResult.getResponse().getHeaders("Set-Cookie");
+		out.append("### ").append(name).append('\n')
+			.append("status: ").append(lastResult.getResponse().getStatus()).append('\n')
+			.append("content-type: -\n")
+			.append(normalize(String.join("\n", cookies.stream().sorted().toList()))).append("\n\n");
+	}
+
 	private String record(String name, MockHttpServletRequestBuilder request) throws Exception {
 		MvcResult result = mvc.perform(request).andReturn();
+		lastResult = result;
 		String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
 		String contentType = result.getResponse().getContentType();
 		out.append("### ").append(name).append('\n')
@@ -179,6 +260,8 @@ class SnapshotRecorderTest extends ApiContractSupport {
 			.replace(nextYear, "\"date\" : \"<today+1y>\"")
 			.replace(today, "\"date\" : \"<today>\"")
 			.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "<uuid>")
+			.replaceAll("eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+", "<jwt>")
+			.replaceAll("Expires=[^;]+", "Expires=<ts>")
 			.replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?", "<ts>")
 			.replaceAll("계약테스트 (행사 )?[0-9a-f]{8}", "계약테스트 $1<t>")
 			.replaceAll("\"(festivalId|id)\" : \\d+", "\"$1\" : <n>");

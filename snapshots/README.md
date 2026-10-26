@@ -19,7 +19,8 @@ snapshots/
  ├ README.md
  ├ baseline/                          기준선 (git에 올라감)
  │   ├ java-era_324ef5e.txt            Java 위주였던 시점 (Java 155 / Kotlin 18)
- │   └ kotlin-mid_a41e11f.txt          변환 중간 시점 (Java 92 / Kotlin 81)
+ │   ├ kotlin-mid_a41e11f.txt          변환 중간 시점 (Java 92 / Kotlin 81)
+│   └ auth-java_ad66cee.txt           auth 도메인을 Kotlin으로 바꾸기 전 (auth 23개 요청 포함, 총 67개)
  ├ tools/
  │   ├ SnapshotRecorderTest.java       요청을 보내고 응답을 저장하는 기록기
  │   ├ record.ps1 / record.sh          기록기를 실행하는 스크립트
@@ -89,7 +90,7 @@ Kotlin의 nullable 타입(`String?`)을 Swagger가 `"type": ["string", "null"]`�
 
 ## 한계 (꼭 읽어 주세요)
 
-- 기록하는 요청은 **44개**입니다. 문의, 후기, 날씨, 오류 응답, OpenAPI 문서 위주이고
+- 기록하는 요청은 **67개**입니다. (auth 23개 추가: 회원가입, 로그인, 토큰 재발급, 로그아웃과 Set-Cookie) 문의, 후기, 날씨, 오류 응답, OpenAPI 문서 위주이고
   로그인, 회원, 행사, 댓글, 커뮤니티, 좋아요는 아직 포함하지 않았습니다.
   **여기서 "동일"이라는 말은 이 요청들에 한한 것**입니다.
 - 기상청 실제 응답 파싱은 API 키가 필요해서 확인하지 못합니다 (UNKNOWN 경로만 기록됨).

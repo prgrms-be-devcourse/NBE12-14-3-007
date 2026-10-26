@@ -57,6 +57,7 @@ python snapshots/tools/compare_snapshots.py snapshots/baseline/java-era_324ef5e.
 |---|---|
 | `baseline/java-era_324ef5e.txt` | **"Java 시절과 같은가?"** 를 확인할 때. 마이그레이션 전체의 기준 |
 | `baseline/kotlin-mid_a41e11f.txt` | **"내가 바꾸기 전의 dev와 같은가?"** 를 확인할 때 |
+| `baseline/auth-java_ad66cee.txt` | **auth 도메인을 바꾼 뒤** 로그인·회원가입·재발급·로그아웃 응답이 그대로인지 확인할 때 (이 파일이 auth의 기준). OpenAPI 문서 항목은 그 뒤 다른 팀원 변경으로 달라질 수 있어 요청 응답 위주로 본다 |
 | 내가 변환 전에 찍어 둔 파일 | **"내 변경 하나가 응답을 바꿨나?"** 를 확인할 때 (가장 정확함) |
 
 ## 3. 결과 읽는 법
