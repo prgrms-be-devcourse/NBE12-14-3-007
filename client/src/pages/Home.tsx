@@ -104,15 +104,20 @@ function pinPoint(event: EventView, index: number): [number, number] | null {
   ];
 }
 function stampOf(event: EventView) {
-  const today = new Date().toISOString().slice(0, 10);
+  // 한국 시간 기준 오늘 날짜. toISOString은 UTC라 오전 9시 전에는 하루 늦게 나온다.
+  const now = new Date();
+  const today = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
   const begin = event.beginDe.slice(0, 10);
   const end = event.endDe.slice(0, 10);
   const days = (a: string, b: string) =>
     Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
-  if (begin > today) return { text: `D-${days(today, begin)}`, hot: false };
-  if (end < today) return { text: "기간 종료", hot: false };
-  if (days(today, end) <= 2) return { text: "곧 마감", hot: true };
-  return { text: "진행 중", hot: false };
+  if (begin > today) return `D-${days(today, begin)}`;
+  if (end < today) return "기간 종료";
+  return "진행 중";
 }
 
 export function Home() {
@@ -376,11 +381,7 @@ export function Home() {
                         >
                           {event.category}
                         </span>
-                        <span
-                          className={`poster-stamp ${stamp.hot ? "hot" : ""}`}
-                        >
-                          {stamp.text}
-                        </span>
+                        <span className="poster-stamp">{stamp}</span>
                       </span>
                       <h3 className="poster-title">{event.title}</h3>
                       <span

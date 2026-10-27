@@ -163,10 +163,10 @@ test("active navigation underline stays below the text at desktop and tablet wid
   for (const width of [561, 790, 1024, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const [path, label] of [
-      ["/", "홈"],
-      ["/explore", "지역 문화행사"],
-      ["/submissions/new", "행사 제보"],
-      ["/reviews", "행사 후기"],
+      ["/explore", "행사"],
+      ["/reviews", "후기"],
+      ["/community", "커뮤니티"],
+      ["/support/notices", "고객센터"],
     ]) {
       await page.goto(path);
       await page.evaluate(() => document.fonts.ready);
