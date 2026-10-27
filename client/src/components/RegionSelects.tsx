@@ -36,6 +36,9 @@ export function RegionSelects({
             <option value="">
               {variant === "form" ? "시·도 선택" : "전국"}
             </option>
+            {province && !regionGroups.some((group) => group.value === province.value) && (
+              <option value={province.value}>{province.label} (기존 제보)</option>
+            )}
             {regionGroups.map((group) => (
               <option key={group.value} value={group.value}>
                 {group.label}

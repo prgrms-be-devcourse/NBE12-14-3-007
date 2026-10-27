@@ -1,8 +1,9 @@
 import { festivalCategories } from "../lib/format";
 import { useRef } from "react";
-import { LayoutGrid, Theater, Music2, Mic2, Footprints, Fan, Users, Ticket, Image, GraduationCap, PartyPopper, ShoppingBag, Ellipsis, ChevronRight, ChevronLeft } from "lucide-react";
+import { LayoutGrid, Music2, Mic2, Ticket, Image, GraduationCap, PartyPopper, ShoppingBag, Ellipsis, ChevronRight, ChevronLeft } from "lucide-react";
+import { StageIcon, BalletShoesIcon, JangguIcon, FamilyIcon } from "./FestivalCategoryIcons";
 
-const categoryIcons = [Theater, Music2, Mic2, Footprints, Fan, Users, Ticket, Image, GraduationCap, PartyPopper, ShoppingBag, Ellipsis];
+const categoryIcons = [StageIcon, Music2, Mic2, BalletShoesIcon, JangguIcon, FamilyIcon, Ticket, Image, GraduationCap, PartyPopper, ShoppingBag, Ellipsis];
 
 /** 등록·홈·검색에서 동일한 순서와 배치로 보여주는 행사 분류 선택입니다. */
 export function FestivalCategorySelect({
