@@ -1,35 +1,88 @@
 package com.team007.room_escape.domain.festival.service
 
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
-import java.util.concurrent.locks.ReentrantLock
+import com.team007.room_escape.global.exception.BusinessException
+import java.time.Instant
+import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicReference
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
-/** 동기화가 동시에 두 번 돌지 않게 막는다. 신규 저장이 커밋된 뒤에 잠금을 푼다. */
+/**
+ * 동기화가 동시에 두 번 돌지 않게 막고, 지금 상태(진행 중 여부·마지막 결과)를 들고 있는다.
+ * 수동 동기화는 오래 걸릴 수 있어 백그라운드로 돌리고, 진행 상태는 [status]로 조회한다.
+ */
 @Component
 class FestivalSyncExecutor(
     private val festivalService: FestivalService
 ) {
-    private val lock = ReentrantLock()
+    private val log = LoggerFactory.getLogger(javaClass)
 
-    /** 수동 동기화용: 이미 실행 중이면 기다리지 않고 null을 돌려준다 (컨트롤러가 409로 응답). */
-    fun tryRun(): FestivalResponse.SyncResponse? {
-        if (!lock.tryLock()) {
-            return null
+    // Semaphore는 ReentrantLock과 달리 획득한 스레드가 아니어도 release할 수 있어,
+    // tryStart()가 다른 스레드에서 끝나는 비동기 실행과 맞는다.
+    private val gate = Semaphore(1)
+    private val status = AtomicReference(
+        FestivalResponse.SyncStatusResponse(running = false, lastResult = null, lastError = null, finishedAt = null)
+    )
+
+    fun status(): FestivalResponse.SyncStatusResponse = status.get()
+
+    /** 수동 동기화용: 이미 실행 중이면 시작하지 않고 false. 아니면 백그라운드에서 돌리고 바로 true를 돌려준다. */
+    fun tryStart(): Boolean {
+        if (!gate.tryAcquire()) {
+            return false
         }
-        try {
-            return festivalService.syncPublicFestivals()
-        } finally {
-            lock.unlock() // 예외가 나도 반드시 풀어야 이후 동기화가 막히지 않는다
-        }
+        markRunning()
+        Thread({ runAndRelease() }, "festival-sync-manual").start()
+        return true
     }
 
     /** 스케줄러용: 이미 실행 중이면 끝날 때까지 기다렸다가 이번 회차도 실행한다. */
     fun run(): FestivalResponse.SyncResponse {
-        lock.lock()
+        gate.acquire()
+        markRunning()
         try {
-            return festivalService.syncPublicFestivals()
+            val result = festivalService.syncPublicFestivals()
+            markFinished(result)
+            return result
+        } catch (e: Exception) {
+            markFailed(e)
+            throw e
         } finally {
-            lock.unlock()
+            gate.release()
         }
+    }
+
+    private fun runAndRelease() {
+        try {
+            val result = festivalService.syncPublicFestivals()
+            markFinished(result)
+        } catch (e: Exception) {
+            log.error("공공 행사 동기화 실패", e)
+            markFailed(e)
+        } finally {
+            gate.release()
+        }
+    }
+
+    private fun markRunning() {
+        status.set(FestivalResponse.SyncStatusResponse(true, null, null, null))
+    }
+
+    private fun markFinished(result: FestivalResponse.SyncResponse) {
+        status.set(FestivalResponse.SyncStatusResponse(false, result, null, Instant.now()))
+    }
+
+    /**
+     * BusinessException은 관리자가 로그 없이 읽어도 이해할 수 있게 이미 다듬어진 메시지라 그대로 쓰고,
+     * 그 외 예상치 못한 예외는 기술적인 메시지(스택트레이스 등)가 그대로 노출되지 않게 일반 문구로 바꾼다.
+     */
+    private fun markFailed(e: Exception) {
+        val message = if (e is BusinessException) e.message else UNEXPECTED_ERROR_MESSAGE
+        status.set(FestivalResponse.SyncStatusResponse(false, null, message, Instant.now()))
+    }
+
+    companion object {
+        private const val UNEXPECTED_ERROR_MESSAGE = "동기화 중 예상치 못한 오류가 발생했어요. 개발팀에 문의해 주세요."
     }
 }

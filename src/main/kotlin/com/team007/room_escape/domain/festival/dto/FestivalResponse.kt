@@ -211,7 +211,32 @@ class FestivalResponse private constructor() {
         val closedFestivals: List<SyncedFestival>?,
 
         @field:Schema(description = "새로 저장된 행사 목록")
-        val savedFestivals: List<SyncedFestival>?
+        val savedFestivals: List<SyncedFestival>?,
+
+        @field:Schema(description = "이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수")
+        val requestedCount: Int,
+
+        @field:Schema(description = "상세조회 응답이 비어서 저장하지 못하고 건너뛴 행사 수")
+        val skippedCount: Int,
+
+        @field:Schema(description = "상세조회 도중 예외가 나서 남은 건을 처리하지 못하고 중단됐는지")
+        val interrupted: Boolean
+    )
+
+    @Schema(description = "공공 행사 동기화 진행 상태")
+    @JvmRecord
+    data class SyncStatusResponse(
+        @field:Schema(description = "지금 동기화가 진행 중인지")
+        val running: Boolean,
+
+        @field:Schema(description = "마지막으로 끝난 동기화 결과. 실행 중이거나 아직 끝난 적이 없으면 null")
+        val lastResult: SyncResponse?,
+
+        @field:Schema(description = "마지막 시도가 예외로 끝났을 때 그 메시지. 정상 종료면 null")
+        val lastError: String?,
+
+        @field:Schema(description = "마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
+        val finishedAt: java.time.Instant?
     )
 
     @Schema(description = "동기화된 행사 요약")
