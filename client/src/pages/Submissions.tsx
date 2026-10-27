@@ -15,6 +15,7 @@ import { useApp, useLoad } from "../lib/context";
 import { dateText, errorText, period, regions, formatRegionDetail } from "../lib/format";
 import { selectedRegion, regionGroups } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
+import { submissionLimits, submissionLengthMessages, isValidSubmissionReferenceUrl, invalidReferenceUrlMessage } from "../lib/submissionValidation";
 import { ApiError } from "../lib/api";
 import { LazyRichTextEditor } from "../components/LazyRichTextEditor";
 import { FestivalDeletionNotice } from "../components/FestivalDeletionNotice";
@@ -326,6 +327,16 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
       }
     }
     const selected = selectedRegion(form.region);
+    for (const key of Object.keys(submissionLimits) as (keyof typeof submissionLimits)[]) {
+      if ((form[key]?.length || 0) > submissionLimits[key]) {
+        setError(submissionLengthMessages[key]);
+        return;
+      }
+    }
+    if (!isValidSubmissionReferenceUrl(form.referenceUrl)) {
+      setError(invalidReferenceUrlMessage);
+      return;
+    }
     if (!selected.province || (selected.province.districts.length > 0 && !selected.district)) {
       setError("시·도와 시·군·구를 선택해 주세요.");
       return;
@@ -389,6 +400,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
                 <input
                   required
                   value={form.title}
+                  maxLength={submissionLimits.title}
                   onChange={(e) => change("title", e.target.value)}
                   onFocus={() => setTitleFocused(true)}
                   onBlur={() => setTitleFocused(false)}
@@ -545,7 +557,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
             </div>
             <Field label="상세 주소">
               <input
-                maxLength={255}
+                maxLength={submissionLimits.regionDetail}
                 value={form.regionDetail || ""}
                 onChange={(e) => change("regionDetail", e.target.value)}
                 placeholder="도로명 주소, 장소 이름"
@@ -577,8 +589,9 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
             >
               <input
                 required
-                type="url"
-                maxLength={2048}
+                type="text"
+                inputMode="url"
+                maxLength={submissionLimits.referenceUrl}
                 value={form.referenceUrl || ""}
                 onChange={(e) => change("referenceUrl", e.target.value)}
                 placeholder="https://"

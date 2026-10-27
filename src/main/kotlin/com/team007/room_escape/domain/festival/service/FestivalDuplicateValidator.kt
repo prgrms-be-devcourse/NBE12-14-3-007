@@ -5,6 +5,8 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalReposito
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.util.trimLikeJava
+import com.team007.room_escape.domain.festival.dto.SubmissionReferenceUrl
+import com.team007.room_escape.global.response.code.CommonExceptionCode
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.*
@@ -15,6 +17,12 @@ class FestivalDuplicateValidator(
     private val repository: FestivalRepository
 ) {
     fun normalizeReferenceUrl(url: String): String {
+        if (url.length > 2048) {
+            throw BusinessException(CommonExceptionCode.INVALID_INPUT, "행사 참고 링크는 2,048자 이하여야 합니다.")
+        }
+        if (!SubmissionReferenceUrl.isValid(url)) {
+            throw BusinessException(CommonExceptionCode.INVALID_INPUT, SubmissionReferenceUrl.INVALID_MESSAGE)
+        }
         // Java String.trim()과 같은 문자 범위만 제거한다.
         return url.trimLikeJava().replaceFirst(Regex("/+$"), "")
     }

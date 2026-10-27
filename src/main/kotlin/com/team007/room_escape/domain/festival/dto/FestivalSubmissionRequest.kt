@@ -13,6 +13,7 @@ class FestivalSubmissionRequest private constructor() {
     @JvmRecord
     data class Upsert(
         @field:NotBlank(message = "행사 이름은 필수입니다.")
+        @field:Size(max = 255, message = "행사 이름은 255자 이하여야 합니다.")
         @field:Schema(description = "행사 이름", example = "성수 독립 플리마켓")
         val title: String?,
 
@@ -64,5 +65,8 @@ class FestivalSubmissionRequest private constructor() {
     ) {
         @AssertTrue(message = "행사 종료 일시는 시작 일시보다 빠를 수 없습니다.")
         fun isValidPeriod(): Boolean = beginDe == null || endDe == null || !endDe.isBefore(beginDe)
+
+        @AssertTrue(message = SubmissionReferenceUrl.INVALID_MESSAGE)
+        fun isValidReferenceUrl(): Boolean = referenceUrl.isNullOrBlank() || SubmissionReferenceUrl.isValid(referenceUrl)
     }
 }
