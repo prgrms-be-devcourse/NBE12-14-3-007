@@ -49,9 +49,10 @@ class FestivalSubmissionServiceTest {
     private val deletion = FestivalDeletionService(
         festivals, mock(MemberTrustGradeService::class.java), deletionHistories, FestivalDuplicateValidator(festivals),
     )
+    private val storage = mock(R2StorageService::class.java)
     private val service = FestivalSubmissionService(
         festivals, submissions, members, mock(RichTextSanitizer::class.java), deletion,
-        deletionHistories, FestivalDuplicateValidator(festivals), mock(R2StorageService::class.java),
+        deletionHistories, FestivalDuplicateValidator(festivals), storage,
     )
     private val memberId = UUID.randomUUID()
     private val submissionId = UUID.randomUUID()
@@ -189,6 +190,28 @@ class FestivalSubmissionServiceTest {
         assertThat(festival.title).isEqualTo("행사")
         assertThat(festival.url).isEqualTo("https://example.com/event")
         verify(festivals).flush()
+    }
+
+    @Test
+    fun `수정하면 수정 전에 저장돼 있던 본문과 이미지를 기준으로 이미지를 확정한다`() {
+        givenNoDuplicate(7L)
+        val adminImage = "festivals/${UUID.randomUUID()}/admin.png"
+        val festival = Festival(
+            id = 7L,
+            content = "<p><img src=\"https://img.example.com/$adminImage\"></p>",
+            imgUrl = "https://img.example.com/$adminImage",
+        )
+        `when`(submissions.findByIdAndFestival_Member_Id(submissionId, memberId))
+            .thenReturn(FestivalSubmission(festival = festival))
+        val previousContent = festival.content
+        val previousImage = festival.imgUrl
+        val sameImage = request().copy(imgUrl = previousImage)
+
+        service.update(memberId, submissionId, sameImage)
+
+        // 수정이 반영된 뒤의 값이 아니라, 수정 전에 저장돼 있던 값을 넘겨야 한다.
+        verify(storage).confirmImagesForUpdate(memberId, previousContent, previousImage, null, sameImage.imgUrl)
+        assertThat(festival.content).isNull()
     }
 
     @Test

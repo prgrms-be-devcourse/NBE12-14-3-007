@@ -60,20 +60,35 @@ class R2StorageService(
         if (!isOwnedBy(newKey, memberId)) throw BusinessException(StorageExceptionCode.IMAGE_NOT_OWNED)
     }
 
-    /** 첨부/본문의 신규 관리 이미지를 글 저장과 함께 확정한다. 미추적 기존 이미지는 보존한다. */
+    /** 새 글의 본문·첨부에 든 신규 관리 이미지를 글 저장과 함께 확정한다. 미추적 기존 이미지는 보존한다. */
     fun confirmImages(ownerId: UUID, content: String? = null, vararg attachments: String?) {
         val keys = imageKeys(content, attachments)
         if (keys.isNotEmpty()) uploadedImages.confirm(keys, ownerId)
     }
 
-    fun confirmImagesForAdministrator(ownerId: UUID, content: String?, attachment: String?) {
-        val keys = imageKeys(content, arrayOf(attachment))
-        if (keys.isNotEmpty()) uploadedImages.confirm(keys, ownerId, allowActiveFromOthers = true)
+    /**
+     * 글을 수정할 때 쓴다. 수정 전에 저장돼 있던 본문·이미지는 올린 사람이 달라도 그대로 유지할 수 있고,
+     * 새로 붙이는 이미지만 올린 사람이 저장하는 사람과 같아야 한다.
+     * (관리자가 교체한 이미지를 작성자가 그대로 두고 수정하는 경우)
+     *
+     * previous* 는 수정 반영 전에 읽은 값이어야 한다. 이미 저장된 값이라 읽을 수 없는 주소는 예외 대신 건너뛴다.
+     */
+    fun confirmImagesForUpdate(
+        ownerId: UUID,
+        previousContent: String?,
+        previousImage: String?,
+        content: String?,
+        image: String?,
+    ) {
+        val keys = imageKeys(content, arrayOf(image))
+        if (keys.isEmpty()) return
+        val attached = imageKeys(previousContent, arrayOf(previousImage), lenient = true).toSet()
+        uploadedImages.confirm(keys, ownerId, attached)
     }
 
-    private fun imageKeys(content: String?, attachments: Array<out String?>): List<String> {
+    private fun imageKeys(content: String?, attachments: Array<out String?>, lenient: Boolean = false): List<String> {
         val base = URI(properties.publicUrl.removeSuffix("/") + "/")
-        fun key(value: String): String {
+        fun key(value: String): String? {
             val decoded = HtmlUtils.htmlUnescape(value)
             return runCatching {
                 val uri = URI(decoded)
@@ -87,10 +102,10 @@ class R2StorageService(
                 // 공개 URL의 인코딩/쿼리/점 경로도 하나의 저장 key로 취급한다.
                 URI(null, null, "/$path", null).normalize().path.removePrefix("/")
             }
-                .getOrElse { throw BusinessException(StorageExceptionCode.IMAGE_EXPIRED) }
+                .getOrElse { if (lenient) null else throw BusinessException(StorageExceptionCode.IMAGE_EXPIRED) }
         }
-        return attachments.filterNotNull().filter { it.isNotBlank() }.map(::key) +
-            IMAGE_SOURCE.findAll(content.orEmpty()).map { key(it.groupValues[1]) }.toList()
+        return (attachments.filterNotNull().filter { it.isNotBlank() }.map(::key) +
+            IMAGE_SOURCE.findAll(content.orEmpty()).map { key(it.groupValues[1]) }.toList()).filterNotNull()
     }
 
     /** 본인 파일만 지운다. 롤백 시 이미지가 깨지지 않게 트랜잭션 커밋 후에 지운다. */
