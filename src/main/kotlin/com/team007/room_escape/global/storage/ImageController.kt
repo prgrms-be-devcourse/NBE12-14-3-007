@@ -1,5 +1,6 @@
 package com.team007.room_escape.global.storage
 
+import com.team007.room_escape.domain.member.service.MemberReader
 import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.security.CustomUserDetails
 import io.swagger.v3.oas.annotations.Operation
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(
     private val r2StorageService: R2StorageService,
     private val imageUrlResolver: ImageUrlResolver,
+    private val memberReader: MemberReader,
 ) {
 
     /** 업로드 폴더 구분. 임의 경로를 못 넘기게 enum으로 고정한다. */
@@ -47,6 +49,8 @@ class ImageController(
         @RequestParam("type") type: ImageType,
         @RequestPart("file") file: MultipartFile,
     ): ResponseEntity<ApiResponse<UploadInfo>> {
+        // 토큰 발급 이후 탈퇴·제재됐을 수 있으므로 업로드 전에 DB의 현재 상태를 확인한다.
+        memberReader.getUnrestrictedMember(principal.id)
         val key = r2StorageService.upload(file, type.directory, principal.id)
         return ResponseEntity.ok(ApiResponse.ok(UploadInfo(key, imageUrlResolver.resolve(key))))
     }
