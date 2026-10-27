@@ -29,7 +29,7 @@ class FestivalAccuracyVoteService(
         festivalId: Long,
         request: FestivalAccuracyVoteRequest.Upsert
     ): FestivalAccuracyVoteResponse.Info {
-        val member = memberReader.getActiveMember(memberId)
+        val member = memberReader.getUnrestrictedMember(memberId)
         val festival = findUserSubmittedFestival(festivalId)
 
         if (festival.member?.id == memberId) {
@@ -51,7 +51,7 @@ class FestivalAccuracyVoteService(
 
     @Transactional
     fun cancelVote(memberId: UUID, festivalId: Long): FestivalAccuracyVoteResponse.Info {
-        val member = memberReader.getActiveMember(memberId)
+        val member = memberReader.getUnrestrictedMember(memberId)
         val festival = findUserSubmittedFestival(festivalId)
 
         accuracyVoteRepository
