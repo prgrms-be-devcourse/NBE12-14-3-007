@@ -25,9 +25,9 @@ test("popular reviews sort before pagination, break ties by date and reflect lik
   page,
 }) => {
   await page.goto("/reviews/demo-post-1");
-  await page.getByRole("button", { name: /도움돼요/ }).click();
+  await page.getByRole("button", { name: /^후기 좋아요 \d/ }).click();
   await expect(
-    page.getByRole("button", { name: /도움이 됐어요/ }),
+    page.getByRole("button", { name: /^후기 좋아요 취소/ }),
   ).toBeVisible();
   await page.evaluate(() => {
     const data = JSON.parse(sessionStorage.getItem("eventus.preview.v1")!);
@@ -58,9 +58,9 @@ test("popular reviews sort before pagination, break ties by date and reflect lik
     "정렬 테스트 0",
   );
   await page.getByRole("link", { name: "정렬 테스트 2", exact: true }).click();
-  await page.getByRole("button", { name: /도움돼요/ }).click();
+  await page.getByRole("button", { name: /^후기 좋아요 \d/ }).click();
   await expect(
-    page.getByRole("button", { name: /도움이 됐어요/ }),
+    page.getByRole("button", { name: /^후기 좋아요 취소/ }),
   ).toContainText("6");
   await page.goto("/reviews");
   await expect(page.locator(".post-row h3")).toHaveText(

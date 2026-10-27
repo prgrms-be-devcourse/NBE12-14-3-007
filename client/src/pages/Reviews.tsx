@@ -10,9 +10,9 @@ import {
   ArrowLeft,
   ArrowRight,
   Flag,
+  Heart,
   MessageCircle,
   Pencil,
-  ThumbsUp,
   Trash2,
 } from "lucide-react";
 import { ApiError, COMMENT_PAGE_SIZE } from "../lib/api";
@@ -269,13 +269,19 @@ function ReviewDetail({ id }: { id: string }) {
         <RichTextContent content={post.content} />
         <div className="review-reactions">
           <button
+            type="button"
             disabled={busy}
             className={`btn ${liked ? "liked" : "secondary"}`}
             onClick={() => like(liked)}
+            aria-label={`후기 좋아요${liked ? " 취소" : ""} ${likeCount}개`}
             aria-pressed={liked}
           >
-            <ThumbsUp size={18} />
-            {liked ? "도움이 됐어요" : "도움돼요"}
+            <Heart
+              size={18}
+              fill={liked ? "currentColor" : "none"}
+              aria-hidden="true"
+            />
+            좋아요
             <strong>{likeCount}</strong>
           </button>
           {!own && (
