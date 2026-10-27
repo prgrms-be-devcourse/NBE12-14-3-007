@@ -113,6 +113,21 @@ class R2StorageService(
         if (!isOwnedBy(key, memberId)) return
         // 사용이 확정된 관리 이미지는 다른 글/복구 대상에서 재사용될 수 있어 유지한다.
         if (uploadedImages.isTracked(checkNotNull(key))) return
+        deleteAfterCommit(key)
+    }
+
+    /**
+     * 개인정보 파기처럼 이미지를 더는 쓰지 않을 때 지운다. 본인 파일만 대상이다.
+     * 장부에 있는 이미지는 정리 대상으로만 돌리고(정리 작업이 지우며 실패하면 다시 시도한다),
+     * 장부에 없는 옛 이미지는 커밋 뒤에 바로 지운다.
+     */
+    fun discardOwnedBy(key: String?, memberId: UUID?) {
+        if (!isOwnedBy(key, memberId)) return
+        if (uploadedImages.markForDeletion(checkNotNull(key))) return
+        deleteAfterCommit(key)
+    }
+
+    private fun deleteAfterCommit(key: String) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             delete(key)
             return

@@ -49,6 +49,22 @@ interface MemberRepository : JpaRepository<Member, UUID> {
 
     fun existsByNicknameAndDeletedAtIsNull(nickname: String?): Boolean
 
+    /**
+     * 파기하면 사라질 프로필 이미지. 파기 쿼리가 key를 지우기 전에 읽어 R2 파일을 같이 지운다.
+     * 조건은 아래 [purgeWithdrawnBefore]와 같아야 한다.
+     */
+    @Query(
+        """
+        SELECT new com.team007.room_escape.domain.member.infra.repository.PurgedProfileImage(m.id, m.profileImg)
+        FROM Member m
+        WHERE m.deletedAt IS NOT NULL
+          AND m.deletedAt < :threshold
+          AND m.email NOT LIKE 'purged-%'
+          AND m.profileImg IS NOT NULL
+        """,
+    )
+    fun findProfileImagesToPurge(@Param("threshold") threshold: LocalDateTime): List<PurgedProfileImage>
+
     /** 보관 기간이 지난 탈퇴 회원의 개인정보를 비운다. 글이 참조하므로 행은 남긴다. */
     @Modifying(clearAutomatically = true)
     @Query(
@@ -91,3 +107,6 @@ interface MemberRepository : JpaRepository<Member, UUID> {
         pageable: Pageable,
     ): Page<Member>
 }
+
+/** 개인정보 파기로 지워질 회원의 프로필 이미지 key. */
+data class PurgedProfileImage(val memberId: UUID, val key: String)
