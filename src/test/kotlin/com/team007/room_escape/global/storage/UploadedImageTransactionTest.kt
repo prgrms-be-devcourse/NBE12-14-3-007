@@ -148,7 +148,9 @@ class UploadedImageTransactionTest @Autowired constructor(
         }
 
         assertThat(repository.findById(key).orElseThrow().state).isEqualTo(UploadState.ACTIVE)
+    }
 
+    @Test
     fun recentUploadCountIncludesOnlyThisOwnersUploadsAfterTheCutoff() {
         val since = Instant.now().minus(Duration.ofHours(24))
         val someone = UUID.randomUUID()
