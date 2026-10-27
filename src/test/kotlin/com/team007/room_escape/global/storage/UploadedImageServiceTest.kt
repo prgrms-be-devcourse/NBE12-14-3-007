@@ -62,13 +62,72 @@ class UploadedImageServiceTest {
     }
 
     @Test
-    fun administratorPreservesActiveAuthorImageButCannotClaimOthersPendingImage() {
+    fun `이 글에 이미 붙어 있던 이미지는 올린 사람이 달라도 유지할 수 있다`() {
         val image = image()
-        val admin = UUID.randomUUID()
+        val author = UUID.randomUUID()
         `when`(repository.findLocked(image.key)).thenReturn(image)
-        assertThrows<BusinessException> { service.confirm(listOf(image.key), admin, allowActiveFromOthers = true) }
-        service.confirm(listOf(image.key), owner)
-        service.confirm(listOf(image.key), admin, allowActiveFromOthers = true)
+        image.activate()
+
+        service.confirm(listOf(image.key), author, attachedKeys = setOf(image.key))
+
         assertThat(image.state).isEqualTo(UploadState.ACTIVE)
+    }
+
+    @Test
+    fun `붙어 있던 목록에 없는 남의 이미지는 ACTIVE여도 붙일 수 없다`() {
+        val image = image()
+        val someone = UUID.randomUUID()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+        image.activate()
+
+        val notOwned = assertThrows<BusinessException> { service.confirm(listOf(image.key), someone) }
+        val otherKeyOnly = assertThrows<BusinessException> {
+            service.confirm(listOf(image.key), someone, attachedKeys = setOf("posts/$owner/other.png"))
+        }
+
+        assertThat(notOwned.exceptionCode).isEqualTo(StorageExceptionCode.IMAGE_NOT_OWNED)
+        assertThat(otherKeyOnly.exceptionCode).isEqualTo(StorageExceptionCode.IMAGE_NOT_OWNED)
+    }
+
+    @Test
+    fun `붙어 있던 이미지라도 삭제 중이거나 삭제됐으면 유지할 수 없다`() {
+        val image = image()
+        val author = UUID.randomUUID()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+        image.beginDeletion()
+
+        val deleting = assertThrows<BusinessException> {
+            service.confirm(listOf(image.key), author, attachedKeys = setOf(image.key))
+        }
+        image.recordDeletion(success = true)
+        val deleted = assertThrows<BusinessException> {
+            service.confirm(listOf(image.key), author, attachedKeys = setOf(image.key))
+        }
+
+        assertThat(deleting.exceptionCode).isEqualTo(StorageExceptionCode.IMAGE_EXPIRED)
+        assertThat(deleted.exceptionCode).isEqualTo(StorageExceptionCode.IMAGE_EXPIRED)
+    }
+
+    @Test
+    fun `붙어 있는데 아직 PENDING인 이미지는 사용 확정해서 정리 대상에서 뺀다`() {
+        val image = image()
+        val author = UUID.randomUUID()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+
+        service.confirm(listOf(image.key), author, attachedKeys = setOf(image.key))
+
+        assertThat(image.state).isEqualTo(UploadState.ACTIVE)
+        assertThat(service.beginDeletion(image.key, cutoff)).isFalse()
+    }
+
+    @Test
+    fun `새 이미지는 PENDING이어도 올린 사람이 아니면 붙일 수 없다`() {
+        val image = image()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+
+        val exception = assertThrows<BusinessException> { service.confirm(listOf(image.key), UUID.randomUUID()) }
+
+        assertThat(exception.exceptionCode).isEqualTo(StorageExceptionCode.IMAGE_NOT_OWNED)
+        assertThat(image.state).isEqualTo(UploadState.PENDING)
     }
 }

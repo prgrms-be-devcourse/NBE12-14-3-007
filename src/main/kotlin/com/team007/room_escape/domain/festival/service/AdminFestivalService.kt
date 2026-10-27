@@ -75,7 +75,7 @@ class AdminFestivalService(
 
         // 진행 상태(status)는 종료일에서 다시 계산된다.
         val content = richTextSanitizer.sanitize(request.festivalContent)
-        storage.confirmImagesForAdministrator(adminId, content, request.imgUrl)
+        storage.confirmImagesForUpdate(adminId, festival.content, festival.imgUrl, content, request.imgUrl)
         festival.updateDetails(
             request.title,
             request.category,

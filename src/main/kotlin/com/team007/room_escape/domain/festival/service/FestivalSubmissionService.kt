@@ -87,7 +87,7 @@ class FestivalSubmissionService(
         if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
         val (normalizedReferenceUrl, district) = validateNotDuplicated(festival.id, request)
         val content = richTextSanitizer.sanitize(request.festivalContent)
-        storage.confirmImages(memberId, content, request.imgUrl)
+        storage.confirmImagesForUpdate(memberId, festival.content, festival.imgUrl, content, request.imgUrl)
         festival.updateDetails(
             request.title, request.category, content,
             normalizedReferenceUrl, request.region, request.regionDetail, request.imgUrl,
