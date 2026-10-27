@@ -40,6 +40,7 @@ class AdminFestivalService(
             request.providerType,
             request.includeDeletedOrFalse(),
             request.excludeClosedOrFalse(),
+            request.deletedOnlyOrFalse(),
             pageable
         )
         val histories = deletionHistories.findLatestForTargets(

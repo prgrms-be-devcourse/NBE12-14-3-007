@@ -26,7 +26,10 @@ class AdminFestivalRequest private constructor() {
         val excludeClosed: Boolean?,
 
         @field:Schema(description = "삭제된 행사 포함 여부. 기본값 false", defaultValue = "false")
-        val includeDeleted: Boolean?
+        val includeDeleted: Boolean?,
+
+        @field:Schema(description = "삭제된 행사만 조회 여부. 기본값 false", defaultValue = "false")
+        val deletedOnly: Boolean?
     ) {
         /** 검색어가 없으면 null 대신 빈 문자열을 돌려준다. */
         fun keywordOrEmpty(): String {
@@ -37,6 +40,8 @@ class AdminFestivalRequest private constructor() {
         fun excludeClosedOrFalse(): Boolean = excludeClosed == true
 
         fun includeDeletedOrFalse(): Boolean = includeDeleted == true
+
+        fun deletedOnlyOrFalse(): Boolean = deletedOnly == true
     }
 
     /** 관리자 행사 수정 요청. 보낸 값으로 전부 덮어쓰며, 출처와 작성자는 바꿀 수 없다. */

@@ -275,7 +275,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
         value = """
 		SELECT f
 		FROM Festival f
-		WHERE (:includeDeleted = true OR f.deletedAt IS NULL)
+		WHERE (
+		    (:deletedOnly = true AND f.deletedAt IS NOT NULL)
+		    OR (:deletedOnly = false AND (:includeDeleted = true OR f.deletedAt IS NULL))
+		  )
 		  AND (LOWER(COALESCE(f.title, '')) LIKE CONCAT('%', :keyword, '%')
 			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%'))
 		  AND (:providerType IS NULL OR f.providerType = :providerType)
@@ -284,7 +287,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
         countQuery = """
 		SELECT COUNT(f)
 		FROM Festival f
-		WHERE (:includeDeleted = true OR f.deletedAt IS NULL)
+		WHERE (
+		    (:deletedOnly = true AND f.deletedAt IS NOT NULL)
+		    OR (:deletedOnly = false AND (:includeDeleted = true OR f.deletedAt IS NULL))
+		  )
 		  AND (LOWER(COALESCE(f.title, '')) LIKE CONCAT('%', :keyword, '%')
 			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%'))
 		  AND (:providerType IS NULL OR f.providerType = :providerType)
@@ -296,6 +302,7 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
         @Param("providerType") providerType: ProviderType?,
         @Param("includeDeleted") includeDeleted: Boolean,
         @Param("excludeClosed") excludeClosed: Boolean,
+        @Param("deletedOnly") deletedOnly: Boolean,
         pageable: Pageable,
     ): Page<Festival>
 }

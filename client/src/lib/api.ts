@@ -937,6 +937,7 @@ export function createApi(mode: Mode) {
         sort = "createdAt,desc",
         excludeClosed,
         includeDeleted,
+        deletedOnly,
         ...filters
       } = query;
       const params = new URLSearchParams({
@@ -952,6 +953,7 @@ export function createApi(mode: Mode) {
       // false는 보내지 않는다. 서버 기본값이 false다.
       if (excludeClosed) params.set("excludeClosed", "true");
       if (includeDeleted) params.set("includeDeleted", "true");
+      if (deletedOnly) params.set("deletedOnly", "true");
       // 공개 검색(GET /festivals)이 아니라 어드민 전용이다.
       // 삭제된 행사를 봐야 복구할 수 있는데 공개 API는 그걸 내려주면 안 된다.
       return transport<Page<AdminFestivalListItem>>(

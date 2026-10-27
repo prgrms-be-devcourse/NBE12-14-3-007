@@ -65,6 +65,8 @@ export const runStateNames: Record<RunState, string> = {
 export const statusNames: Record<string, string> = {
   ...visibilityNames,
   ...runStateNames,
+  // 행사 관리 탭 전용. 삭제 여부는 RunState와 다른 축이라 뱃지로는 안 쓴다.
+  DELETED: "삭제됨",
 };
 export interface ContentItem {
   id: string;
@@ -126,6 +128,7 @@ function sameQuery(a: AdminFestivalQuery, b: AdminFestivalQuery) {
     a.providerType === b.providerType &&
     a.excludeClosed === b.excludeClosed &&
     a.includeDeleted === b.includeDeleted &&
+    a.deletedOnly === b.deletedOnly &&
     a.page === b.page &&
     a.size === b.size
   );
@@ -435,7 +438,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     page: 0,
     size: EVENT_PAGE_SIZE,
     excludeClosed: false,
-    includeDeleted: false,
+    deletedOnly: false,
   });
   const [members, setMembers] = useState<AdminMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);

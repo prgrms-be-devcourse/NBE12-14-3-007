@@ -1062,19 +1062,17 @@ export function AdminContent({ kind }: { kind: "events" | "reviews" }) {
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [source, setSource] = useState("");
-  // 삭제된 행사는 기본적으로 숨긴다. 복구할 때만 켜서 본다.
-  const [showDeleted, setShowDeleted] = useState(false);
   const status = params.get("status") || "";
   const isEvent = kind === "events";
   const records = data[kind];
   /*
     행사는 서버가 진행 상태를 계산해서 내려준다.
     검색 파라미터에는 excludeClosed(종료 제외)만 있고 "종료만 보기"가 없어서
-    탭도 [전체][진행중]까지만 둔다.
+    [종료] 탭은 못 둔다. 대신 [삭제됨] 탭은 deletedOnly로 따로 조회한다.
     TODO 서버에 status 필터가 생기면 [종료] 탭을 되살릴 것.
   */
-  const statuses: (Visibility | RunState)[] = isEvent
-    ? ["OPEN"]
+  const statuses: string[] = isEvent
+    ? ["OPEN", "DELETED"]
     : ["PUBLISHED", "HIDDEN"];
   /**
    * 행사는 검색·필터를 서버가 한다. 타이핑할 때마다 요청이 나가지 않도록
@@ -1087,11 +1085,11 @@ export function AdminContent({ kind }: { kind: "events" | "reviews" }) {
         keyword: query.trim() || undefined,
         providerType: (source as "PUBLIC" | "MEMBER") || undefined,
         excludeClosed: status === "OPEN",
-        includeDeleted: showDeleted,
+        deletedOnly: status === "DELETED",
       });
     }, 300);
     return () => clearTimeout(timer);
-  }, [isEvent, query, source, status, showDeleted, setEventQuery]);
+  }, [isEvent, query, source, status, setEventQuery]);
   // 행사는 서버가 이미 걸러서 보냈다. 후기는 아직 예시 데이터라 화면에서 거른다.
   const items = isEvent
     ? records
@@ -1163,16 +1161,6 @@ export function AdminContent({ kind }: { kind: "events" | "reviews" }) {
               <option value="PUBLIC">지역 문화행사</option>
               <option value="MEMBER">회원 제보</option>
             </select>
-          )}
-          {isEvent && (
-            <label className="adm-toggle">
-              <input
-                type="checkbox"
-                checked={showDeleted}
-                onChange={(e) => setShowDeleted(e.target.checked)}
-              />
-              삭제된 행사 포함
-            </label>
           )}
         </Toolbar>
         <div className="adm-result-count">

@@ -315,7 +315,7 @@ class DeletionHistoryRepositoryTest @Autowired constructor(
             DeletionTargetType.FESTIVAL, current.id.toString(), DeletionReason.SPAM, "이력의 상세 사유", null,
         ))
         // 기존 컬럼의 사유가 아닌 이력의 분류와 상세가 함께 내려와야 한다.
-        val page = adminFestivals.search(AdminFestivalRequest.Search(prefix, null, false, true), PageRequest.of(0, 20))
+        val page = adminFestivals.search(AdminFestivalRequest.Search(prefix, null, false, true, false), PageRequest.of(0, 20))
         assertThat(page.content).hasSize(2)
         assertThat(page.content.first { it.festivalId == legacy.id }.deletion).isNull()
         val item = page.content.first { it.festivalId == current.id }

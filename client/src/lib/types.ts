@@ -457,6 +457,8 @@ export interface AdminFestivalQuery {
   excludeClosed?: boolean;
   /** true면 삭제된 행사도 함께 조회한다. 복구 대상을 찾으려면 필요하다 */
   includeDeleted?: boolean;
+  /** true면 삭제된 행사만 조회한다. [삭제됨] 탭 전용 */
+  deletedOnly?: boolean;
   page?: number;
   size?: number;
   sort?: string;
