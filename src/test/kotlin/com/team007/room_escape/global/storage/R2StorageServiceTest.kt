@@ -288,6 +288,51 @@ class R2StorageServiceTest {
 
     /** DB 트랜잭션 안에서 부르면, 롤백될 수도 있으니 커밋된 뒤에야 파일을 지운다 */
     @Nested
+    inner class `개인정보 파기용 삭제` {
+
+        @BeforeEach
+        fun startTransaction() = TransactionSynchronizationManager.initSynchronization()
+
+        @AfterEach
+        fun endTransaction() = TransactionSynchronizationManager.clear()
+
+        private fun commit() = TransactionSynchronizationManager.getSynchronizations().forEach { it.afterCommit() }
+
+        @Test
+        fun `장부에 있는 이미지는 정리 대상으로만 돌리고 직접 지우지 않는다`() {
+            val key = "profiles/$me/a.png"
+            `when`(uploads.markForDeletion(key)).thenReturn(true)
+
+            service.discardOwnedBy(key, me)
+            commit()
+
+            verify(uploads).markForDeletion(key)
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+        }
+
+        @Test
+        fun `장부에 없는 옛 이미지는 커밋된 뒤에 지운다`() {
+            service.discardOwnedBy("profiles/$me/legacy.png", me)
+
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+            commit()
+
+            verify(s3Client).deleteObject(any(DeleteObjectRequest::class.java))
+        }
+
+        @Test
+        fun `남의 파일이나 주인을 알 수 없는 key는 건드리지 않는다`() {
+            service.discardOwnedBy("profiles/$other/a.png", me)
+            service.discardOwnedBy("profiles/legacy.png", me)
+            service.discardOwnedBy(null, me)
+            commit()
+
+            verify(uploads, never()).markForDeletion(org.mockito.ArgumentMatchers.anyString())
+            verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+        }
+    }
+
+    @Nested
     inner class `트랜잭션 안에서 삭제` {
 
         @BeforeEach

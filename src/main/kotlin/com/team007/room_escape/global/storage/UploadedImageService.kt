@@ -49,6 +49,17 @@ class UploadedImageService(private val repository: UploadedImageRepository) {
     @Transactional(readOnly = true)
     fun isTracked(key: String): Boolean = repository.existsById(key)
 
+    /**
+     * 더는 쓰지 않는 이미지를 정리 대상으로 돌린다. 장부에 있으면 true.
+     * 호출한 트랜잭션과 함께 확정되고, R2 파일은 정리 작업이 지우며 실패하면 다음 회차에 다시 시도한다.
+     */
+    @Transactional
+    fun markForDeletion(key: String): Boolean {
+        val image = repository.findLocked(key) ?: return false
+        if (image.state == UploadState.PENDING || image.state == UploadState.ACTIVE) image.beginDeletion()
+        return true
+    }
+
     @Transactional(readOnly = true)
     fun cleanupKeys(cutoff: Instant): List<String> = repository.cleanupKeys(
         cutoff, UploadState.PENDING, UploadState.DELETING, PageRequest.of(0, 100)

@@ -121,6 +121,34 @@ class UploadedImageTransactionTest @Autowired constructor(
     }
 
     @Test
+
+    fun discardedImageIsPickedUpByCleanupEvenWhenRecentlyUploaded() {
+        val key = "profiles/$owner/${UUID.randomUUID()}.png"
+        transactions.executeWithoutResult {
+            repository.save(UploadedImage(key, owner).also { it.activate() }) // 방금 올려 쓰고 있는 이미지
+        }
+        assertThat(images.cleanupKeys(cutoff)).doesNotContain(key)
+
+        transactions.executeWithoutResult { assertThat(images.markForDeletion(key)).isTrue() }
+
+        assertThat(images.cleanupKeys(cutoff)).contains(key)
+        assertThat(images.beginDeletion(key, cutoff)).isTrue()
+    }
+
+    @Test
+    fun discardIsRolledBackTogetherWithTheTransaction() {
+        val key = "profiles/$owner/${UUID.randomUUID()}.png"
+        transactions.executeWithoutResult { repository.save(UploadedImage(key, owner).also { it.activate() }) }
+
+        assertThrows<IllegalStateException> {
+            transactions.executeWithoutResult {
+                images.markForDeletion(key)
+                error("파기 실패")
+            }
+        }
+
+        assertThat(repository.findById(key).orElseThrow().state).isEqualTo(UploadState.ACTIVE)
+
     fun recentUploadCountIncludesOnlyThisOwnersUploadsAfterTheCutoff() {
         val since = Instant.now().minus(Duration.ofHours(24))
         val someone = UUID.randomUUID()
@@ -132,5 +160,6 @@ class UploadedImageTransactionTest @Autowired constructor(
         }
 
         assertThat(repository.countByOwnerIdAndUploadedAtAfter(someone, since)).isEqualTo(2)
+
     }
 }
