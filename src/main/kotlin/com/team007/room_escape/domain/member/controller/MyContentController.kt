@@ -26,7 +26,7 @@ class MyContentController(
     @Operation(summary = "내가 작성한 글", description = "행사 제보·후기·커뮤니티 글을 삭제 여부와 관계없이 조회합니다.")
     fun posts(
         @AuthenticationPrincipal user: CustomUserDetails,
-        @PageableDefault(size = 20) page: Pageable,
+        @PageableDefault(size = 10) page: Pageable,
     ): ResponseEntity<ApiResponse<Page<MyContentResponse.Item>>> =
         ResponseEntity.ok(ApiResponse.ok(service.findMine(user.id, false, page)))
 
@@ -34,7 +34,7 @@ class MyContentController(
     @Operation(summary = "내가 작성한 댓글", description = "후기·커뮤니티 댓글을 삭제 여부와 관계없이 조회합니다.")
     fun comments(
         @AuthenticationPrincipal user: CustomUserDetails,
-        @PageableDefault(size = 20) page: Pageable,
+        @PageableDefault(size = 10) page: Pageable,
     ): ResponseEntity<ApiResponse<Page<MyContentResponse.Item>>> =
         ResponseEntity.ok(ApiResponse.ok(service.findMine(user.id, true, page)))
 }

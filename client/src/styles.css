@@ -1712,36 +1712,9 @@ select {
   width: 100%;
   font-size: 12px;
 }
-.submission-list {
-  display: grid;
-  gap: 15px;
-}
-.submission-row {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 17px;
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
-}
-.submission-row:hover {
-  border-color: #d3ddc7;
-  box-shadow: var(--shadow);
-}
-.submission-row.is-deleted {
-  background: var(--cream);
-  color: var(--muted);
-}
-.submission-row.is-deleted h3,
 .deleted-event-title {
   color: var(--muted);
   text-decoration: line-through;
-}
-.submission-row.is-deleted > img {
-  filter: grayscale(1);
 }
 .festival-deletion-notice {
   padding: 20px;
@@ -1752,44 +1725,6 @@ select {
 }
 .festival-deletion-notice p {
   overflow-wrap: anywhere;
-}
-.submission-row > img,
-.submission-row > .photo-fallback {
-  width: 165px;
-  height: 115px;
-  object-fit: cover;
-  border-radius: 7px;
-  flex-shrink: 0;
-}
-.submission-row-copy {
-  flex: 1;
-  min-width: 0;
-}
-.submission-row-copy > div {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.submission-row-copy h3 {
-  font-size: 17px;
-  margin: 8px 0;
-}
-.submission-row-copy p {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #626b58;
-  line-height: 1.85;
-}
-.submission-row > svg {
-  color: #646a5d;
-}
-.row-date {
-  color: #64695e;
-  font-size: 12px;
-  margin-right: 13px;
-  white-space: nowrap;
 }
 .back-link {
   display: inline-flex;
@@ -3960,30 +3895,8 @@ button.post-thumbnail {
   color: #63695b;
   margin-top: 30px;
 }
-.my-content .submission-row {
-  padding: 13px;
-  gap: 15px;
-}
-.my-content .submission-row > img,
-.my-content .submission-row > .photo-fallback {
-  width: 100px;
-  height: 90px;
-  min-height: 90px;
-}
-.my-content .submission-row h3 {
-  font-size: 14px;
-}
-.my-content .row-date {
-  display: none;
-}
 .my-content .photo-fallback > span {
   display: none;
-}
-.my-content .submission-row-copy p {
-  font-size: 12px;
-}
-.my-content .submission-row-copy > div .badge {
-  font-size: 11px;
 }
 .step-indicator {
   display: flex;
@@ -4381,9 +4294,6 @@ button.post-thumbnail {
   .review-filter select {
     max-width: 265px;
   }
-  .row-date {
-    display: none;
-  }
   .footer-message {
     display: none;
   }
@@ -4641,17 +4551,6 @@ button.post-thumbnail {
   .intro-flower {
     font-size: 50px;
     padding: 0;
-  }
-  .submission-row {
-    gap: 17px;
-  }
-  .submission-row > img,
-  .submission-row > .photo-fallback {
-    width: 130px;
-    height: 105px;
-  }
-  .submission-row h3 {
-    font-size: 16px;
   }
   .form-layout {
     grid-template-columns: 1fr;
@@ -5465,49 +5364,6 @@ button.post-thumbnail {
   .intro-flower {
     display: none;
   }
-  .submission-row {
-    padding: 12px;
-    gap: 12px;
-    align-items: center;
-  }
-  .submission-row > img,
-  .submission-row > .photo-fallback {
-    width: 83px;
-    height: 96px;
-    min-height: 96px;
-  }
-  .submission-row > .photo-fallback > span {
-    display: none;
-  }
-  .submission-row > .photo-fallback > svg {
-    width: 25px;
-  }
-  .submission-row-copy h3 {
-    font-size: 13px;
-    margin: 6px 0;
-    line-height: 1.5;
-  }
-  .submission-row-copy p {
-    font-size: 11px;
-    line-height: 1.7;
-    gap: 4px;
-  }
-  .submission-row-copy p > svg {
-    width: 11px;
-  }
-  .submission-row > svg {
-    display: none;
-  }
-  .submission-row-copy > div {
-    gap: 6px;
-  }
-  .submission-row .badge {
-    font-size: 10px;
-    padding: 3px 5px;
-  }
-  .submission-row .example-label {
-    font-size: 10px;
-  }
   .inline-search {
     max-width: none;
     margin-bottom: 16px;
@@ -5916,25 +5772,6 @@ button.post-thumbnail {
   }
   .account-security .btn {
     font-size: 12px;
-  }
-  .my-content .submission-row {
-    gap: 10px;
-    padding: 12px 10px;
-  }
-  .my-content .submission-row > img,
-  .my-content .submission-row > .photo-fallback {
-    width: 70px;
-    height: 83px;
-    min-height: 83px;
-  }
-  .my-content .submission-row h3 {
-    font-size: 12px;
-  }
-  .my-content .submission-row-copy p {
-    font-size: 10px;
-  }
-  .my-content .submission-row-copy .example-label {
-    display: none;
   }
   .inquiry-row {
     gap: 12px;

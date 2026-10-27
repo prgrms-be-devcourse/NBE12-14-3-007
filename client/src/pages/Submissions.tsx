@@ -2,17 +2,13 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
-  CalendarDays,
   Check,
   ChevronRight,
   Lightbulb,
-  MapPin,
-  Plus,
-  Search,
   Send,
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
-import { dateText, errorText, period, regions, formatRegionDetail } from "../lib/format";
+import { errorText, period, regions } from "../lib/format";
 import { selectedRegion, regionGroups } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
 import { submissionLimits, submissionLengthMessages, isValidSubmissionReferenceUrl, invalidReferenceUrlMessage } from "../lib/submissionValidation";
@@ -25,133 +21,16 @@ import type {
   SubmissionDetail,
 } from "../lib/types";
 import {
-  Badge,
   Empty,
   ErrorState,
-  FESTIVAL_DEFAULT_IMAGE,
   Field,
   FormError,
   Loading,
   LoginRequired,
   PageTitle,
-  Photo,
   SubmitButton,
   Upload,
 } from "../components/ui";
-
-export function SubmissionList({ compact = false }: { compact?: boolean }) {
-  const { api } = useApp();
-  const { data, loading, error, reload } = useLoad(
-    () => api.submissions(),
-    [api],
-  );
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("ALL");
-  const list = (data || []).filter(
-    (s) =>
-      (!query || s.title.toLowerCase().includes(query.toLowerCase())) &&
-      (status === "ALL" || s.status === status),
-  );
-  return (
-    <>
-      <div className="section-heading">
-        <div>
-          <h2>
-            내가 제보한 행사 <span className="count">{data?.length || 0}</span>
-          </h2>
-          {!compact && (
-            <p className="muted">내가 전한 즐거운 소식을 확인해 보세요.</p>
-          )}
-        </div>
-        <select
-          className="plain-select"
-          aria-label="내 제보 상태 필터"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          <option value="ALL">모든 일정</option>
-          <option value="OPEN">종료 전</option>
-          <option value="CLOSED">종료</option>
-        </select>
-      </div>
-      <div className="inline-search">
-        <Search size={18} />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="내가 제보한 행사 검색"
-          aria-label="내 제보 검색"
-        />
-      </div>
-      {loading ? (
-        <Loading cards />
-      ) : error ? (
-        <ErrorState message={error} retry={reload} />
-      ) : list.length ? (
-        <div className="submission-list">
-          {list.map((s) => {
-            return (
-              <Link
-                className={`submission-row${s.deletion ? " is-deleted" : ""}`}
-                key={s.festivalSubmissionId}
-                to={`/submissions/${s.festivalSubmissionId}`}
-              >
-                <Photo
-                  src={null}
-                  alt={s.title}
-                  fallbackSrc={FESTIVAL_DEFAULT_IMAGE}
-                />
-                <div className="submission-row-copy">
-                  <div>
-                    <Badge tone={s.status === "CLOSED" ? "gray" : "green"}>
-                      {s.deletion
-                        ? "삭제된 행사"
-                        : s.status === "CLOSED"
-                          ? "종료"
-                          : "종료 전"}
-                    </Badge>
-                  </div>
-                  <h3>{s.title}</h3>
-                  {s.deletion && (
-                    <p>
-                      삭제 사유:{" "}
-                      {s.deletion.reason || "기록된 사유가 없습니다."}
-                    </p>
-                  )}
-                  <p>
-                    <MapPin size={14} />
-                    {regions[s.region] || s.region} {formatRegionDetail(s.district, s.regionDetail)}
-                  </p>
-                  <p>
-                    <CalendarDays size={14} />
-                    {period(s.beginDe, s.endDe)}
-                  </p>
-                </div>
-                <span className="row-date">{dateText(s.createdAt)} 제보</span>
-                <ChevronRight size={19} />
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        <Empty
-          title={
-            query || status !== "ALL"
-              ? "조건에 맞는 제보가 없어요"
-              : "아직 제보한 행사가 없어요"
-          }
-          description="알고 있는 행사를 나누며 첫 번째 이야기를 시작해 보세요."
-          action={
-            <Link className="btn primary" to="/submissions/new">
-              <Plus size={16} />
-              행사 제보하기
-            </Link>
-          }
-        />
-      )}
-    </>
-  );
-}
 
 export function SubmissionFormPage() {
   const { submissionId } = useParams();

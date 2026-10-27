@@ -989,7 +989,7 @@ export function createApi(mode: Mode) {
     },
     async myContents(comments: boolean, page = 0) {
       return transport<Page<MyContentItem>>(
-        `/members/me/${comments ? "comments" : "posts"}?page=${page}&size=20`,
+        `/members/me/${comments ? "comments" : "posts"}?page=${page}&size=10`,
       );
     },
     /** 내가 좋아요한 행사. 최근에 누른 순서로 오고 삭제된 행사는 빠진다. */
