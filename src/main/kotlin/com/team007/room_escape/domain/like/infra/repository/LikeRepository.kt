@@ -1,7 +1,11 @@
 package com.team007.room_escape.domain.like.infra.repository
 
+import com.team007.room_escape.domain.festival.infra.entity.Festival
 import com.team007.room_escape.domain.like.infra.dto.FestivalLikeCount
 import com.team007.room_escape.domain.like.infra.entity.Like
+import com.team007.room_escape.domain.post.infra.entity.Post
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -45,4 +49,53 @@ interface LikeRepository : JpaRepository<Like, Long> {
         """
     )
     fun countReceivedFestivalLikesByAuthorId(@Param("authorId") authorId: UUID): Long
+
+    /**
+     * 마이페이지: 회원이 좋아요한 후기. 최근에 누른 것부터, 삭제된 후기는 뺀다.
+     * 순서는 이 쿼리가 정하므로 정렬 없는 Pageable을 넘긴다.
+     */
+    @Query(
+        value = """
+        SELECT p
+        FROM Like l
+        JOIN l.post p
+        JOIN FETCH p.member
+        JOIN FETCH p.festival
+        WHERE l.member.id = :memberId
+          AND p.deletedAt IS NULL
+        ORDER BY l.createdAt DESC, l.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(l)
+        FROM Like l
+        JOIN l.post p
+        WHERE l.member.id = :memberId
+          AND p.deletedAt IS NULL
+        """,
+    )
+    fun findLikedPosts(@Param("memberId") memberId: UUID, pageable: Pageable): Page<Post>
+
+    /**
+     * 마이페이지: 회원이 좋아요한 행사. 최근에 누른 것부터, 삭제된 행사는 뺀다.
+     * 회원 제보 행사는 목록에 제보자를 보여 주므로 함께 읽는다.
+     */
+    @Query(
+        value = """
+        SELECT f
+        FROM Like l
+        JOIN l.festival f
+        LEFT JOIN FETCH f.member
+        WHERE l.member.id = :memberId
+          AND f.deletedAt IS NULL
+        ORDER BY l.createdAt DESC, l.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(l)
+        FROM Like l
+        JOIN l.festival f
+        WHERE l.member.id = :memberId
+          AND f.deletedAt IS NULL
+        """,
+    )
+    fun findLikedFestivals(@Param("memberId") memberId: UUID, pageable: Pageable): Page<Festival>
 }

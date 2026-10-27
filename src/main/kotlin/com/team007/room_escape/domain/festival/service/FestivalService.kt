@@ -213,8 +213,11 @@ class FestivalService(
         )
     }
 
-    /** 페이지에 담긴 행사들의 좋아요·투표 수를 한 번에 센다. (N+1 방지) */
-    private fun toListItems(festivals: Page<Festival>): Page<FestivalResponse.ListItem> {
+    /**
+     * 페이지에 담긴 행사들의 좋아요·투표 수를 한 번에 센다. (N+1 방지)
+     * 마이페이지의 좋아요한 행사 목록도 같은 카드로 보여 주려고 이 함수를 쓴다.
+     */
+    fun toListItems(festivals: Page<Festival>): Page<FestivalResponse.ListItem> {
         if (festivals.isEmpty) {
             return festivals.map { festival ->
                 FestivalResponse.ListItem.from(festival, 0L, 0L, 0L, imageUrlResolver)
