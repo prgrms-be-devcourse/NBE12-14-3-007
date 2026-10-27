@@ -19,6 +19,7 @@ class ExceptionCodesTest {
         MemberExceptionCode.entries,
         PostExceptionCode.entries,
         StorageExceptionCode.entries,
+        SupportExceptionCode.entries,
     ).flatten()
 
     @Test
@@ -42,7 +43,7 @@ class ExceptionCodesTest {
     }
 
     @Test
-    fun `에러 코드 enum 11개가 모두 검사 대상이다`() {
-        assertThat(all.map { it.javaClass }.distinct()).hasSize(11)
+    fun `에러 코드 enum 12개가 모두 검사 대상이다`() {
+        assertThat(all.map { it.javaClass }.distinct()).hasSize(12)
     }
 }
