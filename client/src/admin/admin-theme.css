@@ -16,7 +16,7 @@
   --a-yellow: #f2c14e;
   --a-yellow-soft: #fff4c7;
   --a-green: #1f6b4a;
-  --a-display: "Black Han Sans", Pretendard, "Malgun Gothic", sans-serif;
+  --a-display: Pretendard, "Malgun Gothic", sans-serif;
   background: var(--a-bg);
   color: var(--a-ink);
   word-break: keep-all;
@@ -57,14 +57,14 @@
 .adm-login .logo,
 .adm-shell .logo {
   font-family: var(--a-display);
-  font-weight: 400;
+  font-weight: 700;
   color: var(--a-ink);
   letter-spacing: -0.5px;
 }
 .adm-login h1,
 .adm-login h2 {
   font-family: var(--a-display);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--a-ink);
 }
@@ -166,7 +166,7 @@
 }
 .adm-heading h1 {
   font-family: var(--a-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(30px, 3vw, 40px);
   letter-spacing: -0.5px;
   color: var(--a-ink);
@@ -222,7 +222,7 @@
 }
 .adm-welcome h2 {
   font-family: var(--a-display);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--a-ink);
 }

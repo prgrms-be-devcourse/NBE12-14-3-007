@@ -252,7 +252,7 @@ const districtNames: Record<string, string[]> = {
   ],
 };
 
-export const regionGroups: RegionGroup[] = [
+const allRegionGroups: RegionGroup[] = [
   {
     value: "GYEONGGI",
     label: regions.GYEONGGI,
@@ -275,8 +275,13 @@ export const regionGroups: RegionGroup[] = [
   ),
 }));
 
+// 새 선택 목록에는 통합 지역만 표시한다. 과거 제보·검색 주소의 옛 코드는 아래에서 계속 해석한다.
+export const regionGroups = allRegionGroups.filter(
+  (group) => group.value !== "JEONNAM" && group.value !== "GWANGJU",
+);
+
 export function selectedRegion(value: string) {
-  const province = regionGroups.find(
+  const province = allRegionGroups.find(
     (group) =>
       group.value === value || group.districts.some((d) => d.value === value),
   );
