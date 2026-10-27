@@ -37,7 +37,9 @@ class UploadedImageTransactionTest @Autowired constructor(
 
     companion object {
         private val schema = "uploads_${UUID.randomUUID().toString().replace("-", "")}"
-        @JvmStatic @DynamicPropertySource
+
+        @JvmStatic
+        @DynamicPropertySource
         fun database(properties: DynamicPropertyRegistry) = TestDatabase.configure(properties, schema)
     }
 
@@ -148,7 +150,9 @@ class UploadedImageTransactionTest @Autowired constructor(
         }
 
         assertThat(repository.findById(key).orElseThrow().state).isEqualTo(UploadState.ACTIVE)
+    }
 
+    @Test
     fun recentUploadCountIncludesOnlyThisOwnersUploadsAfterTheCutoff() {
         val since = Instant.now().minus(Duration.ofHours(24))
         val someone = UUID.randomUUID()
@@ -160,6 +164,5 @@ class UploadedImageTransactionTest @Autowired constructor(
         }
 
         assertThat(repository.countByOwnerIdAndUploadedAtAfter(someone, since)).isEqualTo(2)
-
     }
 }
