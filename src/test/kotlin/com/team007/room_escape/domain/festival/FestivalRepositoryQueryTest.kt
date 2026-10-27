@@ -156,11 +156,13 @@ class FestivalRepositoryQueryTest @Autowired constructor(
         em.flush()
         val pageable = PageRequest.of(0, 10)
 
-        val withoutDeleted = festivals.searchForAdmin(token, null, false, false, pageable)
-        val withDeleted = festivals.searchForAdmin(token, null, true, false, pageable)
+        val withoutDeleted = festivals.searchForAdmin(token, null, false, false, false, pageable)
+        val withDeleted = festivals.searchForAdmin(token, null, true, false, false, pageable)
+        val deletedOnly = festivals.searchForAdmin(token, null, false, false, true, pageable)
 
         assertThat(withoutDeleted.content.map { it.title }).containsExactly("$token-visible")
         assertThat(withDeleted.content.map { it.title }).containsExactlyInAnyOrder("$token-visible", "$token-removed")
+        assertThat(deletedOnly.content.map { it.title }).containsExactly("$token-removed")
     }
 
     @Test
