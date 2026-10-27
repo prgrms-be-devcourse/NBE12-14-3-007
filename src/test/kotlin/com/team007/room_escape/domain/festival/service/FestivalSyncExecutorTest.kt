@@ -115,7 +115,10 @@ class FestivalSyncExecutorTest {
     companion object {
         private val RESULT = FestivalResponse.SyncResponse(
             listOf(FestivalResponse.SyncedFestival(1L, "종료된 행사")),
-            listOf(FestivalResponse.SyncedFestival(2L, "새 행사"))
+            listOf(FestivalResponse.SyncedFestival(2L, "새 행사")),
+            1,
+            0,
+            false
         )
     }
 }

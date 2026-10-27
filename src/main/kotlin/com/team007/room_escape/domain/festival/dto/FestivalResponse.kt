@@ -211,7 +211,16 @@ class FestivalResponse private constructor() {
         val closedFestivals: List<SyncedFestival>?,
 
         @field:Schema(description = "새로 저장된 행사 목록")
-        val savedFestivals: List<SyncedFestival>?
+        val savedFestivals: List<SyncedFestival>?,
+
+        @field:Schema(description = "이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수")
+        val requestedCount: Int,
+
+        @field:Schema(description = "상세조회 응답이 비어서 저장하지 못하고 건너뛴 행사 수")
+        val skippedCount: Int,
+
+        @field:Schema(description = "상세조회 도중 예외가 나서 남은 건을 처리하지 못하고 중단됐는지")
+        val interrupted: Boolean
     )
 
     @Schema(description = "동기화된 행사 요약")
