@@ -102,6 +102,13 @@ class FestivalService(
                 Thread.sleep(DETAIL_FETCH_INTERVAL)
             }
             log.info("공공 행사 {}건 저장 완료 (건너뜀 {}건)", savedFestivals.size, skippedCount)
+        } catch (e: InterruptedException) {
+            // 서버 종료 등으로 중단된 것이지 공공 API 호출 실패가 아니다. 인터럽트 상태를 복구해서
+            // 호출자(스레드 풀 등)가 종료 신호를 계속 인식하게 하고, 더 이상 작업을 이어가지 않는다.
+            Thread.currentThread().interrupt()
+            interrupted = true
+            log.warn("신규 행사 저장 중단됨 (서버 종료 등, 지금까지 {}건 저장됨)", savedFestivals.size)
+            return FestivalResponse.SyncResponse(closedFestivals, savedFestivals, newSeqs.size, skippedCount, interrupted)
         } catch (e: Exception) {
             interrupted = true
             log.error("신규 행사 저장 실패 (지금까지 {}건 저장됨), 원본 스냅샷은 반영됨", savedFestivals.size, e)

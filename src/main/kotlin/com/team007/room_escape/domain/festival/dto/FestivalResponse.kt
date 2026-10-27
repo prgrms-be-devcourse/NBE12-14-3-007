@@ -236,7 +236,16 @@ class FestivalResponse private constructor() {
         val lastError: String?,
 
         @field:Schema(description = "마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
-        val finishedAt: java.time.Instant?
+        val finishedAt: java.time.Instant?,
+
+        @field:Schema(description = "스케줄러가 마지막으로 끝낸 자동 동기화 결과. 아직 끝난 적이 없으면 null")
+        val lastScheduledResult: SyncResponse?,
+
+        @field:Schema(description = "스케줄러의 마지막 시도가 예외로 끝났을 때 그 메시지. 정상 종료면 null")
+        val lastScheduledError: String?,
+
+        @field:Schema(description = "스케줄러의 마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
+        val lastScheduledFinishedAt: java.time.Instant?
     )
 
     @Schema(description = "동기화된 행사 요약")

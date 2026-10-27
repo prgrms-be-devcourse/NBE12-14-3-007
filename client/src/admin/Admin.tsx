@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -41,8 +41,13 @@ import { useApp, useLoad } from "../lib/context";
 import { ApiError } from "../lib/api";
 import { DeletionReasonFields } from "./DeletionReasonFields";
 import type { AdminDeletionReason } from "../lib/deletion";
-import { errorText, period, regions, safeUrl } from "../lib/format";
-import type { AdminFestivalDetail, InquiryCategory, Role } from "../lib/types";
+import { dateText, errorText, period, regions, safeUrl } from "../lib/format";
+import type {
+  AdminFestivalDetail,
+  InquiryCategory,
+  Role,
+  SyncResult,
+} from "../lib/types";
 import { AdminGuard } from "./AdminAuth";
 import {
   AdminProvider,
@@ -1015,63 +1020,117 @@ function MemberDialog({
   );
 }
 
+/** 동기화 한 건의 결과를 사람이 읽는 문장으로 바꾼다. 수동·자동 토스트와 안내문에서 같이 쓴다. */
+function syncResultText(result: SyncResult): string {
+  const { savedFestivals, closedFestivals, skippedCount, interrupted } = result;
+  if (interrupted) {
+    return (
+      `중간에 멈췄어요 · 그래도 ${savedFestivals.length}건은 저장됐어요. ` +
+      "다시 실행하면 처리 못한 나머지부터 이어서 진행돼요."
+    );
+  }
+  if (skippedCount > 0) {
+    return (
+      `새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리 · ` +
+      `${skippedCount}건은 공공 API가 상세 정보를 비워서 보내 건너뛰었어요(다음 동기화 때 다시 시도돼요).`
+    );
+  }
+  return `새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리`;
+}
+
 /**
  * 공공 행사 수동 동기화 버튼.
  *
  * 바꾸는 건 유입 경로가 '지역 문화행사'인 행사뿐이고 회원 제보는 건드리지 않는다.
  * 그래서 라벨에 '공공'을 붙여 범위를 드러낸다.
+ *
+ * 새벽 6시·낮 2시·밤 10시에 자동으로도 동기화가 도는데, 그 결과는 관리자가 버튼을 누른 게
+ * 아니라서 토스트로 알리지 않는다. 대신 마지막 자동 동기화 결과를 버튼 아래에 항상 보여준다.
  */
 function SyncButton() {
   const { api, toast } = useApp();
   const [running, setRunning] = useState(false);
+  const [lastScheduled, setLastScheduled] = useState<{
+    result: SyncResult | null;
+    error: string | null;
+    finishedAt: string | null;
+  } | null>(null);
+  // 폴링 도중 화면을 떠나도 몇 분씩 계속 돌다가 뒤늦게 토스트가 뜨는 걸 막는다.
+  // mount에서도 true로 되돌려야 한다 — StrictMode 개발 모드는 effect를 mount→정리→
+  // 재mount 순서로 한 번 더 시뮬레이션해서, 정리에서만 false로 두면 재mount 후에도
+  // false로 남아 폴링이 시작부터 멈춰버린다.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+  // 화면을 처음 열었을 때도 마지막 자동 동기화 결과를 바로 보여준다.
+  useEffect(() => {
+    api
+      .syncStatus()
+      .then((status) => {
+        if (!mountedRef.current) return;
+        setLastScheduled({
+          result: status.lastScheduledResult,
+          error: status.lastScheduledError,
+          finishedAt: status.lastScheduledFinishedAt,
+        });
+      })
+      .catch(() => {
+        // 초기 조회 실패는 조용히 넘어간다. 버튼을 누르면 어차피 다시 상태를 받아온다.
+      });
+  }, [api]);
   return (
-    <button
-      type="button"
-      className="adm-tab-action"
-      // 공공 API를 통째로 훑어서 오래 걸린다. 연타하면 서버가 409로 튕긴다.
-      disabled={running}
-      onClick={async () => {
-        setRunning(true);
-        try {
-          await api.syncFestivals(); // 시작만 하고 바로 응답이 온다. 결과는 상태를 폴링해서 받는다.
-          let status = await api.syncStatus();
-          while (status.running) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            status = await api.syncStatus();
-          }
-          if (status.lastError) {
-            // 로그를 볼 수 없는 관리자도 이해할 수 있게, 서버가 이미 다듬어서 보낸 문구를 그대로 보여준다.
-            toast(`동기화 실패 · ${status.lastError}`);
-          } else if (status.lastResult) {
-            const { savedFestivals, closedFestivals, skippedCount, interrupted } =
-              status.lastResult;
-            if (interrupted) {
-              toast(
-                `동기화가 중간에 멈췄어요 · 그래도 ${savedFestivals.length}건은 저장됐어요. ` +
-                  "다시 실행하면 처리 못한 나머지부터 이어서 진행돼요.",
-              );
-            } else if (skippedCount > 0) {
-              toast(
-                `동기화 완료 · 새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리 · ` +
-                  `${skippedCount}건은 공공 API가 상세 정보를 비워서 보내 건너뛰었어요(다음 동기화 때 다시 시도돼요).`,
-              );
-            } else {
-              toast(
-                `동기화 완료 · 새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리`,
-              );
+    <div className="adm-sync">
+      <button
+        type="button"
+        className="adm-tab-action"
+        // 공공 API를 통째로 훑어서 오래 걸린다. 연타하면 서버가 409로 튕긴다.
+        disabled={running}
+        onClick={async () => {
+          setRunning(true);
+          try {
+            await api.syncFestivals(); // 시작만 하고 바로 응답이 온다. 결과는 상태를 폴링해서 받는다.
+            let status = await api.syncStatus();
+            while (status.running) {
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              if (!mountedRef.current) return; // 화면을 떠났으면 더 기다리지 않는다
+              status = await api.syncStatus();
             }
+            if (!mountedRef.current) return; // 결과를 보여줄 화면이 이미 없다
+            setLastScheduled({
+              result: status.lastScheduledResult,
+              error: status.lastScheduledError,
+              finishedAt: status.lastScheduledFinishedAt,
+            });
+            if (status.lastError) {
+              // 로그를 볼 수 없는 관리자도 이해할 수 있게, 서버가 이미 다듬어서 보낸 문구를 그대로 보여준다.
+              toast(`수동 동기화 실패 · ${status.lastError}`);
+            } else if (status.lastResult) {
+              toast(`수동 동기화 완료 · ${syncResultText(status.lastResult)}`);
+            }
+          } catch (error) {
+            if (mountedRef.current) toast(errorText(error));
+          } finally {
+            if (mountedRef.current) setRunning(false);
           }
-        } catch (error) {
-          toast(errorText(error));
-        } finally {
-          setRunning(false);
-        }
-      }}
-    >
-      {/* .spin 은 styles.css 전역 유틸이다. */}
-      <RefreshCw size={14} className={running ? "spin" : ""} />
-      {running ? "동기화 중…" : "공공 행사 동기화"}
-    </button>
+        }}
+      >
+        {/* .spin 은 styles.css 전역 유틸이다. */}
+        <RefreshCw size={14} className={running ? "spin" : ""} />
+        {running ? "동기화 중…" : "공공 행사 동기화"}
+      </button>
+      {lastScheduled?.finishedAt && (
+        <p className="adm-sync-note">
+          {lastScheduled.error
+            ? `자동 동기화 실패(${dateText(lastScheduled.finishedAt)}) · ${lastScheduled.error}`
+            : lastScheduled.result &&
+              `자동 동기화 완료(${dateText(lastScheduled.finishedAt)}) · ${syncResultText(lastScheduled.result)}`}
+        </p>
+      )}
+    </div>
   );
 }
 export function AdminContent({ kind }: { kind: "events" | "reviews" }) {
