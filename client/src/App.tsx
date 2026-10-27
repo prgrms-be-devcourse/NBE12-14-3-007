@@ -7,6 +7,7 @@ import { SubmissionFormPage } from "./pages/Submissions";
 import { EventDetailPage } from "./pages/EventDetail";
 import { Reviews, ReviewDetailPage, ReviewFormPage } from "./pages/Reviews";
 import { MyPage } from "./pages/MyPage";
+import { SupportPage } from "./pages/Support";
 import { AuthPage } from "./pages/Auth";
 import {
   CommunityDetailPage,
@@ -70,6 +71,18 @@ export function App() {
         <Route path="community/new" element={<CommunityFormPage />} />
         <Route path="community/:postId" element={<CommunityDetailPage />} />
         <Route path="community/:postId/edit" element={<CommunityFormPage />} />
+        <Route
+          path="support"
+          element={<Navigate to="/support/notices" replace />}
+        />
+        <Route
+          path="support/notices"
+          element={<SupportPage kind="notices" key="notices" />}
+        />
+        <Route
+          path="support/faq"
+          element={<SupportPage kind="faq" key="faq" />}
+        />
         <Route path="mypage" element={<MyPage />} />
         <Route path="login" element={<AuthPage key="login" />} />
         <Route path="signup" element={<AuthPage key="signup" signup />} />

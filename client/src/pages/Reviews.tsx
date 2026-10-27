@@ -249,6 +249,22 @@ function ReviewDetail({ id }: { id: string }) {
             <span>{dateText(post.date)}</span>
           </div>
           <div className="article-actions">
+            {!own && (
+              <ReportButton
+                className="text-button"
+                target={{
+                  type: "POST",
+                  id: post.id,
+                  name: post.title,
+                  details: [
+                    `후기 주소: ${window.location.origin}/reviews/${post.id}`,
+                  ],
+                }}
+              >
+                <Flag size={14} />
+                신고하기
+              </ReportButton>
+            )}
             {own && (
               <Link to={`/reviews/${id}/edit`} className="text-button">
                 <Pencil size={14} />
@@ -284,21 +300,6 @@ function ReviewDetail({ id }: { id: string }) {
             좋아요
             <strong>{likeCount}</strong>
           </button>
-          {!own && (
-            <ReportButton
-              target={{
-                type: "POST",
-                id: post.id,
-                name: post.title,
-                details: [
-                  `후기 주소: ${window.location.origin}/reviews/${post.id}`,
-                ],
-              }}
-            >
-              <Flag size={14} />
-              신고하기
-            </ReportButton>
-          )}
         </div>
         <FormError message={actionError} />
       </article>

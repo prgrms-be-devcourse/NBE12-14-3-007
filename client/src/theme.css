@@ -124,6 +124,17 @@
 .theme-c .footer-links a:hover {
   color: #fff;
 }
+/* 고객센터 링크가 늘어 좁은 화면에서는 여러 줄로 감싼다. */
+.theme-c .footer-links {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+@media (max-width: 560px) {
+  .theme-c .footer-links {
+    justify-content: flex-start;
+    column-gap: 18px;
+  }
+}
 .theme-c .footer-bottom {
   border-top-color: #3a3833;
   color: #a8a396;
@@ -1812,4 +1823,367 @@
   border: 1px dashed var(--c-line);
   border-radius: 0;
   color: var(--c-muted);
+}
+
+/* ---------- 글쓰기 에디터 (행사 제보·후기·커뮤니티 공통) ---------- */
+.theme-c .rich-text-editor,
+.theme-c .rich-text-editor-loading {
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-surface);
+}
+.theme-c .rich-text-editor-loading {
+  color: var(--c-muted);
+}
+.theme-c .rich-text-editor:focus-within {
+  border-color: var(--c-ink);
+  box-shadow: 4px 4px 0 var(--c-yellow);
+}
+.theme-c .rich-text-toolbar {
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--c-ink);
+  background: var(--c-paper);
+}
+.theme-c .rich-text-toolbar button {
+  border-radius: 0;
+  color: var(--c-text);
+}
+.theme-c .rich-text-toolbar button:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+}
+.theme-c .rich-text-toolbar button.active {
+  border-color: var(--c-ink);
+  background: var(--c-ink);
+  color: #fff;
+}
+.theme-c .rich-text-toolbar-separator {
+  background: var(--c-line);
+}
+.theme-c .rich-text-editor-content {
+  color: var(--c-ink);
+  font-size: 15px;
+}
+.theme-c .rich-text-editor-content p.is-editor-empty:first-child::before {
+  color: var(--c-muted);
+}
+.theme-c .rich-text-editor-content h2,
+.theme-c .rich-text-content h2 {
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .rich-text-editor-content blockquote,
+.theme-c .rich-text-content blockquote {
+  border-left: 4px solid var(--c-yellow);
+  color: var(--c-text);
+}
+.theme-c .rich-text-editor-content a,
+.theme-c .rich-text-content a {
+  color: var(--c-red-dark);
+}
+.theme-c .rich-text-editor-content img,
+.theme-c .rich-text-content img {
+  border-radius: 0;
+}
+.theme-c .rich-text-editor-content img.ProseMirror-selectednode {
+  outline: 3px solid var(--c-yellow);
+}
+
+/* ---------- 행사 제보 TIP: 게시판에 붙인 노란 메모 ---------- */
+.theme-c .form-aside {
+  top: 32px;
+}
+.theme-c .form-aside > div:first-child {
+  position: relative;
+  padding: 30px 22px 22px;
+  background: var(--c-yellow-soft);
+  border: 0;
+  border-radius: 0;
+  color: var(--c-text);
+  box-shadow:
+    0 2px 0 #d9cfa6,
+    0 18px 30px -22px #0008;
+}
+.theme-c .form-aside > div:first-child::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 84px;
+  height: 22px;
+  margin-left: -42px;
+  background: #f2c14ed9;
+  transform: rotate(-3deg);
+}
+.theme-c .form-aside > div:first-child > svg {
+  color: var(--c-ink);
+}
+.theme-c .form-aside h3 {
+  margin: 10px 0 14px;
+  font-family: var(--c-display);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--c-ink);
+}
+.theme-c .form-aside p {
+  gap: 9px;
+  align-items: center;
+  margin: 0;
+  padding: 9px 0;
+  border-top: 1px dashed #d9cfa6;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-ink);
+}
+.theme-c .form-aside p svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 3px;
+  background: var(--c-ink);
+  color: var(--c-yellow);
+}
+.theme-c .form-aside > div > span {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 2px solid var(--c-ink);
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--c-red-dark);
+}
+
+/* ---------- 머리 메뉴 드롭다운 ---------- */
+.theme-c .nav-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 2px;
+}
+.theme-c .nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+.theme-c .nav-toggle svg {
+  transition: transform 0.18s ease;
+}
+.theme-c .nav-toggle:hover {
+  color: var(--c-ink);
+}
+.theme-c .nav-group.open .nav-toggle svg {
+  transform: rotate(180deg);
+}
+.theme-c .nav-sub {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: -14px;
+  z-index: 30;
+  min-width: 168px;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--c-surface);
+  border: 2px solid var(--c-ink);
+  box-shadow: 5px 5px 0 var(--c-ink);
+}
+.theme-c .nav-group.open .nav-sub {
+  display: block;
+}
+@media (hover: hover) and (min-width: 561px) {
+  .theme-c .nav-group:hover .nav-sub {
+    display: block;
+  }
+}
+.theme-c .main-nav .nav-sub a {
+  display: block;
+  align-self: auto;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-text);
+}
+.theme-c .main-nav .nav-sub a::after {
+  display: none;
+}
+.theme-c .main-nav .nav-sub a:hover {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+}
+.theme-c .main-nav .nav-sub a.current {
+  color: var(--c-ink);
+  font-weight: 700;
+  box-shadow: inset 4px 0 0 var(--c-yellow);
+}
+@media (max-width: 560px) {
+  .theme-c .nav-group {
+    flex-wrap: wrap;
+    align-self: auto;
+  }
+  .theme-c .nav-group > a {
+    flex: 1;
+  }
+  .theme-c .nav-toggle {
+    display: none;
+  }
+  .theme-c .nav-sub,
+  .theme-c .nav-group.open .nav-sub {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    position: static;
+    width: 100%;
+    min-width: 0;
+    padding: 0 0 6px 12px;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .theme-c .main-nav .nav-sub a {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+}
+
+/* ---------- 고객센터 ---------- */
+.theme-c .support-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.theme-c .support-tabs a {
+  padding: 10px 18px;
+  border: 2px solid var(--c-ink);
+  border-bottom: 0;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.theme-c .support-tabs a:hover {
+  background: var(--c-yellow-soft);
+}
+.theme-c .support-tabs a.active {
+  background: var(--c-ink);
+  color: #fff;
+}
+.theme-c .support-list {
+  background: var(--c-surface);
+  border: 2px solid var(--c-ink);
+}
+.theme-c .support-list details + details {
+  border-top: 1px solid var(--c-line);
+}
+.theme-c .support-list summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  cursor: pointer;
+  list-style: none;
+}
+.theme-c .support-list summary::-webkit-details-marker {
+  display: none;
+}
+.theme-c .support-list summary:hover {
+  background: var(--c-paper);
+}
+.theme-c .support-list summary > svg {
+  flex: none;
+  color: var(--c-muted);
+  transition: transform 0.18s ease;
+}
+.theme-c .support-list details[open] summary > svg {
+  transform: rotate(180deg);
+}
+.theme-c .support-q {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--c-yellow);
+  color: var(--c-ink);
+  font-family: var(--c-display);
+  font-size: 15px;
+}
+.theme-c .support-title {
+  flex: 1;
+  color: var(--c-ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.theme-c .support-list time {
+  flex: none;
+  color: var(--c-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.theme-c .support-body {
+  padding: 2px 22px 22px 64px;
+  color: var(--c-text);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.theme-c .support-page .support-list details:not(:has(.support-q)) .support-body {
+  padding-left: 22px;
+}
+.theme-c .support-body p + p {
+  margin-top: 8px;
+}
+.theme-c .support-contact {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 22px 24px;
+  background: var(--c-yellow-soft);
+  border: 2px dashed var(--c-ink);
+}
+.theme-c .support-contact > div {
+  flex: 1;
+}
+.theme-c .support-contact h2 {
+  margin: 0 0 4px;
+  font-family: var(--c-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--c-ink);
+}
+.theme-c .support-contact p {
+  margin: 0;
+  color: var(--c-text);
+  font-size: 14px;
+}
+@media (max-width: 560px) {
+  .theme-c .support-list summary {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 16px;
+  }
+  .theme-c .support-list time {
+    order: -1;
+    width: 100%;
+  }
+  .theme-c .support-body,
+  .theme-c .support-page .support-list details:not(:has(.support-q)) .support-body {
+    padding: 0 16px 18px;
+  }
+  .theme-c .support-contact {
+    flex-wrap: wrap;
+  }
 }

@@ -211,8 +211,8 @@ export function Explore() {
             onChange={(event) => setFilter("providerType", event.target.value)}
           >
             <option value="">모든 출처</option>
-            <option value="PUBLIC">공공데이터</option>
-            <option value="MEMBER">회원 제보</option>
+            <option value="PUBLIC">공공 행사</option>
+            <option value="MEMBER">민간 행사</option>
           </select>
           <select
             aria-label="행사 정렬"
