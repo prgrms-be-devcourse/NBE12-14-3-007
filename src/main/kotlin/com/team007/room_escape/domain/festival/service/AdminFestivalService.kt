@@ -11,6 +11,8 @@ import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.CommonExceptionCode
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.util.RichTextSanitizer
+import com.team007.room_escape.global.storage.R2StorageService
+import java.util.UUID
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -21,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional
 class AdminFestivalService(
     private val festivalRepository: FestivalRepository,
     private val richTextSanitizer: RichTextSanitizer,
-    private val deletionHistories: DeletionHistoryService
+    private val deletionHistories: DeletionHistoryService,
+    private val storage: R2StorageService
 ) {
 
     /** 관리자 행사 검색. 복구 대상을 찾도록 삭제된 행사도 볼 수 있다. */
@@ -59,7 +62,8 @@ class AdminFestivalService(
     @Transactional
     fun update(
         festivalId: Long,
-        request: AdminFestivalRequest.Update
+        request: AdminFestivalRequest.Update,
+        adminId: UUID
     ): FestivalResponse.Detail {
         if (!request.hasValidPeriod()) {
             throw BusinessException(CommonExceptionCode.INVALID_INPUT)
@@ -70,10 +74,12 @@ class AdminFestivalService(
             ?: throw BusinessException(FestivalExceptionCode.FESTIVAL_NOT_FOUND)
 
         // 진행 상태(status)는 종료일에서 다시 계산된다.
+        val content = richTextSanitizer.sanitize(request.festivalContent)
+        storage.confirmImagesForAdministrator(adminId, content, request.imgUrl)
         festival.updateDetails(
             request.title,
             request.category,
-            richTextSanitizer.sanitize(request.festivalContent),
+            content,
             request.referenceUrl,
             request.region,
             request.regionDetail,

@@ -27,6 +27,8 @@ import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.storage.R2StorageService
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import com.team007.room_escape.global.util.RichTextSanitizer
 import com.team007.room_escape.support.TestDatabase
 import jakarta.persistence.EntityManager
@@ -67,6 +69,9 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     private val likes: LikeRepository,
     private val votes: FestivalAccuracyVoteRepository,
 ) {
+    @field:MockitoBean
+    private lateinit var storage: R2StorageService
+
     companion object {
         private val TEST_SCHEMA = "festival_deletion_${UUID.randomUUID().toString().replace("-", "")}"
 

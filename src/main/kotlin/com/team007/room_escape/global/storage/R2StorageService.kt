@@ -16,12 +16,15 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.IOException
 import java.util.UUID
+import org.springframework.web.util.HtmlUtils
+import java.net.URI
 
 /** Cloudflare R2 파일 저장소. DB에는 URL이 아니라 key만 저장해서 도메인이 바뀌어도 데이터를 안 건드린다. */
 @Service
 class R2StorageService(
     private val s3Client: S3Client,
     private val properties: R2Properties,
+    private val uploadedImages: UploadedImageService,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -31,7 +34,10 @@ class R2StorageService(
         if (file == null || file.isEmpty) throw BusinessException(StorageExceptionCode.EMPTY_FILE)
 
         val key = "$directory/$ownerId/${UUID.randomUUID()}.${extensionOf(file.contentType)}"
-        return put(key, file.contentType) { RequestBody.fromInputStream(file.inputStream, file.size) }
+        uploadedImages.register(key, ownerId)
+        return uploadedImages.upload(key) {
+            put(key, file.contentType) { RequestBody.fromInputStream(file.inputStream, file.size) }
+        }
     }
 
     /** 서버가 만든 바이트 배열을 업로드한다. 배치처럼 MultipartFile이 없을 때 쓰고, contentType은 직접 넘긴다. */
@@ -54,9 +60,44 @@ class R2StorageService(
         if (!isOwnedBy(newKey, memberId)) throw BusinessException(StorageExceptionCode.IMAGE_NOT_OWNED)
     }
 
+    /** 첨부/본문의 신규 관리 이미지를 글 저장과 함께 확정한다. 미추적 기존 이미지는 보존한다. */
+    fun confirmImages(ownerId: UUID, content: String? = null, vararg attachments: String?) {
+        val keys = imageKeys(content, attachments)
+        if (keys.isNotEmpty()) uploadedImages.confirm(keys, ownerId)
+    }
+
+    fun confirmImagesForAdministrator(ownerId: UUID, content: String?, attachment: String?) {
+        val keys = imageKeys(content, arrayOf(attachment))
+        if (keys.isNotEmpty()) uploadedImages.confirm(keys, ownerId, allowActiveFromOthers = true)
+    }
+
+    private fun imageKeys(content: String?, attachments: Array<out String?>): List<String> {
+        val base = URI(properties.publicUrl.removeSuffix("/") + "/")
+        fun key(value: String): String {
+            val decoded = HtmlUtils.htmlUnescape(value)
+            return runCatching {
+                val uri = URI(decoded)
+                val path = if (uri.isAbsolute) {
+                    if (!uri.rawAuthority.equals(base.rawAuthority, ignoreCase = true) ||
+                        uri.scheme.lowercase() !in setOf("http", "https") || !uri.path.startsWith(base.path)) {
+                        return decoded // 다른 저장소/공공 API 주소는 추적하지 않는다.
+                    }
+                    uri.path.removePrefix(base.path)
+                } else uri.path
+                // 공개 URL의 인코딩/쿼리/점 경로도 하나의 저장 key로 취급한다.
+                URI(null, null, "/$path", null).normalize().path.removePrefix("/")
+            }
+                .getOrElse { throw BusinessException(StorageExceptionCode.IMAGE_EXPIRED) }
+        }
+        return attachments.filterNotNull().filter { it.isNotBlank() }.map(::key) +
+            IMAGE_SOURCE.findAll(content.orEmpty()).map { key(it.groupValues[1]) }.toList()
+    }
+
     /** 본인 파일만 지운다. 롤백 시 이미지가 깨지지 않게 트랜잭션 커밋 후에 지운다. */
     fun deleteOwnedBy(key: String?, memberId: UUID?) {
         if (!isOwnedBy(key, memberId)) return
+        // 사용이 확정된 관리 이미지는 다른 글/복구 대상에서 재사용될 수 있어 유지한다.
+        if (uploadedImages.isTracked(checkNotNull(key))) return
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             delete(key)
             return
@@ -69,10 +110,17 @@ class R2StorageService(
     /** 삭제 실패는 로그만 남긴다. 파일이 남는 것보다 비즈니스 흐름이 끊기는 게 더 나쁘다. */
     fun delete(key: String?) {
         if (key == null || key.isBlankLikeJava()) return
+        tryDelete(key)
+    }
+
+    /** 정리 작업은 실패를 알아야 삭제 상태를 남겨 다음 회차에 재시도할 수 있다. */
+    fun tryDelete(key: String): Boolean {
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder().bucket(properties.bucket).key(key).build())
+            return true
         } catch (e: SdkException) {
             log.warn("R2 삭제 실패 key={}", key, e)
+            return false
         }
     }
 
@@ -107,6 +155,7 @@ class R2StorageService(
     }
 
     companion object {
+        private val IMAGE_SOURCE = Regex("<img\\b[^>]*\\bsrc=\"([^\"]+)\"", RegexOption.IGNORE_CASE)
 
         /** 허용 Content-Type과 저장 시 사용할 확장자 */
         private val ALLOWED_TYPES: Map<String, String> = java.util.Map.of(

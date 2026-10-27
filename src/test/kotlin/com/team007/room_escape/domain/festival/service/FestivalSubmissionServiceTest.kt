@@ -21,6 +21,7 @@ import com.team007.room_escape.domain.member.service.MemberReader
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.util.RichTextSanitizer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -50,7 +51,7 @@ class FestivalSubmissionServiceTest {
     )
     private val service = FestivalSubmissionService(
         festivals, submissions, members, mock(RichTextSanitizer::class.java), deletion,
-        deletionHistories, FestivalDuplicateValidator(festivals),
+        deletionHistories, FestivalDuplicateValidator(festivals), mock(R2StorageService::class.java),
     )
     private val memberId = UUID.randomUUID()
     private val submissionId = UUID.randomUUID()

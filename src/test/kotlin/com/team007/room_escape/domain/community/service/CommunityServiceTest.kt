@@ -11,6 +11,7 @@ import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.CommunityExceptionCode
+import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import com.team007.room_escape.global.util.RichTextSanitizer
 import org.assertj.core.api.Assertions.assertThat
@@ -47,10 +48,13 @@ class CommunityServiceTest {
     @field:Mock
     private lateinit var deletionHistoryService: DeletionHistoryService
 
+    @field:Mock
+    private lateinit var storageService: R2StorageService
+
     private val communityService by lazy {
         CommunityService(
             postRepository, commentRepository, memberRepository,
-            richTextSanitizer, imageUrlResolver, deletionHistoryService,
+            richTextSanitizer, imageUrlResolver, deletionHistoryService, storageService,
         )
     }
 

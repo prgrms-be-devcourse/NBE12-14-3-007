@@ -8,6 +8,7 @@ enum class StorageExceptionCode(
     override val status: HttpStatus,
     override val message: String
 ) : ExceptionCode {
+    IMAGE_EXPIRED("STOR004", HttpStatus.CONFLICT, "이미지 보관 기간이 만료되어 정리 중이거나 삭제되었습니다. 이미지를 다시 업로드해 주세요."),
 
     EMPTY_FILE("STOR000", HttpStatus.BAD_REQUEST, "업로드할 파일이 비어 있습니다."),
     UNSUPPORTED_FILE_TYPE("STOR001", HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),

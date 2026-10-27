@@ -34,13 +34,34 @@ import java.util.UUID
 class R2StorageServiceTest {
 
     private val s3Client = mock(S3Client::class.java)
+    private val uploads = mock(UploadedImageService::class.java).also { tracking ->
+        org.mockito.Mockito.doAnswer { invocation ->
+            invocation.getArgument<() -> String>(1).invoke()
+        }.`when`(tracking).upload(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any<() -> String>() ?: { "" })
+    }
     private val service = R2StorageService(
         s3Client,
         R2Properties("account", "access", "secret", "my-bucket", "https://img.example.com"),
+        uploads,
     )
 
     private val me = UUID.randomUUID()
     private val other = UUID.randomUUID()
+
+    @Test
+    fun `본문과 첨부 이미지의 공개 URL을 key로 변환하여 사용 확정한다`() {
+        val key = "posts/$me/a.png"
+        service.confirmImages(me, "<p><img src=\"https://img.example.com/$key?preview=1\"></p>", key)
+        verify(uploads).confirm(listOf(key, key), me)
+    }
+
+    @Test
+    fun `사용 확정된 관리 이미지는 교체하더라도 직접 삭제하지 않는다`() {
+        val key = "posts/$me/a.png"
+        `when`(uploads.isTracked(key)).thenReturn(true)
+        service.deleteOwnedBy(key, me)
+        verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
+    }
 
     private fun pngFile() = MockMultipartFile("file", "a.png", "image/png", byteArrayOf(1, 2, 3))
 

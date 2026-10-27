@@ -13,6 +13,7 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalSubmissi
 import com.team007.room_escape.domain.member.service.MemberReader
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
+import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.global.util.RichTextSanitizer
 import org.hibernate.exception.ConstraintViolationException
 import org.springframework.dao.DataIntegrityViolationException
@@ -29,16 +30,19 @@ class FestivalSubmissionService(
     private val richTextSanitizer: RichTextSanitizer,
     private val festivalDeletionService: FestivalDeletionService,
     private val deletionHistories: DeletionHistoryService,
-    private val duplicateValidator: FestivalDuplicateValidator
+    private val duplicateValidator: FestivalDuplicateValidator,
+    private val storage: R2StorageService
 ) {
     @Transactional
     fun create(memberId: UUID, request: FestivalSubmissionRequest.Upsert): FestivalSubmissionResponse.Create {
         val member = memberReader.getUnrestrictedMember(memberId)
         val (normalizedReferenceUrl, district) = validateNotDuplicated(null, request)
+        val content = richTextSanitizer.sanitize(request.festivalContent)
+        storage.confirmImages(memberId, content, request.imgUrl)
         val festival = Festival(
             member = member, providerType = ProviderType.MEMBER,
             title = request.title, category = request.category,
-            content = richTextSanitizer.sanitize(request.festivalContent), url = normalizedReferenceUrl,
+            content = content, url = normalizedReferenceUrl,
             region = request.region, district = district, regionDetail = request.regionDetail, imgUrl = request.imgUrl,
             beginDe = request.beginDe, endDe = request.endDe,
             partcptExpnInfo = request.partcptExpnInfo, telnoInfo = request.telnoInfo,
@@ -82,8 +86,10 @@ class FestivalSubmissionService(
             ?: throw BusinessException(FestivalExceptionCode.EDIT_VERSION_REQUIRED)
         if (version != festival.version) throw BusinessException(FestivalExceptionCode.EDIT_CONFLICT)
         val (normalizedReferenceUrl, district) = validateNotDuplicated(festival.id, request)
+        val content = richTextSanitizer.sanitize(request.festivalContent)
+        storage.confirmImages(memberId, content, request.imgUrl)
         festival.updateDetails(
-            request.title, request.category, richTextSanitizer.sanitize(request.festivalContent),
+            request.title, request.category, content,
             normalizedReferenceUrl, request.region, request.regionDetail, request.imgUrl,
             request.beginDe, request.endDe, request.partcptExpnInfo, request.telnoInfo, district
         )
