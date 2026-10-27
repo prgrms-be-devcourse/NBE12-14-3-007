@@ -356,6 +356,24 @@ export interface SyncResult {
   closedFestivals: { festivalId: number; title: string }[];
   /** 새로 저장된 행사 */
   savedFestivals: { festivalId: number; title: string }[];
+  /** 이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수 */
+  requestedCount: number;
+  /** 상세조회 응답이 비어서 건너뛴 행사 수 */
+  skippedCount: number;
+  /** 상세조회 도중 예외가 나서 중간에 중단됐는지 */
+  interrupted: boolean;
+}
+
+/** 공공 행사 동기화 진행 상태. 서버 FestivalResponse.SyncStatusResponse와 같은 모양. */
+export interface SyncStatus {
+  /** 지금 동기화가 진행 중인지 */
+  running: boolean;
+  /** 마지막으로 끝난 동기화 결과. 실행 중이거나 아직 끝난 적이 없으면 null */
+  lastResult: SyncResult | null;
+  /** 마지막 시도가 예외로 끝났을 때 그 메시지 */
+  lastError: string | null;
+  /** 마지막 시도가 끝난 시각 (ISO-8601) */
+  finishedAt: string | null;
 }
 /**
  * 운영 대시보드 집계.

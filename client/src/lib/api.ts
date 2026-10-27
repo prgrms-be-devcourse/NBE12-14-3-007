@@ -37,7 +37,7 @@ import type {
   AdminFestivalInput,
   AdminFestivalListItem,
   AdminStats,
-  SyncResult,
+  SyncStatus,
   Role,
   EventView,
   FestivalAccuracyVote,
@@ -131,8 +131,6 @@ export function refreshAccessToken() {
   return refresh();
 }
 const DEFAULT_TIMEOUT_MS = 15000;
-// 동기화는 기존 이미지를 실제로 다운로드·리사이즈·R2 업로드까지 하느라 기본 타임아웃을 넘길 수 있다.
-const SYNC_TIMEOUT_MS = 60000;
 async function transport<T>(
   path: string,
   method = "GET",
@@ -142,9 +140,7 @@ async function transport<T>(
   const requestSession = sessionVersion;
   const form = body instanceof FormData;
   const controller = new AbortController();
-  const timeoutMs =
-    path === "/festivals/sync" ? SYNC_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
-  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = window.setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
   let response: Response;
   try {
     response = await fetch(`/api/v1${path}`, {
@@ -923,13 +919,18 @@ export function createApi(mode: Mode) {
       );
     },
     /**
-     * [ADMIN] 공공 행사 수동 동기화.
+     * [ADMIN] 공공 행사 수동 동기화 시작.
      *
-     * 공공 API를 통째로 훑어서 오래 걸린다. transport의 15초 타임아웃에 걸릴 수 있다.
+     * 공공 API를 통째로 훑어서 오래 걸릴 수 있어, 서버는 시작만 하고 바로 응답한다.
+     * 진행 상황과 최종 결과는 syncStatus()를 폴링해서 확인한다.
      * 이미 실행 중이면 409(SYNC_ALREADY_RUNNING)가 온다.
      */
     async syncFestivals() {
-      return transport<SyncResult>("/festivals/sync", "POST");
+      return transport<SyncStatus>("/festivals/sync", "POST");
+    },
+    /** [ADMIN] 공공 행사 동기화 진행 상태 조회. */
+    async syncStatus() {
+      return transport<SyncStatus>("/festivals/sync/status", "GET");
     },
     /**
      * [ADMIN] 행사 목록. 공개 화면과 같은 GET /festivals 를 쓴다.

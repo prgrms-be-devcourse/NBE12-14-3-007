@@ -1031,11 +1031,34 @@ function SyncButton() {
       onClick={async () => {
         setRunning(true);
         try {
-          const result = await api.syncFestivals();
-          // 무엇이 바뀌었는지 알려주지 않으면 눌러도 결과를 알 수 없다.
-          toast(
-            `동기화 완료 · 새 행사 ${result.savedFestivals.length}건 저장, ${result.closedFestivals.length}건 종료 처리`,
-          );
+          await api.syncFestivals(); // 시작만 하고 바로 응답이 온다. 결과는 상태를 폴링해서 받는다.
+          let status = await api.syncStatus();
+          while (status.running) {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            status = await api.syncStatus();
+          }
+          if (status.lastError) {
+            // 로그를 볼 수 없는 관리자도 이해할 수 있게, 서버가 이미 다듬어서 보낸 문구를 그대로 보여준다.
+            toast(`동기화 실패 · ${status.lastError}`);
+          } else if (status.lastResult) {
+            const { savedFestivals, closedFestivals, skippedCount, interrupted } =
+              status.lastResult;
+            if (interrupted) {
+              toast(
+                `동기화가 중간에 멈췄어요 · 그래도 ${savedFestivals.length}건은 저장됐어요. ` +
+                  "다시 실행하면 처리 못한 나머지부터 이어서 진행돼요.",
+              );
+            } else if (skippedCount > 0) {
+              toast(
+                `동기화 완료 · 새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리 · ` +
+                  `${skippedCount}건은 공공 API가 상세 정보를 비워서 보내 건너뛰었어요(다음 동기화 때 다시 시도돼요).`,
+              );
+            } else {
+              toast(
+                `동기화 완료 · 새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리`,
+              );
+            }
+          }
         } catch (error) {
           toast(errorText(error));
         } finally {
