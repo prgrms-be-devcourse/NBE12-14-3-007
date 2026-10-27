@@ -56,6 +56,7 @@ import {
   type Visibility,
 } from "./store";
 import "./admin.css";
+import "./admin-theme.css";
 
 const navigation = [
   { to: "/admin", label: "운영 대시보드", icon: LayoutDashboard },

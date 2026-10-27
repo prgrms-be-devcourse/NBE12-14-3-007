@@ -1,0 +1,479 @@
+/*
+ * 관리자 화면 C안 테마. admin.css 뒤에 불러와 색·테두리·모서리·글꼴만 덮어쓴다.
+ * 여백과 배치는 admin.css 값을 그대로 쓴다.
+ */
+.adm-shell,
+.adm-login {
+  --a-bg: #f1f2ef;
+  --a-surface: #ffffff;
+  --a-paper: #fffdf6;
+  --a-ink: #1b1b1b;
+  --a-text: #3d3a35;
+  --a-muted: #5c574d;
+  --a-line: #d9d7cf;
+  --a-line-soft: #ecebe5;
+  --a-red: #c8401c;
+  --a-yellow: #f2c14e;
+  --a-yellow-soft: #fff4c7;
+  --a-green: #1f6b4a;
+  --a-display: "Black Han Sans", Pretendard, "Malgun Gothic", sans-serif;
+  background: var(--a-bg);
+  color: var(--a-ink);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.adm-shell a:focus-visible,
+.adm-shell button:focus-visible,
+.adm-shell input:focus-visible,
+.adm-shell select:focus-visible,
+.adm-shell textarea:focus-visible,
+.adm-login a:focus-visible,
+.adm-login button:focus-visible,
+.adm-login input:focus-visible {
+  outline: 3px solid #f2b705;
+  outline-offset: 2px;
+}
+
+/* ---------- 로그인 ---------- */
+.adm-login-card {
+  background: var(--a-paper);
+  border: 0;
+  border-radius: 0;
+  position: relative;
+  box-shadow:
+    0 2px 0 #b7b2a6,
+    0 26px 40px -30px #0009;
+}
+.adm-login-card::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 32px;
+  width: 96px;
+  height: 22px;
+  background: #f2c14ed9;
+  transform: rotate(-3deg);
+}
+.adm-login .logo,
+.adm-shell .logo {
+  font-family: var(--a-display);
+  font-weight: 400;
+  color: var(--a-ink);
+  letter-spacing: -0.5px;
+}
+.adm-login h1,
+.adm-login h2 {
+  font-family: var(--a-display);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--a-ink);
+}
+.adm-login input {
+  border: 2px solid var(--a-ink);
+  border-radius: 0;
+  background: var(--a-yellow-soft);
+  box-shadow: inset 4px 0 0 var(--a-yellow);
+}
+.adm-login input:focus {
+  background: #fff;
+}
+
+/* ---------- 사이드바 ---------- */
+.adm-shell {
+  /* 사이드바 배경이 긴 화면 끝까지 이어지게 그린다. */
+  background: linear-gradient(
+    to right,
+    var(--a-surface) 0 232px,
+    var(--a-ink) 232px 235px,
+    var(--a-bg) 235px
+  );
+}
+.adm-sidebar {
+  background: var(--a-surface);
+  border-right: 3px solid var(--a-ink);
+}
+.adm-brand > span:last-child,
+.adm-nav-label {
+  color: var(--a-muted);
+}
+.adm-workspace {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-left: 5px solid var(--a-yellow);
+  border-radius: 0;
+}
+.adm-workspace-icon {
+  color: var(--a-ink);
+}
+.adm-workspace small {
+  color: var(--a-muted);
+}
+.adm-sidebar nav a {
+  color: var(--a-text);
+  border-radius: 999px;
+}
+.adm-sidebar nav a:hover {
+  background: var(--a-bg);
+  color: var(--a-ink);
+}
+.adm-sidebar nav a.active {
+  background: var(--a-ink);
+  color: #fff;
+  font-weight: 600;
+}
+.adm-sidebar nav b {
+  background: var(--a-red);
+  color: #fff;
+}
+.adm-demo-note {
+  background: var(--a-bg);
+  border: 1px solid var(--a-line);
+  border-radius: 0;
+}
+.adm-live-dot {
+  background: var(--a-green);
+}
+
+/* ---------- 상단 ---------- */
+.adm-topbar {
+  background: var(--a-surface);
+  border-bottom: 3px solid var(--a-ink);
+}
+.adm-breadcrumb {
+  color: var(--a-muted);
+}
+.adm-avatar {
+  background: var(--a-ink);
+  color: #fff;
+}
+.adm-storage-warning,
+.adm-preview-strip {
+  background: var(--a-yellow-soft);
+  border-color: var(--a-line);
+  color: var(--a-ink);
+}
+
+/* ---------- 제목 ---------- */
+.adm-eyebrow {
+  display: inline-block;
+  background: var(--a-yellow);
+  color: var(--a-ink);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 4px 9px;
+  transform: rotate(-2deg);
+  margin-bottom: 14px;
+}
+.adm-heading h1 {
+  font-family: var(--a-display);
+  font-weight: 400;
+  font-size: clamp(30px, 3vw, 40px);
+  letter-spacing: -0.5px;
+  color: var(--a-ink);
+}
+.adm-heading p,
+.adm-page-hint,
+.adm-footnote {
+  color: var(--a-text);
+}
+.adm-date {
+  border: 1.5px solid var(--a-ink);
+  border-radius: 999px;
+  background: var(--a-surface);
+  color: var(--a-ink);
+}
+
+/* ---------- 패널·카드 ---------- */
+.adm-panel,
+.adm-stat {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-radius: 0;
+}
+.adm-stat:hover {
+  border-color: var(--a-ink);
+}
+.adm-panel-heading h2,
+.adm-stat strong {
+  color: var(--a-ink);
+}
+.adm-panel-heading h2 {
+  font-weight: 700;
+}
+.adm-stat-icon,
+.adm-stat-icon.sage,
+.adm-stat-icon.peach,
+.adm-stat-icon.blue,
+.adm-stat-icon.orange,
+.adm-ticket-icon,
+.adm-log-icon {
+  background: var(--a-yellow-soft);
+  color: var(--a-ink);
+  border-radius: 999px;
+}
+.adm-ticket-icon.report {
+  background: #fde4df;
+  color: var(--a-red);
+}
+.adm-welcome {
+  background: var(--a-surface);
+  border: 3px dashed var(--a-ink);
+  border-radius: 0;
+}
+.adm-welcome h2 {
+  font-family: var(--a-display);
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--a-ink);
+}
+.adm-welcome-art > div {
+  background: var(--a-yellow-soft);
+  border-color: var(--a-line);
+}
+.adm-welcome-art > svg {
+  color: var(--a-ink);
+}
+.adm-welcome-art > span {
+  background: var(--a-paper);
+  border-color: var(--a-ink);
+  color: var(--a-ink);
+}
+.adm-review-callout {
+  background: var(--a-surface);
+  border: 1px solid var(--a-line);
+  border-left: 5px solid var(--a-yellow);
+  border-radius: 0;
+}
+.adm-progress {
+  background: var(--a-line-soft);
+  border-radius: 999px;
+}
+.adm-progress > span,
+.adm-progress > i,
+.adm-progress > div {
+  background: var(--a-ink);
+}
+
+/* ---------- 탭·검색·필터 ---------- */
+.adm-tabs button {
+  color: var(--a-muted);
+}
+.adm-tabs button.active {
+  color: var(--a-ink);
+  font-weight: 700;
+  box-shadow: inset 0 -3px 0 var(--a-ink);
+}
+.adm-tabs button > span {
+  background: var(--a-bg);
+  color: var(--a-text);
+}
+.adm-tabs button.active > span {
+  background: var(--a-ink);
+  color: #fff;
+}
+.adm-search,
+.adm-filters select {
+  background-color: var(--a-surface);
+  border: 2px solid var(--a-ink);
+  border-radius: 999px;
+  color: var(--a-ink);
+}
+.adm-filters select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-left: 16px;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231b1b1b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px;
+}
+.adm-toggle input {
+  accent-color: var(--a-ink);
+}
+.adm-result-count strong {
+  color: var(--a-ink);
+}
+
+/* ---------- 표 ---------- */
+.adm-table th {
+  background: var(--a-bg);
+  color: var(--a-text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--a-ink);
+}
+.adm-table td {
+  border-color: var(--a-line-soft);
+  color: var(--a-ink);
+}
+.adm-table tbody tr:hover {
+  background: #faf9f5;
+}
+.adm-thumbnail,
+.adm-content-image {
+  border-radius: 0;
+  background: var(--a-line-soft);
+}
+.adm-row-button {
+  border: 1.5px solid var(--a-ink);
+  border-radius: 999px;
+  color: var(--a-ink);
+  background: var(--a-surface);
+  font-weight: 600;
+}
+.adm-row-button:hover {
+  background: var(--a-ink);
+  color: #fff;
+}
+
+/* ---------- 페이지 번호 ---------- */
+.adm-pagination {
+  border-top-color: var(--a-line-soft);
+}
+.adm-pagination button {
+  min-width: 36px;
+  height: 36px;
+  border: 2px solid var(--a-ink);
+  border-radius: 999px;
+  background: var(--a-surface);
+  color: var(--a-ink);
+  font-weight: 700;
+}
+.adm-pagination button.active,
+.adm-pagination button[aria-current="page"] {
+  background: var(--a-ink);
+  color: #fff;
+}
+
+/* ---------- 버튼·배지 ---------- */
+.adm-shell .btn {
+  border-radius: 999px;
+  border-width: 2px;
+  font-weight: 600;
+}
+.adm-shell .btn.primary,
+.adm-login .btn.primary {
+  background: var(--a-red);
+  border-color: var(--a-red);
+  color: #fff;
+  border-radius: 999px;
+}
+.adm-shell .btn.primary:hover,
+.adm-login .btn.primary:hover {
+  background: var(--a-ink);
+  border-color: var(--a-ink);
+}
+.adm-shell .btn.secondary {
+  background: var(--a-paper);
+  border-color: var(--a-ink);
+  color: var(--a-ink);
+}
+.adm-shell .btn.danger {
+  background: var(--a-red);
+}
+.adm-shell .badge,
+.theme-c .badge {
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-weight: 600;
+}
+.adm-shell .badge.green,
+.theme-c .badge.green {
+  background: #e3f1e8;
+  color: var(--a-green, #1f6b4a);
+}
+.adm-shell .badge.orange,
+.theme-c .badge.orange {
+  background: #fde4d8;
+  color: #a9330f;
+}
+.adm-shell .badge.blue,
+.theme-c .badge.blue {
+  background: #e4e9fb;
+  color: #2343d1;
+}
+.adm-shell .badge.gray,
+.theme-c .badge.gray {
+  background: #ecebe5;
+  color: #3d3a35;
+}
+
+/* ---------- 입력 양식·대화상자 ---------- */
+.adm-shell .field input,
+.adm-shell .field select,
+.adm-shell .field textarea,
+.adm-shell dialog input,
+.adm-shell dialog select,
+.adm-shell dialog textarea {
+  border: 2px solid var(--a-ink);
+  border-radius: 0;
+}
+.adm-shell .modal-inner {
+  border-radius: 0;
+}
+.adm-saved-answer,
+.adm-dialog-note,
+.adm-event-deletion-reason,
+.adm-restore-hint {
+  border-radius: 0;
+  border-left: 4px solid var(--a-yellow);
+}
+.adm-footer {
+  border-top-color: var(--a-line);
+  color: var(--a-muted);
+}
+
+/* 남은 옛 색 정리 */
+.adm-shell .adm-avatar.small,
+.adm-shell .adm-avatar.admin {
+  background: var(--a-ink);
+  color: #fff;
+}
+.adm-welcome-art {
+  color: var(--a-ink);
+}
+.adm-welcome-art > div {
+  border-color: var(--a-line);
+  background: var(--a-yellow-soft);
+  box-shadow:
+    0 0 0 15px var(--a-bg),
+    0 0 0 16px var(--a-line);
+}
+.adm-welcome-art > svg {
+  fill: var(--a-yellow);
+}
+.adm-welcome-art > span {
+  border-radius: 0;
+  box-shadow: none;
+}
+.adm-tabs button.active {
+  border-bottom-color: var(--a-ink);
+  box-shadow: none;
+}
+.adm-tab-action {
+  border: 1.5px solid var(--a-ink);
+  border-radius: 999px;
+  color: var(--a-ink);
+  font-weight: 600;
+}
+.adm-tab-action:hover {
+  background: var(--a-ink);
+  color: #fff;
+}
+.adm-login .field input {
+  border: 2px solid var(--a-ink);
+  border-radius: 0;
+}
+@media (max-width: 900px) {
+  /* 사이드바가 위로 올라가는 배치에서는 세로 줄 없이 아래 테두리만 둔다. */
+  .adm-shell {
+    background: var(--a-bg);
+  }
+  .adm-sidebar {
+    border-right: 0;
+    border-bottom: 3px solid var(--a-ink);
+  }
+}
+.adm-demo-note p {
+  color: var(--a-muted);
+}

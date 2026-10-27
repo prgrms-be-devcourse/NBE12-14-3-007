@@ -380,13 +380,15 @@
 }
 
 /* ---------- 후기 목록: 카드 격자 ---------- */
-.theme-c .festival-posts .post-list {
+.theme-c .festival-posts .post-list,
+.theme-c .my-likes .post-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 24px;
   border-top: 0;
 }
-.theme-c .festival-posts .post-row {
+.theme-c .festival-posts .post-row,
+.theme-c .my-likes .post-row {
   position: relative;
   flex-direction: column;
   align-items: stretch;
@@ -398,26 +400,31 @@
     border-color 0.15s,
     transform 0.15s;
 }
-.theme-c .festival-posts .post-row:hover {
+.theme-c .festival-posts .post-row:hover,
+.theme-c .my-likes .post-row:hover {
   border-color: var(--c-ink);
   transform: translateY(-2px);
 }
-.theme-c .festival-posts .post-thumbnail {
+.theme-c .festival-posts .post-thumbnail,
+.theme-c .my-likes .post-thumbnail {
   order: -1;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
   border-radius: 0;
 }
-.theme-c .festival-posts .post-row-copy {
+.theme-c .festival-posts .post-row-copy,
+.theme-c .my-likes .post-row-copy {
   padding: 16px 18px 18px;
 }
-.theme-c .festival-posts .post-row h3 {
+.theme-c .festival-posts .post-row h3,
+.theme-c .my-likes .post-row h3 {
   font-size: 18px;
   font-weight: 700;
   margin: 10px 0 6px;
 }
-.theme-c .festival-posts .post-detail-link {
+.theme-c .festival-posts .post-detail-link,
+.theme-c .my-likes .post-detail-link {
   position: absolute;
   right: 14px;
   bottom: 16px;
@@ -646,7 +653,8 @@
   .poster,
   .sticky-note,
   .theme-c .event-card,
-  .theme-c .festival-posts .post-row {
+  .theme-c .festival-posts .post-row,
+  .theme-c .my-likes .post-row {
     transition: none;
   }
 }
@@ -1489,4 +1497,319 @@
 .theme-c .section-heading {
   flex-wrap: wrap;
   row-gap: 12px;
+}
+
+/* ---------- 마이페이지 ---------- */
+.theme-c .my-sidebar {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.theme-c .profile-avatar {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .my-profile h2 {
+  font-family: var(--c-display);
+  font-weight: 400;
+  font-size: 24px;
+  letter-spacing: -0.3px;
+  color: var(--c-ink);
+}
+.theme-c .my-profile p {
+  color: var(--c-muted);
+}
+.theme-c .my-sidebar > nav > button {
+  color: var(--c-text);
+  border-radius: 999px;
+  font-size: 14px;
+}
+.theme-c .my-sidebar > nav > button:hover {
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+.theme-c .my-sidebar > nav > button.active {
+  background: var(--c-ink);
+  color: #fff;
+  font-weight: 600;
+}
+.theme-c .logout-button {
+  color: var(--c-muted);
+}
+.theme-c .logout-button:hover {
+  color: var(--c-red);
+}
+.theme-c .my-content {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.theme-c .my-content .section-heading {
+  margin-bottom: 24px;
+}
+.theme-c .trust-panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-left: 6px solid var(--c-yellow);
+  border-radius: 0;
+  color: var(--c-ink);
+}
+.theme-c .trust-panel svg {
+  color: var(--c-ink);
+}
+.theme-c .trust-panel span {
+  color: var(--c-muted);
+}
+.theme-c .trust-panel h3 {
+  font-family: var(--c-display);
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: -0.3px;
+  color: var(--c-ink);
+}
+.theme-c .trust-panel p {
+  color: var(--c-text);
+}
+.theme-c .account-security {
+  border-top: 1px solid var(--c-line-soft);
+  border-radius: 0;
+}
+.theme-c .account-security h3 {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+.theme-c .account-security.danger h3 {
+  color: var(--c-red);
+}
+.theme-c .withdraw-notice {
+  background: #fdf0ec;
+  border: 1px solid #f2c3b5;
+  border-left: 5px solid var(--c-red);
+  border-radius: 0;
+}
+.theme-c .my-contents .empty-state {
+  margin-top: 0;
+}
+.theme-c .my-content-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.theme-c .my-content-table th {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--c-ink);
+}
+.theme-c .my-content-table td {
+  border-bottom: 1px solid var(--c-line-soft);
+  color: var(--c-ink);
+}
+.theme-c .my-content-table .btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.theme-c .step-indicator > span {
+  border-radius: 999px;
+  border: 1.5px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-muted);
+}
+.theme-c .step-indicator > span.active {
+  border-color: var(--c-ink);
+  background: var(--c-ink);
+  color: #fff;
+}
+.theme-c .inquiry-list {
+  border-top: 2px solid var(--c-ink);
+}
+.theme-c .inquiry-row {
+  border-radius: 0;
+  border-bottom: 1px solid var(--c-line-soft);
+}
+.theme-c .inquiry-row:hover {
+  background: #faf9f5;
+}
+.theme-c .inquiry-icon {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+  border-radius: 999px;
+}
+.theme-c .inquiry-answer,
+.theme-c .inquiry-note {
+  border-radius: 0;
+  border-left: 4px solid var(--c-yellow);
+  background: var(--c-paper);
+}
+.theme-c .upload-area {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+@media (max-width: 800px) {
+  /* 좁은 화면에서는 마이페이지 메뉴를 한 줄 가로 스크롤로 둔다. */
+  .theme-c .my-sidebar > nav {
+    overflow-x: auto;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+  .theme-c .my-sidebar > nav > button {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+}
+.theme-c .my-content-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  font-weight: 600;
+}
+.theme-c .my-content-pagination .btn {
+  min-height: 40px;
+  padding: 6px 18px;
+}
+
+/* ---------- 마이페이지: 좋아요한 목록 ---------- */
+.theme-c .my-likes .category-tabs {
+  margin-bottom: 24px;
+}
+.theme-c .my-likes .event-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 20px;
+}
+.theme-c .my-likes-count {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--c-text);
+}
+.theme-c .my-likes-count strong {
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .my-likes-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* ---------- 댓글 입력 ---------- */
+.theme-c .comment-form,
+.theme-c .community-comment-form {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 0;
+}
+/* 필수 칸 노란 띠(4px) 옆에 글자가 붙지 않게 안쪽 여백을 준다. */
+.theme-c .comment-form > textarea,
+.theme-c .community-comment-form textarea {
+  padding: 14px 16px 14px 20px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---------- 상세 화면: 후기·커뮤니티 글 ---------- */
+.theme-c .review-article,
+.theme-c .community-detail {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 0;
+}
+.theme-c .community-detail {
+  padding: clamp(24px, 4vw, 40px);
+}
+.theme-c .review-article > .badge {
+  background: var(--c-ink);
+  color: #fff;
+  border-radius: 0;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.theme-c .review-event-title {
+  font-size: 14px;
+  color: var(--c-text);
+}
+.theme-c .review-article > h1,
+.theme-c .community-detail h1 {
+  font-family: var(--c-display);
+  font-weight: 400;
+  font-size: clamp(30px, 3.4vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--c-ink);
+}
+.theme-c .article-meta,
+.theme-c .community-detail > header,
+.theme-c .community-comments {
+  border-color: var(--c-line-soft);
+}
+.theme-c .article-meta > div > strong,
+.theme-c .article-meta > div > span,
+.theme-c .community-detail-meta {
+  color: var(--c-muted);
+}
+.theme-c .avatar {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .btn.liked {
+  background: #fde4df;
+  border-color: var(--c-red);
+  color: var(--c-red);
+}
+/* 커뮤니티 분류 배지: 홈·목록의 분류 태그와 같은 각진 색 태그 */
+.theme-c .community-category {
+  border-radius: 0;
+  font-weight: 600;
+  background: var(--c-ink);
+  color: #fff;
+}
+.theme-c .community-category.category-event {
+  background: var(--c-red);
+  color: #fff;
+}
+.theme-c .community-category.category-restaurant {
+  background: var(--c-green);
+  color: #fff;
+}
+.theme-c .comment-row,
+.theme-c .community-comment {
+  border-color: var(--c-line-soft);
+}
+.theme-c .comment-row textarea,
+.theme-c .community-comment-edit textarea {
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  color: var(--c-ink);
+}
+.theme-c .review-article > .badge {
+  margin-right: 8px;
+}
+.theme-c .community-author {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+.theme-c .community-avatar {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .community-no-comments,
+.theme-c .review-no-comments {
+  background: var(--c-surface);
+  border: 1px dashed var(--c-line);
+  border-radius: 0;
+  color: var(--c-muted);
 }
