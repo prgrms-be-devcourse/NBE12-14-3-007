@@ -4,7 +4,9 @@ import {
   ArrowRight,
   CalendarDays,
   Grid2X2,
-  Landmark,
+  MapPin,
+  ChevronDown,
+  Check,
   List,
   RotateCcw,
   Search,
@@ -12,14 +14,13 @@ import {
 import { useApp, useLoad } from "../lib/context";
 import { normalizeFestivalCategory } from "../lib/format";
 import { FestivalCategorySelect } from "../components/FestivalCategorySelect";
-import { selectedRegion } from "../lib/regions";
-import { RegionSelects } from "../components/RegionSelects";
+import { selectedRegion, regionGroups } from "../lib/regions";
+import { PROVINCES } from "../lib/koreaMap";
 import {
   Empty,
   ErrorState,
   EventCard,
   Loading,
-  PageTitle,
   Pagination,
   WeatherBadge,
 } from "../components/ui";
@@ -28,6 +29,8 @@ export function Explore() {
   const { api, mode } = useApp();
   const [params, setParams] = useSearchParams();
   const [layout, setLayout] = useState("grid");
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [regionExpanded, setRegionExpanded] = useState(false);
 
   const category = normalizeFestivalCategory(params.get("category") || "전체");
   const region = params.get("region") || "";
@@ -97,36 +100,43 @@ export function Explore() {
   const currentPage = data?.number ?? page;
 
   return (
-    <div className="container page-space">
-      <PageTitle
-        eyebrow="ESCAPE THE ORDINARY"
-        title="오늘, 어디로 탈출할까요?"
-        description="축제부터 공연, 전시까지! 방구석을 나설 이유를 찾아보세요."
-      />
-      <div className="source-note">
-        <Landmark size={18} />
-        <span>
-          공공데이터와 이웃의 제보를 모아, 놓치기 아까운 행사를 한곳에!
-        </span>
-        {mode === "preview" && (
-          <span className="example-label">현재 화면은 예시입니다</span>
-        )}
-      </div>
+    <div className="container page-space explore-page home-c">
+      <h1 className="explore-title">행사</h1>
 
+      <section className="home-search" aria-label="행사 검색 조건">
       <form
-        className="filter-panel"
+        className={`discovery-search${searchExpanded ? " is-expanded" : ""}`}
+        onFocus={() => setSearchExpanded(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setSearchExpanded(false);
+            setRegionExpanded(false);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setSearchExpanded(false);
+            setRegionExpanded(false);
+            (event.target as HTMLElement).blur();
+          }
+        }}
         onSubmit={(event) => {
           event.preventDefault();
           setFilter("q", text.trim());
         }}
       >
-        <div className="filter-chips">
-          <RegionSelects
-            value={region}
-            onChange={(value) => setFilter("region", value)}
-          />
-          <label className="filter-select">
+        <div className="discovery-search-filters" id="explore-search-options" hidden={!searchExpanded}>
+          <div className="filter-chip">
+            <MapPin size={15} />
+            <span className="home-search-field-label">지역</span>
+            <button type="button" className="home-region-trigger" aria-expanded={regionExpanded} aria-controls="explore-region-options" onClick={() => setRegionExpanded(!regionExpanded)}>
+              {province ? [PROVINCES[province.value]?.short || province.label, apiRegionDetail].filter(Boolean).join(" ") : "전국"}
+              <ChevronDown size={14} />
+            </button>
+          </div>
+          <label className="filter-chip">
             <CalendarDays size={17} />
+            <span className="home-search-field-label">날짜</span>
             <input
               type="date"
               aria-label="날짜 필터"
@@ -148,26 +158,49 @@ export function Explore() {
                 : "오늘 기준 +4일치만 날씨 제공이 가능합니다"}
             </span>
           )}
+          {regionExpanded && (
+            <div className="explore-region-options" id="explore-region-options">
+              <div className="home-region-grid" role="group" aria-label="시·도 선택">
+                {[{ value: "", label: "전국" }, ...regionGroups].map((option) => (
+                  <button key={option.value} type="button" className={apiRegion === option.value ? "selected" : ""} aria-pressed={apiRegion === option.value} onClick={() => setFilter("region", option.value)}>
+                    <span>{PROVINCES[option.value]?.short || option.label}</span>
+                    {apiRegion === option.value && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+              {province && province.districts.length > 0 && (
+                <div className="home-region-grid" role="group" aria-label="시·군·구 선택">
+                  {[{ value: province.value, label: "전체" }, ...province.districts].map((option) => (
+                    <button key={option.value} type="button" className={region === option.value ? "selected" : ""} aria-pressed={region === option.value} onClick={() => { setFilter("region", option.value); setRegionExpanded(false); }}>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <div className="filter-search">
-          <Search size={19} />
+        <div className="discovery-search-bar">
           <input
             aria-label="행사 검색"
-            placeholder="찾고 싶은 행사 이름을 입력해 보세요"
+            placeholder="행사명 또는 지역 검색"
+            aria-expanded={searchExpanded}
+            aria-controls="explore-search-options"
             value={text}
             onChange={(event) => setText(event.target.value)}
           />
-          <button className="btn primary">
-            <Search size={17} />
-            검색
+          <button type="submit" className="home-search-submit" aria-label="행사 검색">
+            <Search size={21} />
           </button>
         </div>
       </form>
+      </section>
 
       <div className="filter-bottom festival-category-toolbar">
         <FestivalCategorySelect
           value={category}
           includeAll
+          variant="icons"
           onChange={(next) => setFilter("category", next)}
         />
         <button

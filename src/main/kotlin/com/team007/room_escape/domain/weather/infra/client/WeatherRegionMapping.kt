@@ -24,6 +24,8 @@ object WeatherRegionMapping {
         POINTS[FestivalRegion.SEJONG] = WeatherRegionPoint(66, 103)
         POINTS[FestivalRegion.JEONBUK] = WeatherRegionPoint(63, 89)
         POINTS[FestivalRegion.JEONNAM] = WeatherRegionPoint(50, 67)
+        // 통합 지역의 날씨는 기존 전남 대표 지점으로 제공한다.
+        POINTS[FestivalRegion.JEONNAM_GWANGJU] = WeatherRegionPoint(50, 67)
         POINTS[FestivalRegion.GWANGJU] = WeatherRegionPoint(58, 74)
         POINTS[FestivalRegion.GYEONGBUK] = WeatherRegionPoint(102, 94)
         POINTS[FestivalRegion.DAEGU] = WeatherRegionPoint(89, 91)

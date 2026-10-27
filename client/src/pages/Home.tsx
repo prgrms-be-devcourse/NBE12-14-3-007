@@ -5,10 +5,12 @@ import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
+  Check,
+  Plus,
+  Search,
   ChevronDown,
   Heart,
   MapPin,
-  Search,
   X,
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
@@ -30,61 +32,46 @@ import {
 } from "../components/ui";
 import type { EventView } from "../lib/types";
 
-/** 분류 태그 색. 색은 태그에만 쓰고 카드 바탕에는 쓰지 않는다. */
-const TAG_COLORS: Record<string, string> = {
-  "행사/축제": "#c8401c",
-  "교육/체험": "#5b3a8c",
-  연극: "#2343d1",
-  "음악/콘서트": "#2343d1",
-  "뮤지컬/오페라": "#2343d1",
-  "무용/발레": "#2343d1",
-  국악: "#2343d1",
-  "아동/가족": "#7a5a00",
-  축제: "#c8401c",
-  공연: "#2343d1",
-  전시: "#1b1b1b",
-  플리마켓: "#1f6b4a",
-  체험: "#7a5a00",
-  교육: "#5b3a8c",
-};
+/** 행사 분류 태그는 동일한 색으로 표시합니다. */
+const CATEGORY_TAG_COLOR = "#875b3e";
+const NOTES = ["#f7e27a", "#f6c6c0", "#cfe3c4"];
 /** 홈 포스터 4종. 지도 옆 게시판에서만 장식으로 쓴다. */
 const PAPERS = [
   {
     r: -1.6,
-    bg: "#fffdf6",
-    fg: "#1b1b1b",
+    bg: NOTES[0],
+    fg: "#222321",
     tape: {
       left: "50%",
       marginLeft: -39,
       transform: "rotate(3deg)",
-      background: "#f2c14ed9",
+      background: "#d9a05ad9",
     },
-    line: "#1b1b1b",
+    line: "#dedfd9",
   },
   {
     r: 1.4,
-    bg: "#2343d1",
-    fg: "#ffffff",
+    bg: NOTES[1],
+    fg: "#222321",
     tape: { left: 18, transform: "rotate(-5deg)", background: "#fffdf6b3" },
-    line: "#ffffff66",
+    line: "#dedfd9",
     gray: true,
   },
   {
     r: 1.1,
-    bg: "#f2c14e",
-    fg: "#1b1b1b",
+    bg: NOTES[2],
+    fg: "#222321",
     tape: { right: 22, transform: "rotate(4deg)", background: "#fffdf6cc" },
-    line: "#1b1b1b",
+    line: "#dedfd9",
   },
   {
     r: -1.3,
-    bg: "#1b1b1b",
-    fg: "#fffdf6",
-    tape: { left: "40%", transform: "rotate(-3deg)", background: "#f2c14ed9" },
-    line: "#ffffff4d",
+    bg: "#d4e7f5",
+    fg: "#222321",
+    tape: { left: "40%", transform: "rotate(-3deg)", background: "#d9a05ad9" },
+    line: "#dedfd9",
   },
 ] as const;
-const NOTES = ["#f7e27a", "#f6c6c0", "#cfe3c4"];
 const NOTE_TILT = ["-1.5deg", "1.2deg", "-0.6deg"];
 const MEMO_TILT = ["-0.8deg", "0.6deg", "-0.4deg"];
 
@@ -131,6 +118,8 @@ function stampOf(event: EventView) {
 }
 
 export function Home() {
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [regionExpanded, setRegionExpanded] = useState(false);
   const { mode, api } = useApp();
   const navigate = useNavigate();
   const [category, setCategory] = useState("전체");
@@ -238,11 +227,6 @@ export function Home() {
           : [];
       })
     : [];
-  const empties = counts.data
-    ? PROVINCE_ORDER.filter((code) => !counts.data![code]).map(
-        (code) => PROVINCES[code].short,
-      )
-    : [];
 
   function pick(code: string | null) {
     setPicked(code);
@@ -251,11 +235,122 @@ export function Home() {
 
   return (
     <div className="home-c">
-      <section className="home-hero container" aria-labelledby="home-title">
-        <h1 id="home-title">이번 주말, 어디로 떠나볼까요?</h1>
+
+
+      <section className="home-search container" aria-label="조건으로 행사 검색">
+        <form
+          className={`discovery-search${searchExpanded ? " is-expanded" : ""}`}
+          onFocus={() => setSearchExpanded(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+              setSearchExpanded(false);
+              setRegionExpanded(false);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              setSearchExpanded(false);
+              setRegionExpanded(false);
+              (event.target as HTMLElement).blur();
+            }
+          }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            const params = new URLSearchParams();
+            if (categoryParam) params.set("category", categoryParam);
+            if (region) params.set("region", region);
+            if (date) params.set("date", date);
+            if (query.trim()) params.set("q", query.trim());
+            navigate(`/explore?${params}`);
+          }}
+        >
+          <div className="discovery-search-bar">
+            <input
+              aria-label="행사 검색어"
+              aria-expanded={searchExpanded}
+              aria-controls="home-search-options"
+              placeholder="행사명 또는 지역 검색"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <button type="submit" className="home-search-submit" aria-label="행사 검색"><Search size={21} /></button>
+          </div>
+          <div className="discovery-search-filters" id="home-search-options" hidden={!searchExpanded}>
+            <div className="filter-chip">
+              <MapPin size={15} />
+              <span className="home-search-field-label">지역</span>
+              <button
+                type="button"
+                className="home-region-trigger"
+                aria-label="지역 선택"
+                aria-expanded={regionExpanded}
+                aria-controls="home-region-options"
+                onClick={() => setRegionExpanded((open) => !open)}
+              >
+                {region ? PROVINCES[region]?.short || regions[region] || region : "전국"}
+                <ChevronDown size={14} aria-hidden="true" />
+              </button>
+            </div>
+            <label className="filter-chip">
+              <CalendarDays size={15} />
+              <span className="home-search-field-label">날짜</span>
+              <input
+                aria-label="행사 날짜"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+              />
+            </label>
+            {weather.data && weather.data.condition !== "UNKNOWN" && (
+              <WeatherBadge
+                condition={weather.data.condition}
+                precipitationProbability={weather.data.precipitationProbability}
+              />
+            )}
+            {weather.data && weather.data.condition === "UNKNOWN" && (
+              <span className="weather-hint">
+                {date < new Date().toISOString().slice(0, 10)
+                  ? "지난 날짜는 날씨 제공이 불가합니다"
+                  : "오늘 기준 +4일치만 날씨 제공이 가능합니다"}
+              </span>
+            )}
+            {regionExpanded && (
+              <div className="home-region-grid" id="home-region-options" role="group" aria-label="검색 지역">
+                {[{ value: "", label: "전국" }, ...regionGroups].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={region === option.value}
+                    className={region === option.value ? "selected" : ""}
+                    onClick={(event) => {
+                      setRegion(option.value);
+                      setRegionExpanded(false);
+                      event.currentTarget.closest("form")?.querySelector<HTMLButtonElement>(".home-region-trigger")?.focus();
+                    }}
+                  >
+                    <span>{PROVINCES[option.value]?.short || option.label}</span>
+                    {region === option.value && <Check size={14} aria-hidden="true" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </form>
+        {!searchExpanded && (region || date) && (
+          <p className="home-search-selection">
+            {[region ? regions[region] || region : "전국", date ? dateText(date) : null].filter(Boolean).join(" · ")}
+          </p>
+        )}
+      </section>
+
+      <section className="home-hero container" aria-label="행사 분류 선택">
         <FestivalCategorySelect
           value={category}
           includeAll
+          variant="icons"
           onChange={(next) => {
             setCategory(next);
             setHover(null);
@@ -265,7 +360,7 @@ export function Home() {
 
       <section className="home-map container" aria-label="지역 지도와 행사">
         <div className="home-map-col">
-          <div className="home-map-weather" role="status" aria-live="polite">
+          <div className={`home-map-weather${picked ? " has-weather" : ""}`} role="status" aria-live="polite">
             {picked ? (
               <>
               <h2>{regions[picked]} 오늘의 날씨</h2>
@@ -285,8 +380,8 @@ export function Home() {
               </>
             ) : (
               <>
-                <h2>지역별 행사 찾기</h2>
-                <p>지도에서 지역을 눌러보세요.</p>
+                <h2>원하는 지역을 클릭해보세요</h2>
+
               </>
             )}
           </div>
@@ -297,13 +392,6 @@ export function Home() {
             pins={pins}
             onSelect={pick}
           />
-          <div className="map-legend">
-            <span aria-hidden="true">
-              행사 수 <i className="lv0" /> <i className="lv1" />
-              <i className="lv2" /> <i className="lv3" /> 많음
-            </span>
-            <span>진행 중인 {label} 기준</span>
-          </div>
         </div>
 
         <aside
@@ -383,7 +471,7 @@ export function Home() {
                         <span
                           className="poster-tag"
                           style={{
-                            background: TAG_COLORS[event.category] || "#1b1b1b",
+                            background: CATEGORY_TAG_COLOR,
                           }}
                         >
                           {event.category}
@@ -421,7 +509,7 @@ export function Home() {
             <div
               className="sticky-note map-board-empty"
               style={
-                { "--r": "-1.2deg", background: "#f7e27a" } as CSSProperties
+                { "--r": "-1.2deg", background: "#f4e2c3" } as CSSProperties
               }
             >
               <strong>아직 찾은 행사가 없어요</strong>
@@ -437,88 +525,21 @@ export function Home() {
         </aside>
       </section>
 
-      <section className="home-search container" aria-label="조건으로 행사 검색">
-        <form
-          className="discovery-search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const params = new URLSearchParams();
-            if (categoryParam) params.set("category", categoryParam);
-            if (region) params.set("region", region);
-            if (date) params.set("date", date);
-            if (query.trim()) params.set("q", query.trim());
-            navigate(`/explore?${params}`);
-          }}
-        >
-          <div className="discovery-search-filters">
-            <label className="filter-chip">
-              <MapPin size={15} />
-              <select
-                aria-label="지역 선택"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-              >
-                <option value="">전국</option>
-                {regionGroups.map((group) => (
-                  <option key={group.value} value={group.value}>
-                    {group.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} />
-            </label>
-            <label className="filter-chip">
-              <CalendarDays size={15} />
-              <input
-                aria-label="행사 날짜"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onClick={(e) => e.currentTarget.showPicker?.()}
-              />
-            </label>
-            {weather.data && weather.data.condition !== "UNKNOWN" && (
-              <WeatherBadge
-                condition={weather.data.condition}
-                precipitationProbability={weather.data.precipitationProbability}
-              />
-            )}
-            {weather.data && weather.data.condition === "UNKNOWN" && (
-              <span className="weather-hint">
-                {date < new Date().toISOString().slice(0, 10)
-                  ? "지난 날짜는 날씨 제공이 불가합니다"
-                  : "오늘 기준 +4일치만 날씨 제공이 가능합니다"}
-              </span>
-            )}
-          </div>
-          <div className="discovery-search-bar">
-            <Search size={19} />
-            <input
-              aria-label="행사 검색어"
-              placeholder="어떤 행사를 찾고 있나요?"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <button className="btn primary">검색</button>
-          </div>
-        </form>
-      </section>
+
 
       <section className="home-band" aria-labelledby="home-reports">
         <div className="container">
           <div className="home-band-head">
             <div>
-              <h2 id="home-reports">이웃이 제보한 행사</h2>
-              <p>
-                공공데이터에 없는 작은 행사를 이웃들이 직접 알려 줬어요.
-                정확해요 투표로 함께 확인해요.
-              </p>
+              <h2 id="home-reports">회원제보 행사</h2>
+
             </div>
             <div className="home-band-actions">
               <Link className="btn secondary" to="/explore?providerType=MEMBER">
                 제보 행사 모두 보기
               </Link>
               <Link className="btn dark" to="/submissions/new">
+                <Plus size={15} aria-hidden="true" />
                 행사 제보하기
               </Link>
             </div>
@@ -551,7 +572,7 @@ export function Home() {
                     <span
                       className="poster-tag"
                       style={{
-                        background: TAG_COLORS[event.category] || "#1b1b1b",
+                        background: CATEGORY_TAG_COLOR,
                       }}
                     >
                       {event.category}
@@ -606,7 +627,7 @@ export function Home() {
           ) : (
             <Empty
               title="아직 진행 중인 이웃 제보가 없어요"
-              description="알고 있는 동네 행사를 첫 번째로 알려 주세요."
+
             />
           )}
         </div>
@@ -617,11 +638,8 @@ export function Home() {
         aria-labelledby="home-notes-title"
       >
         <div className="home-notes-intro">
-          <h2 id="home-notes-title">이웃이 붙이고 간 쪽지</h2>
-          <p>
-            행사에 다녀온 이웃들이 남긴 후기예요. 좋아요를 많이 받은 후기부터
-            보여드려요.
-          </p>
+          <h2 id="home-notes-title">후기</h2>
+
           <div className="home-band-actions">
             <Link className="btn secondary" to="/reviews">
               후기 전체 보기
@@ -675,25 +693,12 @@ export function Home() {
           ) : (
             <Empty
               title="아직 남겨진 후기가 없어요"
-              description="다녀온 행사의 이야기를 첫 쪽지로 남겨 주세요."
+
             />
           )}
         </div>
       </section>
 
-      <section className="container home-cta">
-        <div>
-          <h2>비어 있는 지역을 같이 채워 주세요</h2>
-          <p>
-            {empties.length
-              ? `지금 ${empties.join(", ")}에는 열리는 행사가 없어요. 알고 있는 행사가 있다면 제보해 주세요.`
-              : "작은 동네 행사도 좋아요. 알고 있는 행사가 있다면 제보해 주세요."}
-          </p>
-        </div>
-        <Link className="btn primary" to="/submissions/new">
-          행사 제보하기
-        </Link>
-      </section>
     </div>
   );
 }
