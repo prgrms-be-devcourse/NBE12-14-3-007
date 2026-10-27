@@ -102,6 +102,13 @@ r2:
   bucket: ${R2_BUCKET}
   public-url: ${R2_PUBLIC_URL}
 
+storage:
+  upload:
+    # 회원당 최근 24시간 동안 올릴 수 있는 이미지 수
+    daily-limit: 30
+    # 올린 이미지의 최대 해상도(가로 x 세로 화소 수). 넘으면 이미지를 읽지 않고 거절한다.
+    max-pixels: 25000000
+
 public-api:
   # 전국 문화정보 API(한국문화정보원)
   culture-info:

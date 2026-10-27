@@ -26,7 +26,8 @@ class ImageControllerTest {
     private val storage = mock(R2StorageService::class.java)
     private val resolver = ImageUrlResolver(R2Properties("account", "access", "secret", "bucket", "https://img.example.com"))
     private val members = mock(MemberRepository::class.java)
-    private val controller = ImageController(storage, resolver, MemberReader(members))
+    private val quota = mock(UploadQuota::class.java)
+    private val controller = ImageController(storage, resolver, MemberReader(members), quota)
 
     private val me = UUID.randomUUID()
     private val principal = CustomUserDetails(me, "닉네임", "ROLE_UNVERIFIED", null, null)
@@ -76,6 +77,31 @@ class ImageControllerTest {
         assertThat(response.body?.data).isEqualTo(
             ImageController.UploadInfo("posts/$me/a.png", "https://img.example.com/posts/$me/a.png")
         )
+    }
+
+    @Test
+    fun `하루 업로드 한도를 넘으면 업로드하지 않는다`() {
+        org.mockito.Mockito.doThrow(BusinessException(com.team007.room_escape.global.response.code.StorageExceptionCode.UPLOAD_LIMIT_EXCEEDED))
+            .`when`(quota).requireAvailable(me)
+
+        assertThatThrownBy { controller.upload(principal, ImageController.ImageType.POST, file) }
+            .isInstanceOfSatisfying(BusinessException::class.java) {
+                assertThat(it.exceptionCode)
+                    .isEqualTo(com.team007.room_escape.global.response.code.StorageExceptionCode.UPLOAD_LIMIT_EXCEEDED)
+            }
+        verifyNoInteractions(storage)
+    }
+
+    @Test
+    fun `제재된 회원은 한도를 세기 전에 거절한다`() {
+        `when`(members.findByIdAndDeletedAtIsNull(me)).thenReturn(
+            Member(email = "member@test.com", password = "pw", role = MemberRole.ROLE_WARNING,
+                nickname = "닉네임", id = me)
+        )
+
+        assertThatThrownBy { controller.upload(principal, ImageController.ImageType.POST, file) }
+            .isInstanceOf(BusinessException::class.java)
+        verifyNoInteractions(quota)
     }
 
     @ParameterizedTest(name = "{0} -> {1}")
