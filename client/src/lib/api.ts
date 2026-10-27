@@ -159,7 +159,14 @@ async function transport<T>(
       },
       body: body === undefined ? undefined : form ? body : JSON.stringify(body),
     });
-  } catch {
+  } catch (error) {
+    // AbortController가 타임아웃으로 끊은 경우: 연결이 끊긴 게 아니라 응답이 늦은 것뿐이고,
+    // 서버 쪽 처리는 끊어도 계속 진행될 수 있어 "연결 실패"와는 다른 메시지로 알려준다.
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError(
+        "응답이 오래 걸려서 요청을 기다리지 않았어요. 작업은 서버에서 계속 진행되고 있을 수 있어요.",
+      );
+    }
     throw new ApiError(
       "서버에 연결하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
     );
