@@ -2,7 +2,7 @@ package com.team007.room_escape.domain.festival.service
 
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -18,7 +18,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 /**
- * FestivalSyncExecutor의 동시 실행 방지를 검증한다.
+ * FestivalSyncExecutor의 동시 실행 방지와 상태 노출을 검증한다.
  * 동기화 자체(FestivalService)는 목으로 대체하고, "누가 먼저 실행 중일 때 어떻게 되는지"만 확인한다.
  */
 @ExtendWith(MockitoExtension::class)
@@ -31,18 +31,20 @@ class FestivalSyncExecutorTest {
     private lateinit var executor: FestivalSyncExecutor
 
     @Test
-    @DisplayName("실행 중이 아니면 동기화 결과를 그대로 돌려준다")
-    fun tryRunReturnsResultWhenIdle() {
+    @DisplayName("실행 중이 아니면 tryStart는 즉시 true를 돌려주고, 백그라운드에서 끝낸 결과를 status에 남긴다")
+    fun tryStartRunsInBackgroundAndRecordsResult() {
         `when`(festivalService.syncPublicFestivals()).thenReturn(RESULT)
 
-        val result: FestivalResponse.SyncResponse? = executor.tryRun()
+        assertThat(executor.tryStart()).isTrue()
 
-        assertThat(result).isEqualTo(RESULT)
+        awaitStatus { !it.running }
+        assertThat(executor.status().lastResult).isEqualTo(RESULT)
+        assertThat(executor.status().lastError).isNull()
     }
 
     @Test
-    @DisplayName("이미 실행 중이면 tryRun은 기다리지 않고 null을 돌려주고 동기화를 또 실행하지 않는다")
-    fun tryRunReturnsNullWhileAnotherRunIsInProgress() {
+    @DisplayName("이미 실행 중이면 tryStart는 기다리지 않고 false를 돌려주고 동기화를 또 실행하지 않는다")
+    fun tryStartReturnsFalseWhileAnotherRunIsInProgress() {
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
         `when`(festivalService.syncPublicFestivals()).thenAnswer {
@@ -51,33 +53,33 @@ class FestivalSyncExecutorTest {
             RESULT
         }
 
-        val pool = Executors.newSingleThreadExecutor()
         try {
-            val first: Future<FestivalResponse.SyncResponse?> = pool.submit(executor::tryRun)
+            assertThat(executor.tryStart()).isTrue()
             assertThat(started.await(5, TimeUnit.SECONDS)).isTrue()
 
-            val second = executor.tryRun() // 첫 실행이 잡고 있는 중
-
-            assertThat(second).isNull()
-            release.countDown()
-            assertThat(first.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
-            verify(festivalService, times(1)).syncPublicFestivals()
+            assertThat(executor.tryStart()).isFalse() // 첫 실행이 잡고 있는 중
+            assertThat(executor.status().running).isTrue()
         } finally {
             release.countDown()
-            pool.shutdownNow()
         }
+
+        awaitStatus { !it.running }
+        verify(festivalService, times(1)).syncPublicFestivals()
     }
 
     @Test
-    @DisplayName("동기화 중 예외가 나도 잠금이 풀려서 다음 실행이 막히지 않는다")
-    fun releasesLockWhenSyncThrows() {
+    @DisplayName("동기화 중 예외가 나도 잠금이 풀려서 다음 실행이 막히지 않고, status에 에러가 남는다")
+    fun releasesGateWhenSyncThrowsAndRecordsError() {
         `when`(festivalService.syncPublicFestivals())
             .thenThrow(IllegalStateException("공공 API 실패"))
             .thenReturn(RESULT)
 
-        assertThatThrownBy { executor.tryRun() }.isInstanceOf(IllegalStateException::class.java)
+        assertThat(executor.tryStart()).isTrue()
+        awaitStatus { !it.running }
+        assertThat(executor.status().lastError).isEqualTo("공공 API 실패")
 
-        assertThat(executor.tryRun()).isEqualTo(RESULT)
+        assertThat(executor.tryStart()).isTrue()
+        awaitStatus { it.lastResult == RESULT }
     }
 
     @Test
@@ -93,23 +95,35 @@ class FestivalSyncExecutorTest {
             }
             .thenReturn(RESULT)
 
-        val pool = Executors.newFixedThreadPool(2)
-        try {
-            val manual: Future<FestivalResponse.SyncResponse?> = pool.submit(executor::tryRun)
-            assertThat(started.await(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(executor.tryStart()).isTrue() // 수동 실행이 백그라운드에서 시작됨
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue()
 
+        val pool = Executors.newSingleThreadExecutor()
+        try {
             val scheduled: Future<FestivalResponse.SyncResponse> = pool.submit(executor::run)
             Thread.sleep(200) // 스케줄러 쪽이 잠금을 기다리는 상태가 되도록 잠깐 둔다
             assertThat(scheduled.isDone).isFalse() // 아직 기다리는 중
 
             release.countDown() // 수동 실행 종료
-            assertThat(manual.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
             assertThat(scheduled.get(5, TimeUnit.SECONDS)).isEqualTo(RESULT)
             verify(festivalService, times(2)).syncPublicFestivals() // 건너뛰지 않고 두 번 다 실행
         } finally {
             release.countDown()
             pool.shutdownNow()
         }
+    }
+
+    /** 백그라운드 스레드가 status를 다 쓸 때까지 짧게 기다린다. */
+    private fun awaitStatus(
+        timeoutSeconds: Long = 5,
+        predicate: (FestivalResponse.SyncStatusResponse) -> Boolean
+    ) {
+        val deadline = System.currentTimeMillis() + timeoutSeconds * 1000
+        while (System.currentTimeMillis() < deadline) {
+            if (predicate(executor.status())) return
+            Thread.sleep(10)
+        }
+        fail<Unit>("상태가 기대한 조건에 도달하지 못함: ${executor.status()}")
     }
 
     companion object {

@@ -13,6 +13,7 @@ import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -57,15 +58,26 @@ class FestivalController(
     }
 
     @Operation(
-        summary = "공공 행사 수동 동기화",
-        description = "관리자가 공공 API 데이터를 즉시 동기화하고, 끝나면 결과를 반환합니다. 이미 진행 중이면 409를 반환합니다."
+        summary = "공공 행사 수동 동기화 시작",
+        description = "관리자가 공공 API 데이터 동기화를 백그라운드로 시작합니다. 결과를 기다리지 않고 바로 응답하며, " +
+            "진행 상태와 결과는 GET /sync/status로 조회합니다. 이미 진행 중이면 409를 반환합니다."
     )
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/sync")
-    fun syncPublicFestivals(): ResponseEntity<ApiResponse<FestivalResponse.SyncResponse>> {
-        val result: FestivalResponse.SyncResponse = festivalSyncExecutor.tryRun()
-            ?: throw BusinessException(FestivalExceptionCode.SYNC_ALREADY_RUNNING)
+    fun startSyncPublicFestivals(): ResponseEntity<ApiResponse<FestivalResponse.SyncStatusResponse>> {
+        if (!festivalSyncExecutor.tryStart()) {
+            throw BusinessException(FestivalExceptionCode.SYNC_ALREADY_RUNNING)
+        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(ApiResponse.ok(festivalSyncExecutor.status()))
+    }
 
-        return ResponseEntity.ok(ApiResponse.ok(result))
+    @Operation(
+        summary = "공공 행사 동기화 상태 조회",
+        description = "지금 동기화가 진행 중인지, 혹은 마지막으로 끝난 결과(성공·건너뜀 건수 포함)를 반환합니다."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/sync/status")
+    fun syncStatus(): ResponseEntity<ApiResponse<FestivalResponse.SyncStatusResponse>> {
+        return ResponseEntity.ok(ApiResponse.ok(festivalSyncExecutor.status()))
     }
 }

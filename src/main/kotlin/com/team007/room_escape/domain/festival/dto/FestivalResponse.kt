@@ -223,6 +223,22 @@ class FestivalResponse private constructor() {
         val interrupted: Boolean
     )
 
+    @Schema(description = "공공 행사 동기화 진행 상태")
+    @JvmRecord
+    data class SyncStatusResponse(
+        @field:Schema(description = "지금 동기화가 진행 중인지")
+        val running: Boolean,
+
+        @field:Schema(description = "마지막으로 끝난 동기화 결과. 실행 중이거나 아직 끝난 적이 없으면 null")
+        val lastResult: SyncResponse?,
+
+        @field:Schema(description = "마지막 시도가 예외로 끝났을 때 그 메시지. 정상 종료면 null")
+        val lastError: String?,
+
+        @field:Schema(description = "마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
+        val finishedAt: java.time.Instant?
+    )
+
     @Schema(description = "동기화된 행사 요약")
     @JvmRecord
     data class SyncedFestival(
