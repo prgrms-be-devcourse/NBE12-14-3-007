@@ -211,6 +211,20 @@ function EventDetail({ event }: { event: EventView }) {
           <button className="text-button" onClick={share}>
             {copied ? <Check size={16} /> : <Share2 size={16} />}공유하기
           </button>
+          {!event.submissionId && (
+            <ReportButton
+              className="text-button"
+              ariaLabel="이 행사 신고 및 제보"
+              target={{
+                type: "FESTIVAL",
+                id: String(event.festivalId),
+                name: event.title,
+              }}
+            >
+              <Flag size={15} />
+              신고 및 제보
+            </ReportButton>
+          )}
           {isAuthor && (
             <button
               className="text-button"
@@ -461,18 +475,6 @@ function EventDetail({ event }: { event: EventView }) {
               <FestivalPosts festivalId={event.festivalId} />
             )}
           </div>
-          {!event.submissionId && (
-            <ReportButton
-              className="report-link"
-              target={{
-                type: "FESTIVAL",
-                id: String(event.festivalId),
-                name: event.title,
-              }}
-            >
-              <Flag size={14} />이 행사 신고 및 제보
-            </ReportButton>
-          )}
         </div>
       </div>
       {deleteOpen && (
