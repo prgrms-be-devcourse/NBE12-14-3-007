@@ -44,6 +44,7 @@ export function AdminReviews() {
         keyword,
       }),
     [api, page, sort, type, keyword],
+    { keepPrevious: true },
   );
   useEffect(() => {
     setQuery(keyword);
@@ -115,7 +116,7 @@ export function AdminReviews() {
           </div>
         </div>
         <div className="adm-result-count">
-          {loading ? (
+          {loading && !data ? (
             "불러오는 중…"
           ) : (
             <>
@@ -137,7 +138,7 @@ export function AdminReviews() {
             </button>
           </p>
         )}
-        {loading ? (
+        {loading && !data ? (
           <Loading />
         ) : !data?.content.length ? (
           <Empty
@@ -146,9 +147,10 @@ export function AdminReviews() {
           />
         ) : (
           <div
-            className="adm-table-scroll"
+            className={`adm-table-scroll${loading ? " is-refreshing" : ""}`}
             role="region"
             aria-label="후기 목록"
+            aria-busy={loading}
             tabIndex={0}
           >
             <table className="adm-table">

@@ -63,9 +63,10 @@ export function FestivalPosts({ festivalId }: { festivalId?: number }) {
     keyword,
     update,
   } = useReviewQuery(mode === "preview");
-  const { data, loading, error, reload } = useLoad(
+  const { data, loading, refreshing, error, reload } = useLoad(
     () => api.posts(festivalId, page, activeSort, { type, keyword }),
     [api, festivalId, page, activeSort, type, keyword],
+    { keepPrevious: true, scope: festivalId },
   );
   return (
     <div className="festival-posts">
@@ -80,7 +81,7 @@ export function FestivalPosts({ festivalId }: { festivalId?: number }) {
         <h2>
           함께 나눈 후기{" "}
           <span className="count">
-            {loading || error ? "—" : (data?.totalElements ?? 0)}
+            {(loading && !data) || error ? "—" : (data?.totalElements ?? 0)}
           </span>
         </h2>
         <div className="action-row">
@@ -109,13 +110,16 @@ export function FestivalPosts({ festivalId }: { festivalId?: number }) {
           </Link>
         </div>
       </div>
-      {loading ? (
+      {loading && !data ? (
         <Loading />
       ) : error ? (
         <ErrorState message={error} retry={reload} />
       ) : data?.content.length ? (
         <>
-          <div className="post-list">
+          <div
+            className={`post-list${refreshing ? " is-refreshing" : ""}`}
+            aria-busy={refreshing}
+          >
             {data.content.map((post) => (
               <ReviewRow post={post} key={post.id} placeholder />
             ))}
@@ -361,6 +365,7 @@ function Comments({ postId }: { postId: string }) {
   const { data, loading, error, reload } = useLoad(
     () => api.comments(postId, page),
     [api, postId, page],
+    { keepPrevious: true, scope: postId },
   );
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
@@ -426,12 +431,12 @@ function Comments({ postId }: { postId: string }) {
           댓글을 남기려면 <Link to={loginPath(location)}>로그인</Link>해 주세요.
         </p>
       )}
-      {loading ? (
+      {loading && !data ? (
         <Loading />
       ) : error ? (
         <ErrorState message={error} retry={reload} />
       ) : data?.content.length ? (
-        <div className="comment-list">
+        <div className="comment-list" aria-busy={loading}>
           {data.content.map((root) => (
             <div key={root.id} className="comment-thread">
               <CommentRow

@@ -178,6 +178,7 @@ export function Home() {
         (entries) => Object.fromEntries(entries) as Record<string, number>,
       ),
     [api, categoryParam],
+    { keepPrevious: true },
   );
   const board = useLoad(
     () =>
@@ -187,6 +188,7 @@ export function Home() {
         excludeClosed: true,
       }),
     [api, picked, categoryParam],
+    { keepPrevious: true },
   );
   const reports = useLoad(
     () => api.festivals({ providerType: "MEMBER", excludeClosed: true }),
@@ -326,11 +328,14 @@ export function Home() {
               </button>
             )}
           </div>
-          {board.loading ? (
+          {board.loading && !board.data ? (
             <Loading />
           ) : posters.length ? (
             <>
-              <div className="home-grid map-posters">
+              <div
+                className={`home-grid map-posters${board.refreshing ? " is-refreshing" : ""}`}
+                aria-busy={board.refreshing}
+              >
                 {posters.map((event, i) => {
                   const paper = PAPERS[i % PAPERS.length];
                   const stamp = stampOf(event);
