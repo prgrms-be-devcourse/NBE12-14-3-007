@@ -70,10 +70,12 @@ class FestivalService(
         if (newSeqs.isEmpty()) {
             log.info("신규 행사 없음 ({}년 전체 {}건, 신규 0건)", currentYear, allRows.size)
             migrateLegacyImages()
-            return FestivalResponse.SyncResponse(closedFestivals, emptyList())
+            return FestivalResponse.SyncResponse(closedFestivals, emptyList(), 0, 0, false)
         }
 
         val savedFestivals = mutableListOf<FestivalResponse.SyncedFestival>()
+        var skippedCount = 0
+        var interrupted = false
         // 원본 스냅샷은 이미 커밋돼서 여기서 실패해도 남는다.
         try {
             // 신규 건만 상세조회(가격 등 포함)까지 받아서 엔티티로 변환한다.
@@ -85,6 +87,8 @@ class FestivalService(
                 val detail: CultureInfoDetailRow? = festivalPublicApiClientV2.fetchDetail(seq)
                 if (detail != null) { // 상세 조회가 빈 값으로 오는 경우 방어
                     buffer.add(toCultureInfoFestival(detail)) // 이미지 다운로드·업로드가 여기서 일어난다
+                } else {
+                    skippedCount++
                 }
                 processed++
 
@@ -97,12 +101,13 @@ class FestivalService(
 
                 Thread.sleep(DETAIL_FETCH_INTERVAL)
             }
-            log.info("공공 행사 {}건 저장 완료", savedFestivals.size)
+            log.info("공공 행사 {}건 저장 완료 (건너뜀 {}건)", savedFestivals.size, skippedCount)
         } catch (e: Exception) {
+            interrupted = true
             log.error("신규 행사 저장 실패 (지금까지 {}건 저장됨), 원본 스냅샷은 반영됨", savedFestivals.size, e)
         }
         migrateLegacyImages()
-        return FestivalResponse.SyncResponse(closedFestivals, savedFestivals)
+        return FestivalResponse.SyncResponse(closedFestivals, savedFestivals, newSeqs.size, skippedCount, interrupted)
     }
 
     /** 이미지 처리까지 끝난 행사 묶음을 한 트랜잭션으로 저장한다. 저장 후에 id가 채워진 목록을 돌려준다. */

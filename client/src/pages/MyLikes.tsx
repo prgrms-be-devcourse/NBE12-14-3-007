@@ -37,10 +37,12 @@ export function MyLikes() {
     () =>
       kind === "festivals" ? api.myLikedFestivals(page) : Promise.resolve(null),
     [api, kind, page],
+    { keepPrevious: true, scope: kind },
   );
   const posts = useLoad(
     () => (kind === "posts" ? api.myLikedPosts(page) : Promise.resolve(null)),
     [api, kind, page],
+    { keepPrevious: true, scope: kind },
   );
   const result = kind === "festivals" ? festivals : posts;
   const data = result.data;
@@ -71,7 +73,7 @@ export function MyLikes() {
         ))}
       </div>
 
-      {result.loading ? (
+      {result.loading && !data ? (
         <Loading cards={kind === "festivals"} />
       ) : result.error ? (
         <ErrorState message={result.error} retry={result.reload} />
@@ -105,13 +107,19 @@ export function MyLikes() {
             좋아요한 {label} <strong>{data.totalElements}</strong>개
           </p>
           {kind === "festivals" && festivals.data ? (
-            <div className="event-grid">
+            <div
+              className={`event-grid${result.refreshing ? " is-refreshing" : ""}`}
+              aria-busy={result.refreshing}
+            >
               {festivals.data.content.map((event) => (
                 <EventCard key={event.festivalId} event={event} />
               ))}
             </div>
           ) : posts.data ? (
-            <div className="post-list">
+            <div
+              className={`post-list${result.refreshing ? " is-refreshing" : ""}`}
+              aria-busy={result.refreshing}
+            >
               {posts.data.content.map((post) => (
                 <ReviewRow key={post.id} post={post} placeholder />
               ))}

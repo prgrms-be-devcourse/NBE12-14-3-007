@@ -313,6 +313,44 @@ class FestivalServiceTest {
 		assertThat(result.savedFestivals)
 			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String?> { it.title })
 			.containsExactly("남한산성문화제", "남한산성문화제")
+		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.skippedCount).isEqualTo(0)
+		assertThat(result.interrupted).isFalse()
+	}
+
+	/** 상세조회가 빈 값으로 오는 건은 저장하지 않고 건너뛰되, 건너뛴 건수를 응답에 남겨야 한다. */
+	@Test
+	@DisplayName("상세조회 응답이 비어 있으면 그 건은 저장하지 않고 skippedCount로 센다")
+	fun countsSkippedWhenDetailIsEmpty() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1"), periodRow("seq-2")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", "29991231"))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-2")).thenReturn(null)
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(result.savedFestivals).hasSize(1)
+		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.skippedCount).isEqualTo(1)
+		assertThat(result.interrupted).isFalse()
+	}
+
+	/** 상세조회 도중 예외가 나면 거기까지만 처리하고, interrupted=true로 응답해서 "정상적으로 신규가 없던 것"과 구분돼야 한다. */
+	@Test
+	@DisplayName("상세조회 도중 예외가 나면 거기까지의 결과와 interrupted=true를 응답한다")
+	fun marksInterruptedWhenDetailFetchThrows() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1"), periodRow("seq-2")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", "29991231"))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-2"))
+				.thenThrow(BusinessException(FestivalExceptionCode.PUBLIC_API_CALL_FAILED))
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.interrupted).isTrue()
 	}
 
 	/** 종료 처리 목록을 뽑은 뒤, 같은 시각(now)으로 일괄 갱신까지 호출되는지 확인한다. */
@@ -349,6 +387,8 @@ class FestivalServiceTest {
 
 		assertThat(result.closedFestivals).hasSize(1)
 		assertThat(result.savedFestivals).isEmpty()
+		assertThat(result.requestedCount).isEqualTo(0)
+		assertThat(result.interrupted).isFalse()
 	}
 
 	/** saveAll(List)에 실제로 넘어간 Festival 목록을 잡아내는 공통 헬퍼. */

@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -103,23 +104,38 @@ export function useApp() {
   if (!context) throw new Error("Missing AppProvider");
   return context;
 }
-export function useLoad<T>(loader: () => Promise<T>, dependencies: unknown[]) {
+/**
+ * 비동기 데이터를 불러온다.
+ * keepPrevious를 켜면 필터·정렬·페이지가 바뀌어 다시 불러오는 동안 이전 결과를 그대로 둔다.
+ * 목록이 로딩 화면으로 바뀌었다 돌아오며 깜빡이는 것을 막는다. 실패하면 이전 결과는 지운다.
+ * scope가 바뀌면(예: 다른 글의 댓글) 이전 결과는 다른 대상의 것이라 바로 지운다.
+ */
+export function useLoad<T>(
+  loader: () => Promise<T>,
+  dependencies: unknown[],
+  options: { keepPrevious?: boolean; scope?: unknown } = {},
+) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const keepPrevious = Boolean(options.keepPrevious);
+  const scopeRef = useRef(options.scope);
   useEffect(() => {
     let current = true;
+    const sameScope = Object.is(scopeRef.current, options.scope);
+    scopeRef.current = options.scope;
     setLoading(true);
     setError("");
-    setData(null);
+    if (!keepPrevious || !sameScope) setData(null);
     loader()
       .then((value) => {
         if (current) setData(value);
       })
       .catch((e) => {
-        if (current)
-          setError(e instanceof Error ? e.message : "불러오지 못했어요.");
+        if (!current) return;
+        setData(null);
+        setError(e instanceof Error ? e.message : "불러오지 못했어요.");
       })
       .finally(() => {
         if (current) setLoading(false);
@@ -131,6 +147,8 @@ export function useLoad<T>(loader: () => Promise<T>, dependencies: unknown[]) {
   return {
     data,
     loading,
+    /** 이전 결과를 보여 주면서 새 결과를 기다리는 중 */
+    refreshing: loading && data !== null,
     error,
     reload: () => setRevision((x) => x + 1),
     setData,

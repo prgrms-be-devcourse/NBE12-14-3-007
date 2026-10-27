@@ -90,6 +90,50 @@ class MemberPurgeRepositoryTest @Autowired constructor(
         assertThat(second).isZero()
     }
 
+    @Test
+    fun 파기하면_사라질_프로필_이미지_key를_회원과_함께_돌려준다() {
+        val member = withdrawnAt(THRESHOLD.minusDays(1))
+        val key = member.profileImg
+
+        val targets = memberRepository.findProfileImagesToPurge(THRESHOLD)
+
+        assertThat(targets).contains(PurgedProfileImage(member.id, checkNotNull(key)))
+    }
+
+    @Test
+    fun 보관_기간이_남았거나_탈퇴하지_않은_회원의_이미지는_대상이_아니다() {
+        val remaining = withdrawnAt(THRESHOLD.plusDays(1))
+        val active = save("활동 중", willWithdraw = false)
+
+        val ids = memberRepository.findProfileImagesToPurge(THRESHOLD).map { it.memberId }
+
+        assertThat(ids).doesNotContain(remaining.id, active.id)
+    }
+
+    @Test
+    fun 프로필_이미지가_없는_회원은_대상이_아니다() {
+        val member = withdrawnAt(THRESHOLD.minusDays(1))
+        entityManager.createQuery("update Member m set m.profileImg = null where m.id = :id")
+            .setParameter("id", member.id)
+            .executeUpdate()
+        entityManager.clear()
+
+        val ids = memberRepository.findProfileImagesToPurge(THRESHOLD).map { it.memberId }
+
+        assertThat(ids).doesNotContain(member.id)
+    }
+
+    /** 파기 쿼리와 조건이 같아야 한다. 이미 파기된 회원의 이미지를 다시 지우려 하면 안 된다. */
+    @Test
+    fun 이미_파기된_회원의_이미지는_다시_대상이_되지_않는다() {
+        val member = withdrawnAt(THRESHOLD.minusDays(1))
+        assertThat(memberRepository.findProfileImagesToPurge(THRESHOLD).map { it.memberId }).contains(member.id)
+
+        memberRepository.purgeWithdrawnBefore(THRESHOLD)
+
+        assertThat(memberRepository.findProfileImagesToPurge(THRESHOLD).map { it.memberId }).doesNotContain(member.id)
+    }
+
     /** deletedAt 은 delete() 가 현재 시각으로만 넣어서, 경계 검증을 위해 직접 지정한다. */
     private fun withdrawnAt(deletedAt: LocalDateTime): Member {
         val member = save("탈퇴 예정", willWithdraw = true)

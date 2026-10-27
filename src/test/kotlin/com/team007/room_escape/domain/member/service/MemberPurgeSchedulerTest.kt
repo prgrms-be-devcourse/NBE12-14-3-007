@@ -1,6 +1,8 @@
 package com.team007.room_escape.domain.member.service
 
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
+import com.team007.room_escape.domain.member.infra.repository.PurgedProfileImage
+import com.team007.room_escape.global.storage.R2StorageService
 import com.team007.room_escape.support.anyDateTime
 import com.team007.room_escape.support.capture
 import org.assertj.core.api.Assertions.assertThat
@@ -8,10 +10,13 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.time.LocalDateTime
+import java.util.UUID
 
 /**
  * 파기 배치가 저장소에 넘기는 기준 시각을 검증한다.
@@ -21,12 +26,14 @@ import java.time.LocalDateTime
 class MemberPurgeSchedulerTest {
 
     private lateinit var memberRepository: MemberRepository
+    private lateinit var storage: R2StorageService
     private lateinit var scheduler: MemberPurgeScheduler
 
     @BeforeEach
     fun setUp() {
         memberRepository = mock(MemberRepository::class.java)
-        scheduler = MemberPurgeScheduler(memberRepository, RETENTION_MONTHS)
+        storage = mock(R2StorageService::class.java)
+        scheduler = MemberPurgeScheduler(memberRepository, storage, RETENTION_MONTHS)
     }
 
     private fun capturedThreshold(): LocalDateTime {
@@ -62,6 +69,33 @@ class MemberPurgeSchedulerTest {
         `when`(memberRepository.purgeWithdrawnBefore(anyDateTime())).thenReturn(0)
 
         assertThatCode { scheduler.purgeWithdrawnMembers() }.doesNotThrowAnyException()
+    }
+
+    /** 파기 쿼리가 key를 지운 뒤에는 어떤 파일을 지울지 알 수 없으므로, 반드시 파기 전에 읽어야 한다. */
+    @Test
+    fun 파기하기_전에_프로필_이미지를_읽어_R2에서_지운다() {
+        val first = PurgedProfileImage(UUID.randomUUID(), "profiles/a/1.png")
+        val second = PurgedProfileImage(UUID.randomUUID(), "profiles/b/2.png")
+        `when`(memberRepository.findProfileImagesToPurge(anyDateTime())).thenReturn(listOf(first, second))
+        `when`(memberRepository.purgeWithdrawnBefore(anyDateTime())).thenReturn(2)
+
+        scheduler.purgeWithdrawnMembers()
+
+        val order = inOrder(memberRepository, storage)
+        order.verify(memberRepository).findProfileImagesToPurge(anyDateTime())
+        order.verify(memberRepository).purgeWithdrawnBefore(anyDateTime())
+        order.verify(storage).discardOwnedBy(first.key, first.memberId)
+        order.verify(storage).discardOwnedBy(second.key, second.memberId)
+    }
+
+    @Test
+    fun 지울_이미지가_없으면_R2를_건드리지_않는다() {
+        `when`(memberRepository.findProfileImagesToPurge(anyDateTime())).thenReturn(emptyList())
+        `when`(memberRepository.purgeWithdrawnBefore(anyDateTime())).thenReturn(0)
+
+        scheduler.purgeWithdrawnMembers()
+
+        verify(storage, never()).discardOwnedBy(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any())
     }
 
     private companion object {

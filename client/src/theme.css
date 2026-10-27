@@ -2859,3 +2859,19 @@
     gap: 8px;
   }
 }
+
+/* ---------- 목록 새로 불러오는 중 ---------- */
+/* 필터를 바꿔도 이전 목록을 그대로 두고, 0.25초 넘게 걸릴 때만 살짝 흐리게 해 깜빡임 없이 진행 중임을 알린다. */
+@keyframes c-refresh-dim {
+  to {
+    opacity: 0.5;
+  }
+}
+.theme-c .is-refreshing {
+  animation: c-refresh-dim 0.15s ease 0.25s forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-c .is-refreshing {
+    animation-duration: 0s;
+  }
+}

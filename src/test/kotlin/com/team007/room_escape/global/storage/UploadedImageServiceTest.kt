@@ -121,6 +121,35 @@ class UploadedImageServiceTest {
     }
 
     @Test
+    fun `쓰던 이미지를 정리 대상으로 돌린다`() {
+        val image = image()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+        image.activate()
+
+        val tracked = service.markForDeletion(image.key)
+
+        assertThat(tracked).isTrue()
+        assertThat(image.state).isEqualTo(UploadState.DELETING)
+    }
+
+    @Test
+    fun `장부에 없는 이미지는 정리 대상으로 돌리지 않고 false를 돌려준다`() {
+        assertThat(service.markForDeletion("legacy.png")).isFalse()
+    }
+
+    @Test
+    fun `이미 삭제된 이미지는 상태를 되돌리지 않는다`() {
+        val image = image()
+        `when`(repository.findLocked(image.key)).thenReturn(image)
+        image.beginDeletion()
+        image.recordDeletion(success = true)
+
+        assertThat(service.markForDeletion(image.key)).isTrue()
+
+        assertThat(image.state).isEqualTo(UploadState.DELETED)
+    }
+
+    @Test
     fun `새 이미지는 PENDING이어도 올린 사람이 아니면 붙일 수 없다`() {
         val image = image()
         `when`(repository.findLocked(image.key)).thenReturn(image)
