@@ -59,7 +59,7 @@ export function Explore() {
       apiRegion && date ? api.weather(apiRegion, date) : Promise.resolve(null),
     [api, apiRegion, date],
   );
-  const { data, loading, error, reload } = useLoad(
+  const { data, loading, refreshing, error, reload } = useLoad(
     () =>
       api.festivals({
         keyword: query || undefined,
@@ -90,6 +90,7 @@ export function Explore() {
       page,
       sort,
     ],
+    { keepPrevious: true },
   );
 
   const events = data?.content || [];
@@ -240,12 +241,15 @@ export function Explore() {
         </div>
       </div>
 
-      {loading ? (
+      {loading && !data ? (
         <Loading cards />
       ) : error ? (
         <ErrorState message={error} retry={reload} />
       ) : events.length ? (
-        <div className={layout === "grid" ? "event-grid" : "event-list"}>
+        <div
+          className={`${layout === "grid" ? "event-grid" : "event-list"}${refreshing ? " is-refreshing" : ""}`}
+          aria-busy={refreshing}
+        >
           {events.map((event) => (
             <EventCard
               key={event.festivalId}
@@ -272,7 +276,7 @@ export function Explore() {
         />
       )}
 
-      {!loading && !error && data && (
+      {!error && data && (
         <Pagination
           page={currentPage}
           total={data.totalPages}

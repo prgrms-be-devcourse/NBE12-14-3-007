@@ -520,6 +520,7 @@ function Inquiries() {
   const { data, loading, error, reload } = useLoad(
     () => api.inquiries(),
     [api],
+    { keepPrevious: true },
   );
   const [open, setOpen] = useState(!!params.get("report"));
   const [selected, setSelected] = useState<Inquiry | null>(null);
@@ -552,12 +553,12 @@ function Inquiries() {
           문의하기
         </button>
       </div>
-      {loading ? (
+      {loading && !data ? (
         <Loading />
       ) : error ? (
         <ErrorState message={error} retry={reload} />
       ) : data?.length ? (
-        <div className="inquiry-list">
+        <div className="inquiry-list" aria-busy={loading}>
           {data.map((q) => (
             <button
               key={q.id}

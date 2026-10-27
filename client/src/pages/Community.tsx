@@ -73,6 +73,7 @@ export function CommunityPage() {
   const result = useLoad(
     () => api.communityPosts(page, category || undefined, keyword || undefined),
     [api, page, category, keyword],
+    { keepPrevious: true },
   );
 
   function changeFilter(nextCategory: CommunityCategory | "") {
@@ -134,7 +135,7 @@ export function CommunityPage() {
         <button className="btn secondary small">검색</button>
       </form>
 
-      {result.loading && <Loading />}
+      {result.loading && !result.data && <Loading />}
       {result.error && (
         <ErrorState message={result.error} retry={result.reload} />
       )}
@@ -152,7 +153,10 @@ export function CommunityPage() {
         />
       )}
       {result.data && result.data.content.length > 0 && (
-        <div className="community-list">
+        <div
+          className={`community-list${result.refreshing ? " is-refreshing" : ""}`}
+          aria-busy={result.refreshing}
+        >
           {result.data.content.map((post) => (
             <Link
               key={post.id}
@@ -214,6 +218,7 @@ export function CommunityDetailPage() {
   const comments = useLoad(
     () => api.communityComments(postId, commentPage),
     [api, postId, commentPage],
+    { keepPrevious: true, scope: postId },
   );
   const [comment, setComment] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -537,7 +542,7 @@ export function CommunityDetailPage() {
           </p>
         )}
 
-        {comments.loading && <Loading />}
+        {comments.loading && !comments.data && <Loading />}
         {comments.error && (
           <ErrorState message={comments.error} retry={comments.reload} />
         )}

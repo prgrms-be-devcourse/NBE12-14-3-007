@@ -477,3 +477,13 @@
 .adm-demo-note p {
   color: var(--a-muted);
 }
+
+/* 목록을 새로 불러오는 동안 이전 결과를 두고, 오래 걸릴 때만 살짝 흐리게 한다. */
+@keyframes adm-refresh-dim {
+  to {
+    opacity: 0.5;
+  }
+}
+.adm-shell .is-refreshing {
+  animation: adm-refresh-dim 0.15s ease 0.25s forwards;
+}

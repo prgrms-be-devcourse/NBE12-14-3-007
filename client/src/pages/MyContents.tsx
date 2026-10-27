@@ -20,6 +20,7 @@ export function MyContents({ comments }: { comments: boolean }) {
   const result = useLoad(
     () => api.myContents(comments, page),
     [api, comments, page],
+    { keepPrevious: true, scope: comments },
   );
   return (
     <section
@@ -36,7 +37,7 @@ export function MyContents({ comments }: { comments: boolean }) {
           </p>
         </div>
       </div>
-      {result.loading ? (
+      {result.loading && !result.data ? (
         <Loading />
       ) : result.error ? (
         <ErrorState message={result.error} retry={result.reload} />
@@ -44,7 +45,10 @@ export function MyContents({ comments }: { comments: boolean }) {
         <Empty title="작성한 내용이 없습니다" />
       ) : (
         <>
-          <div className="my-content-table-wrap">
+          <div
+            className={`my-content-table-wrap${result.refreshing ? " is-refreshing" : ""}`}
+            aria-busy={result.refreshing}
+          >
             <table className="my-content-table">
               <thead>
                 <tr>
