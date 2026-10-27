@@ -191,6 +191,8 @@ export interface PostSummary {
   festivalTitle: string;
   title: string;
   thumbnail: string | null;
+  /** 사진 없는 후기 카드에서 사용하는 HTML 없는 본문 미리보기. */
+  preview?: string | null;
   date: string;
   // 목록·상세 응답에 있다. 관리자 목록 응답에는 없다.
   likeCount?: number;

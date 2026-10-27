@@ -19,6 +19,7 @@ import { DISTRICT_POINTS, PROVINCE_ORDER, PROVINCES } from "../lib/koreaMap";
 import { richTextToPlainText } from "../components/RichText";
 import { KoreaMap, zoomFor, type MapPin as Pin } from "../components/KoreaMap";
 import { TrustGradeBadge } from "../components/TrustGradeBadge";
+import { FestivalCover } from "../components/FestivalCover";
 import {
   Empty,
   FESTIVAL_DEFAULT_IMAGE,
@@ -530,6 +531,7 @@ export function Home() {
                       src={event.imgUrl}
                       alt=""
                       fallbackSrc={FESTIVAL_DEFAULT_IMAGE}
+                      fallback={<FestivalCover event={event} />}
                     />
                     <span className="memo-where">
                       {[regions[event.region], event.regionDetail]

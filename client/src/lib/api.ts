@@ -261,6 +261,7 @@ function toEventView(item: FestivalSearchItem): EventView {
     festivalContent: null,
     referenceUrl: null,
     region: item.region,
+    district: item.district,
     regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,

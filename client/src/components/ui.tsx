@@ -24,6 +24,7 @@ import { useApp } from "../lib/context";
 import { errorText, imageUrl, period, regions } from "../lib/format";
 import type { EventView, WeatherCondition } from "../lib/types";
 import { TrustGradeBadge } from "./TrustGradeBadge";
+import { FestivalCover } from "./FestivalCover";
 
 export function Logo() {
   return (
@@ -148,12 +149,15 @@ export function Photo({
   alt,
   className = "",
   fallbackSrc,
+  fallback,
 }: {
   src?: string | null;
   alt: string;
   className?: string;
   /** 원본이 없거나 깨졌을 때 대신 보여줄 이미지. 이것마저 실패하면 기본 안내 화면을 보여준다. */
   fallbackSrc?: string;
+  /** 이미지가 없거나 로딩에 실패했을 때 보여줄 화면 요소. */
+  fallback?: ReactNode;
 }) {
   const [failed, setFailed] = useState(false);
   const [fallbackFailed, setFallbackFailed] = useState(false);
@@ -172,6 +176,7 @@ export function Photo({
         onError={() => setFailed(true)}
       />
     );
+  if (fallback) return <>{fallback}</>;
   return fallbackSrc && !fallbackFailed ? (
     <img
       className={className}
@@ -204,6 +209,7 @@ export function EventCard({
           src={event.imgUrl}
           alt={event.title}
           fallbackSrc={FESTIVAL_DEFAULT_IMAGE}
+          fallback={event.source === "MEMBER" ? <FestivalCover event={event} /> : undefined}
         />
         <span className="image-label">{event.category}</span>
       </div>

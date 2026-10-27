@@ -5,6 +5,8 @@ import com.team007.room_escape.domain.member.dto.MemberResponse
 import com.team007.room_escape.domain.post.infra.entity.Post
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import io.swagger.v3.oas.annotations.media.Schema
+import org.owasp.html.HtmlPolicyBuilder
+import org.springframework.web.util.HtmlUtils
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -30,6 +32,8 @@ class PostResponse private constructor() {
         val thumbnail: String?,
         val date: LocalDateTime?,
         val likeCount: Long,
+        @field:Schema(description = "사진 없는 후기의 본문 미리보기. HTML을 제외한 최대 240자")
+        val preview: String? = null,
     ) {
         companion object {
             fun from(post: Post, imageUrlResolver: ImageUrlResolver): ListItem {
@@ -43,6 +47,7 @@ class PostResponse private constructor() {
                     thumbnail = imageUrlResolver.resolve(post.thumbnail),
                     date = post.updatedAt,
                     likeCount = post.likeCount,
+                    preview = if (post.thumbnail.isNullOrBlank()) previewOf(post.content) else null,
                 )
             }
         }
@@ -109,6 +114,14 @@ class PostResponse private constructor() {
     }
 
     private companion object {
+        val plainTextPolicy = HtmlPolicyBuilder().toFactory()
+        val blockBoundary = Regex("<(?:br\\s*/?|/(?:p|h[1-6]|li|blockquote|div))\\s*>", RegexOption.IGNORE_CASE)
+        val whitespace = Regex("[\\s\\u00a0]+")
+
+        fun previewOf(content: String): String = HtmlUtils.htmlUnescape(
+            plainTextPolicy.sanitize(content.replace(blockBoundary, " ")),
+        ).replace(whitespace, " ").trim().take(240)
+
         fun savedId(post: Post): UUID =
             requireNotNull(post.id) { "저장되지 않은 후기는 응답으로 만들 수 없습니다." }
 
