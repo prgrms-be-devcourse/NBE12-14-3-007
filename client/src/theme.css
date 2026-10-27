@@ -459,7 +459,6 @@
 /* ---------- 커뮤니티 ---------- */
 .theme-c .community-categories button {
   border: 2px solid var(--c-ink);
-  border-bottom: 0;
   background: var(--c-surface);
   color: var(--c-ink);
   border-radius: 0;
@@ -473,6 +472,19 @@
   background: var(--c-surface);
   border: 2px solid var(--c-ink);
   border-radius: 0;
+}
+.theme-c .community-row {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 14px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+/* 분류 배지는 폭을 맞추고 제목 첫 줄 가운데에 놓는다. */
+.theme-c .community-row > .community-category {
+  justify-content: center;
+  min-width: 44px;
+  margin-top: 2px;
 }
 .theme-c .community-row:hover {
   background: #faf9f5;
@@ -1073,9 +1085,6 @@
   padding: 1px 6px;
   border: 2px solid currentColor;
   transform: rotate(-4deg);
-}
-.poster-stamp.hot {
-  color: #b8360f;
 }
 .home-c .map-posters .poster-title {
   font-size: 21px;
@@ -2134,16 +2143,20 @@
   font-variant-numeric: tabular-nums;
 }
 .theme-c .support-body {
-  padding: 2px 22px 22px 64px;
+  margin-top: -6px;
+  padding: 0 22px 20px 64px;
   color: var(--c-text);
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.65;
 }
 .theme-c .support-page .support-list details:not(:has(.support-q)) .support-body {
   padding-left: 22px;
 }
+.theme-c .support-body p {
+  margin: 0;
+}
 .theme-c .support-body p + p {
-  margin-top: 8px;
+  margin-top: 2px;
 }
 .theme-c .support-contact {
   display: flex;
@@ -2185,5 +2198,254 @@
   }
   .theme-c .support-contact {
     flex-wrap: wrap;
+  }
+}
+
+/* ---------- 행사 상세 ---------- */
+/* 포스터를 게시판에 테이프로 붙인 모양. 폭은 아래 본문(최대 920px)과 맞춘다. */
+.theme-c .detail-hero {
+  max-width: 920px;
+  margin: 0 auto;
+  padding-top: 12px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.theme-c .detail-hero > img {
+  box-sizing: border-box;
+  max-height: 460px;
+  padding: 10px;
+  border: 2px solid var(--c-ink);
+  background: var(--c-surface);
+  box-shadow: 6px 6px 0 #1b1b1b26;
+}
+.theme-c .detail-hero:not(.loading)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 96px;
+  height: 24px;
+  margin-left: -48px;
+  background: #f2c14ed9;
+  transform: rotate(-2deg);
+}
+.theme-c .detail-hero-skeleton {
+  height: 360px;
+  background: var(--c-line-soft);
+}
+.theme-c .photo-example {
+  border-radius: 0;
+  background: #1b1b1bcc;
+}
+.theme-c .detail-title .action-row {
+  align-items: center;
+}
+.theme-c .source-badge {
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: #fff;
+  font-size: 13px;
+}
+.theme-c .source-badge.public {
+  background: var(--c-ink);
+  color: #fff;
+}
+.theme-c .source-badge.member {
+  background: var(--c-red);
+  color: #fff;
+}
+.theme-c .detail-title .badge {
+  padding: 3px 8px;
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.theme-c .state-label {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border: 2px solid var(--c-ink);
+  color: var(--c-ink);
+  font-size: 12px;
+  font-weight: 800;
+  transform: rotate(-3deg);
+}
+.theme-c .state-label::before {
+  display: none;
+}
+.theme-c .detail-title h1 {
+  margin: 16px 0 12px;
+  font-family: var(--c-display);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--c-ink);
+}
+.theme-c .detail-location {
+  color: var(--c-muted);
+  font-size: 14px;
+}
+.theme-c .detail-tabs {
+  gap: 28px;
+  border-bottom: 2px solid var(--c-ink);
+}
+.theme-c .detail-tabs > button {
+  margin-bottom: -2px;
+  padding: 14px 2px;
+  border-bottom: 3px solid transparent;
+  color: var(--c-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+.theme-c .detail-tabs > button:hover {
+  color: var(--c-ink);
+}
+.theme-c .detail-tabs > button.active {
+  color: var(--c-ink);
+  border-color: var(--c-ink);
+  font-weight: 700;
+}
+.theme-c .detail-section {
+  border-bottom-color: var(--c-line);
+}
+.theme-c .detail-section h2 {
+  color: var(--c-ink);
+  font-size: 19px;
+  font-weight: 700;
+}
+.theme-c .detail-summary {
+  gap: 0;
+  padding: 0;
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-surface);
+}
+.theme-c .detail-summary > div {
+  padding: 22px 16px;
+  color: var(--c-ink);
+}
+.theme-c .detail-summary > div + div {
+  border-left: 1px dashed var(--c-line);
+}
+.theme-c .detail-summary > div > svg {
+  color: var(--c-ink);
+}
+.theme-c .detail-summary small {
+  color: var(--c-muted);
+}
+.theme-c .event-info dt {
+  color: var(--c-ink);
+}
+.theme-c .event-info dt > svg {
+  color: var(--c-muted);
+}
+.theme-c .event-info dd,
+.theme-c .prose {
+  color: var(--c-text);
+}
+.theme-c .detail-source {
+  border-radius: 0;
+  background: var(--c-yellow-soft);
+  box-shadow: inset 4px 0 0 var(--c-yellow);
+  padding: 16px 18px 16px 22px;
+  color: var(--c-text);
+}
+.theme-c .detail-source svg {
+  color: var(--c-ink);
+}
+.theme-c .detail-accuracy-warning {
+  border: 2px solid var(--c-red);
+  border-radius: 0;
+  background: #fde4df;
+  color: #7a2410;
+}
+.theme-c .detail-accuracy-warning strong {
+  color: #7a2410;
+}
+.theme-c .submitter-profile,
+.theme-c .festival-like,
+.theme-c .accuracy-vote {
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-surface);
+}
+.theme-c .submitter-avatar.fallback {
+  background: var(--c-yellow-soft);
+  color: var(--c-ink);
+}
+.theme-c .submitter-profile-copy small,
+.theme-c .festival-like p,
+.theme-c .accuracy-vote > div:first-child > p,
+.theme-c .accuracy-vote-login {
+  color: var(--c-muted);
+}
+.theme-c .submitter-profile-copy strong,
+.theme-c .festival-like h2,
+.theme-c .accuracy-vote h2 {
+  color: var(--c-ink);
+}
+/* 등급 설명 말풍선은 제보자 상자 기준으로 열어 좁은 화면에서도 상자 폭을 넘지 않게 한다. */
+.theme-c .submitter-profile {
+  position: relative;
+}
+.theme-c .submitter-profile .trust-grade-wrap {
+  position: static;
+}
+.theme-c .submitter-profile .trust-grade-tooltip {
+  top: calc(100% + 6px);
+  left: 20px;
+  max-width: calc(100% - 40px);
+  transform: none;
+  border-radius: 0;
+  background: var(--c-ink);
+  text-align: left;
+}
+.theme-c .accuracy-vote-actions button {
+  border: 2px solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-surface);
+  color: var(--c-ink);
+}
+.theme-c .accuracy-vote-actions button.accurate {
+  border-color: var(--c-green);
+  background: var(--c-surface);
+  color: var(--c-green);
+}
+.theme-c .accuracy-vote-actions button.inaccurate {
+  border-color: var(--c-red);
+  background: var(--c-surface);
+  color: var(--c-red-dark);
+}
+.theme-c .accuracy-vote-actions button.accurate:hover:not(:disabled) {
+  background: #e7f2ec;
+}
+.theme-c .accuracy-vote-actions button.inaccurate:hover:not(:disabled) {
+  background: #fde9e4;
+}
+.theme-c .accuracy-vote-actions button.selected.accurate {
+  border-color: var(--c-green);
+  background: var(--c-green);
+  color: #fff;
+}
+.theme-c .accuracy-vote-actions button.selected.inaccurate {
+  border-color: var(--c-red);
+  background: var(--c-red);
+  color: #fff;
+}
+@media (max-width: 560px) {
+  .theme-c .detail-title h1 {
+    font-size: 26px;
+  }
+  .theme-c .detail-summary > div + div {
+    border-left: 0;
+    border-top: 1px dashed var(--c-line);
   }
 }

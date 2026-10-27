@@ -892,7 +892,7 @@ test("mobile pages have no horizontal overflow and navigation works", async ({
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   await page
     .getByRole("navigation", { name: "메인 메뉴" })
-    .getByRole("link", { name: "전체 행사" })
+    .getByRole("link", { name: "행사", exact: true })
     .click();
   await expect(page).toHaveURL("/explore");
 });

@@ -35,6 +35,23 @@ import { MyContents } from "./MyContents";
 import { MyLikes } from "./MyLikes";
 import { TrustGradeBadge } from "../components/TrustGradeBadge";
 
+/** 가입한 날을 1일째로 세어 오늘까지 며칠째인지 돌려준다. */
+function daysSince(createdAt: string) {
+  const start = new Date(createdAt);
+  const today = new Date();
+  const startDay = Date.UTC(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate(),
+  );
+  const todayDay = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  return Math.max(1, Math.floor((todayDay - startDay) / 86_400_000) + 1);
+}
+
 export function MyPage() {
   const { member, authLoading, api, setMember, toast } = useApp();
   const [params, setParams] = useSearchParams();
@@ -275,7 +292,7 @@ function Profile() {
         </div>
       )}
       <div className="joined-date">
-        함께한 날 · {dateText(member!.createdAt)}
+        함께한 날 · {daysSince(member!.createdAt)}일
       </div>
       {passwordOpen && <PasswordModal onClose={() => setPasswordOpen(false)} />}
       {withdrawOpen && <WithdrawModal onClose={() => setWithdrawOpen(false)} />}

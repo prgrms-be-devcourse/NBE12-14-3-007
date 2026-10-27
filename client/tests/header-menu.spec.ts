@@ -1,30 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-test("header dropdowns open sub menus that keep list filters", async ({
-  page,
-}) => {
+test("only the customer center opens a dropdown", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/explore");
   const nav = page.getByRole("navigation", { name: "메인 메뉴", exact: true });
   for (const name of ["홈", "행사 제보"])
     await expect(nav.getByRole("link", { name, exact: true })).toHaveCount(0);
+  for (const name of ["행사", "후기", "커뮤니티"])
+    await expect(
+      nav.getByRole("button", { name: `${name} 하위 메뉴 열기` }),
+    ).toHaveCount(0);
 
-  await nav.getByRole("button", { name: "행사 하위 메뉴 열기" }).click();
-  await nav.getByRole("link", { name: "민간 행사", exact: true }).click();
-  await expect(page).toHaveURL("/explore?providerType=MEMBER");
-
-  await nav.getByRole("button", { name: "커뮤니티 하위 메뉴 열기" }).click();
-  await nav.getByRole("link", { name: "맛집", exact: true }).click();
-  await expect(page).toHaveURL("/community?category=RESTAURANT");
-  await nav.getByRole("button", { name: "커뮤니티 하위 메뉴 열기" }).click();
-  await expect(
-    nav.getByRole("link", { name: "맛집", exact: true }),
-  ).toHaveAttribute("aria-current", "page");
-  await page.keyboard.press("Escape");
-  await page.mouse.move(640, 700);
-  await expect(
-    nav.getByRole("link", { name: "맛집", exact: true }),
-  ).toBeHidden();
+  await nav.getByRole("link", { name: "커뮤니티", exact: true }).click();
+  await expect(page).toHaveURL("/community");
 
   await nav.getByRole("button", { name: "고객센터 하위 메뉴 열기" }).click();
   await nav.getByRole("link", { name: "자주 묻는 질문", exact: true }).click();
@@ -34,6 +22,16 @@ test("header dropdowns open sub menus that keep list filters", async ({
   ).toBeVisible();
   await page.getByText("제보자 등급은 어떻게 올라가나요?").click();
   await expect(page.getByText("‘탈출 마스터’가 돼요")).toBeVisible();
+
+  await nav.getByRole("button", { name: "고객센터 하위 메뉴 열기" }).click();
+  await expect(
+    nav.getByRole("link", { name: "자주 묻는 질문", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Escape");
+  await page.mouse.move(640, 700);
+  await expect(
+    nav.getByRole("link", { name: "자주 묻는 질문", exact: true }),
+  ).toBeHidden();
 });
 
 test("support root opens notices", async ({ page }) => {

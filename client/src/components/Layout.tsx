@@ -6,28 +6,11 @@ import { Logo } from "./ui";
 
 type SubItem = { label: string; to: string };
 
-/** 머리 메뉴. 하위 항목이 있는 메뉴는 드롭다운으로 연다. */
+/** 머리 메뉴. 하위 항목이 있는 메뉴(고객센터)만 드롭다운으로 연다. */
 const NAV: { label: string; to: string; items?: SubItem[] }[] = [
-  {
-    label: "행사",
-    to: "/explore",
-    items: [
-      { label: "전체 행사", to: "/explore" },
-      { label: "공공 행사", to: "/explore?providerType=PUBLIC" },
-      { label: "민간 행사", to: "/explore?providerType=MEMBER" },
-    ],
-  },
+  { label: "행사", to: "/explore" },
   { label: "후기", to: "/reviews" },
-  {
-    label: "커뮤니티",
-    to: "/community",
-    items: [
-      { label: "전체", to: "/community" },
-      { label: "자유", to: "/community?category=FREE" },
-      { label: "행사", to: "/community?category=EVENT" },
-      { label: "맛집", to: "/community?category=RESTAURANT" },
-    ],
-  },
+  { label: "커뮤니티", to: "/community" },
   {
     label: "고객센터",
     to: "/support",
@@ -45,8 +28,8 @@ function isCurrent(to: string, pathname: string, search: string) {
   if (path !== pathname) return false;
   const want = new URLSearchParams(query);
   const now = new URLSearchParams(search);
-  // 필터가 없는 "전체" 항목은 같은 필터 키가 비어 있을 때만 현재 위치다.
-  const keys = ["providerType", "category", "tab"];
+  // 마이페이지처럼 탭을 쿼리로 고르는 화면은 탭까지 같아야 현재 위치다.
+  const keys = ["tab"];
   return keys.every((key) => (want.get(key) || "") === (now.get(key) || ""));
 }
 
