@@ -25,20 +25,32 @@ class R2StorageService(
     private val s3Client: S3Client,
     private val properties: R2Properties,
     private val uploadedImages: UploadedImageService,
+    private val imageSanitizer: ImageSanitizer,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    /** 업로드 후 key를 돌려준다. key는 공개되므로 주인 확인용으로 key에 회원 ID를 넣는다. (예: posts/{회원ID}/0198....jpg) */
+    /**
+     * 업로드 후 key를 돌려준다. key는 공개되므로 주인 확인용으로 key에 회원 ID를 넣는다. (예: posts/{회원ID}/0198....jpg)
+     * 올리기 전에 실제 이미지인지 확인하고 촬영 위치 같은 메타데이터를 지운다. 확장자는 요청이 아니라 실제 형식을 따른다.
+     */
     fun upload(file: MultipartFile?, directory: String, ownerId: UUID): String {
         if (file == null || file.isEmpty) throw BusinessException(StorageExceptionCode.EMPTY_FILE)
 
-        val key = "$directory/$ownerId/${UUID.randomUUID()}.${extensionOf(file.contentType)}"
+        val image = imageSanitizer.sanitize(readBytes(file), file.contentType)
+        val key = "$directory/$ownerId/${UUID.randomUUID()}.${image.format.extension}"
         uploadedImages.register(key, ownerId)
         return uploadedImages.upload(key) {
-            put(key, file.contentType) { RequestBody.fromInputStream(file.inputStream, file.size) }
+            put(key, image.format.contentType) { RequestBody.fromBytes(image.bytes) }
         }
     }
+
+    private fun readBytes(file: MultipartFile): ByteArray =
+        try {
+            file.inputStream.use { it.readBytes() }
+        } catch (e: IOException) {
+            throw uploadFailed(file.originalFilename ?: "(이름 없음)", e)
+        }
 
     /** 서버가 만든 바이트 배열을 업로드한다. 배치처럼 MultipartFile이 없을 때 쓰고, contentType은 직접 넘긴다. */
     fun upload(content: ByteArray, contentType: String, directory: String): String {
@@ -156,7 +168,8 @@ class R2StorageService(
 
     /** 허용한 형식이면 저장할 확장자를, 아니면 지원하지 않는 형식 예외를 던진다. */
     private fun extensionOf(contentType: String?): String =
-        ALLOWED_TYPES[contentType] ?: throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
+        ImageFormat.ofContentType(contentType)?.extension
+            ?: throw BusinessException(StorageExceptionCode.UNSUPPORTED_FILE_TYPE)
 
     /** S3에 올리고 key를 돌려준다. 읽기·전송이 실패하면 업로드 실패 예외로 바꾼다. */
     private fun put(key: String, contentType: String?, body: () -> RequestBody): String {
@@ -186,12 +199,5 @@ class R2StorageService(
 
     companion object {
         private val IMAGE_SOURCE = Regex("<img\\b[^>]*\\bsrc=\"([^\"]+)\"", RegexOption.IGNORE_CASE)
-
-        /** 허용 Content-Type과 저장 시 사용할 확장자 */
-        private val ALLOWED_TYPES: Map<String, String> = java.util.Map.of(
-            "image/jpeg", "jpg",
-            "image/png", "png",
-            "image/webp", "webp",
-        )
     }
 }

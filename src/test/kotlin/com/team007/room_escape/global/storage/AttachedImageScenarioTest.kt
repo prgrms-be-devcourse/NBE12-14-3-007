@@ -20,6 +20,7 @@ class AttachedImageScenarioTest {
         mock(S3Client::class.java),
         R2Properties("account", "access", "secret", "my-bucket", "https://img.example.com"),
         UploadedImageService(repository),
+        ImageSanitizer(maxPixels = 25_000_000),
     )
 
     private val author = UUID.randomUUID()
