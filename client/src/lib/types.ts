@@ -376,6 +376,12 @@ export interface SyncStatus {
   lastError: string | null;
   /** 마지막 시도가 끝난 시각 (ISO-8601) */
   finishedAt: string | null;
+  /** 스케줄러가 마지막으로 끝낸 자동 동기화 결과. 아직 끝난 적이 없으면 null */
+  lastScheduledResult: SyncResult | null;
+  /** 스케줄러의 마지막 시도가 예외로 끝났을 때 그 메시지 */
+  lastScheduledError: string | null;
+  /** 스케줄러의 마지막 시도가 끝난 시각 (ISO-8601) */
+  lastScheduledFinishedAt: string | null;
 }
 /**
  * 운영 대시보드 집계.

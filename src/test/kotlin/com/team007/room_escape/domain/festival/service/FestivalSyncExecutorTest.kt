@@ -4,6 +4,7 @@ import com.team007.room_escape.domain.festival.dto.FestivalResponse
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -98,7 +99,7 @@ class FestivalSyncExecutorTest {
     }
 
     @Test
-    @DisplayName("run(스케줄러용)이 끝나도 status에 남아 있는 수동 동기화 결과를 덮어쓰지 않는다")
+    @DisplayName("run(스케줄러용)이 끝나도 수동 동기화 결과는 그대로고, 자동 동기화 결과만 따로 채워진다")
     fun scheduledRunDoesNotOverwriteManualStatus() {
         `when`(festivalService.syncPublicFestivals()).thenReturn(RESULT)
 
@@ -106,10 +107,15 @@ class FestivalSyncExecutorTest {
         awaitStatus { !it.running }
         val afterManual = executor.status()
         assertThat(afterManual.lastResult).isEqualTo(RESULT)
+        assertThat(afterManual.lastScheduledResult).isNull() // 아직 스케줄러는 안 돎
 
         executor.run() // 스케줄러가 바로 뒤이어 도는 상황
 
-        assertThat(executor.status()).isEqualTo(afterManual)
+        val afterScheduled = executor.status()
+        assertThat(afterScheduled.lastResult).isEqualTo(afterManual.lastResult) // 수동 결과는 그대로
+        assertThat(afterScheduled.finishedAt).isEqualTo(afterManual.finishedAt)
+        assertThat(afterScheduled.lastScheduledResult).isEqualTo(RESULT) // 자동 결과만 새로 채워짐
+        assertThat(afterScheduled.lastScheduledFinishedAt).isNotNull()
     }
 
     @Test
@@ -120,6 +126,19 @@ class FestivalSyncExecutorTest {
         assertThat(executor.tryStart()).isTrue()
         awaitStatus { !it.running }
         assertThat(executor.status().lastError).contains("개발팀")
+    }
+
+    @Test
+    @DisplayName("run(스케줄러용)이 실패하면 예외를 다시 던지면서 lastScheduledError에도 남긴다")
+    fun recordsScheduledFailureAndRethrows() {
+        `when`(festivalService.syncPublicFestivals())
+                .thenThrow(BusinessException(FestivalExceptionCode.PUBLIC_API_CALL_FAILED))
+
+        assertThatThrownBy { executor.run() }.isInstanceOf(BusinessException::class.java)
+
+        assertThat(executor.status().lastScheduledError)
+                .isEqualTo(FestivalExceptionCode.PUBLIC_API_CALL_FAILED.message)
+        assertThat(executor.status().lastScheduledResult).isNull()
     }
 
     @Test

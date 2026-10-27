@@ -843,6 +843,22 @@ img.adm-avatar {
   opacity: 0.55;
   cursor: not-allowed;
 }
+/* 동기화 버튼 + 마지막 자동 동기화 안내문을 오른쪽 끝에 세로로 쌓는다. */
+.adm-sync {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.adm-sync-note {
+  max-width: 420px;
+  overflow: hidden;
+  font-size: 11px;
+  color: #687763;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .adm-tabs button {
   display: flex;
   align-items: center;
