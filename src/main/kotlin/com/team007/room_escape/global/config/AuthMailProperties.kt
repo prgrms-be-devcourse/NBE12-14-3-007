@@ -8,6 +8,8 @@ data class AuthMailProperties(
     val expireMinutes: Long,
     val resendCooldownSeconds: Long,
     val verifiedValidMinutes: Long,
+    /** 인증 코드를 이만큼 틀리면 그 코드를 폐기한다. */
+    val maxCodeAttempts: Int = 5,
 ) {
 
     /** 캐시 보관 시간. 두 단계 중 긴 쪽보다 넉넉해야 "만료"와 "없음"을 구분할 수 있다. */

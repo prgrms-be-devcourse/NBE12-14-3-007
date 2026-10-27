@@ -1,5 +1,6 @@
 package com.team007.room_escape.global.exception
 
+import com.team007.room_escape.global.ratelimit.AuthRateLimiter
 import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.response.code.AuthExceptionCode
 import com.team007.room_escape.global.response.code.CommonExceptionCode
@@ -9,6 +10,7 @@ import org.hibernate.query.sqm.UnknownPathException
 import org.slf4j.LoggerFactory
 import org.springframework.dao.InvalidDataAccessApiUsageException
 import org.springframework.data.core.PropertyReferenceException
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
@@ -38,7 +40,13 @@ class GlobalExceptionHandler {
         if (ec.status.is5xxServerError) log.error("[{}] {}", ec.code, e.message, e) else log.warn("[{}] {}", ec.code, e.message)
         val details = e.details
         return if (details == null) respond(ec, e.message)
-        else ResponseEntity.status(ec.status).body(ApiResponse.failWithDetails(ec, e.message, details))
+        else ResponseEntity.status(ec.status).headers(retryAfterHeaders(details))
+            .body(ApiResponse.failWithDetails(ec, e.message, details))
+    }
+
+    /** 요청을 제한한 응답에는 몇 초 뒤에 다시 시도할 수 있는지 Retry-After 헤더로도 알려 준다. */
+    private fun retryAfterHeaders(details: Map<String, Any>): HttpHeaders = HttpHeaders().apply {
+        (details[AuthRateLimiter.RETRY_AFTER_SECONDS] as? Long)?.let { set(HttpHeaders.RETRY_AFTER, it.toString()) }
     }
 
     /** @Valid 요청 본문 검증 실패 (필드 제약 위반) */

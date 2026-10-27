@@ -44,6 +44,8 @@ class EmailVerificationService(
         val issuedAt: LocalDateTime,
         val expiresAt: LocalDateTime,
         val verified: Boolean,
+        /** 이 코드를 틀린 횟수. 한도에 닿으면 코드를 폐기한다 */
+        val failedAttempts: Int = 0,
     ) {
         fun markVerified(expiresAt: LocalDateTime) = copy(expiresAt = expiresAt, verified = true)
     }
@@ -75,15 +77,35 @@ class EmailVerificationService(
     /**
      * 1단계. 코드가 맞는지 확인하고 인증 상태로 바꾼다.
      * 이 시점부터 verifiedValidMinutes 동안 실제 작업을 진행할 수 있다.
+     *
+     * 틀리면 횟수를 세고, maxCodeAttempts 번째에 코드를 폐기해서 더 이상 대입할 수 없게 한다.
+     * 확인과 횟수 세기를 한 번에 해서, 여러 요청이 동시에 와도 한도를 넘겨 시도하거나 폐기된 코드가 되살아나지 않는다.
      */
     fun verifyCode(memberId: UUID, purpose: Purpose, inputCode: String?) {
         val now = LocalDateTime.now()
         val key = key(memberId, purpose)
-        val entry = requireAlive(key, now)
 
-        if (entry.code != inputCode) throw BusinessException(AuthExceptionCode.VERIFICATION_CODE_MISMATCH)
+        var rejected: AuthExceptionCode? = null
+        val kept = cache.asMap().computeIfPresent(key) { _, current ->
+            when {
+                current.expiresAt.isBefore(now) -> {
+                    rejected = AuthExceptionCode.VERIFICATION_CODE_EXPIRED
+                    null
+                }
+                current.code == inputCode -> current.markVerified(now.plusMinutes(properties.verifiedValidMinutes))
+                current.failedAttempts + 1 >= properties.maxCodeAttempts -> {
+                    rejected = AuthExceptionCode.VERIFICATION_TOO_MANY_ATTEMPTS
+                    null
+                }
+                else -> {
+                    rejected = AuthExceptionCode.VERIFICATION_CODE_MISMATCH
+                    current.copy(failedAttempts = current.failedAttempts + 1)
+                }
+            }
+        }
 
-        cache.put(key, entry.markVerified(now.plusMinutes(properties.verifiedValidMinutes)))
+        rejected?.let { throw BusinessException(it) }
+        if (kept == null) throw BusinessException(AuthExceptionCode.VERIFICATION_NOT_FOUND)
     }
 
     /**

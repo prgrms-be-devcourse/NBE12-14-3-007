@@ -25,6 +25,10 @@ enum class AuthExceptionCode(
     ACCOUNT_EXPIRED("AUTH005", HttpStatus.UNAUTHORIZED, "만료된 계정입니다."),
     /** 2차 인증(MFA)이 더 필요함 */
     MULTI_FACTOR_REQUIRED("AUTH006", HttpStatus.UNAUTHORIZED, "추가 인증이 필요합니다."),
+    /** 로그인을 정해진 횟수만큼 틀려서 잠시 막힘. 비밀번호 대입 공격을 막는다 */
+    TOO_MANY_LOGIN_ATTEMPTS("AUTH007", HttpStatus.TOO_MANY_REQUESTS, "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요."),
+    /** 같은 곳에서 가입 요청이 너무 많음 */
+    TOO_MANY_SIGNUPS("AUTH008", HttpStatus.TOO_MANY_REQUESTS, "가입 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요."),
 
     /** 로그인은 됐으나 권한 부족 (예: USER가 관리자 API 호출, 403) */
     ACCESS_DENIED("AUTH100", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
@@ -43,6 +47,8 @@ enum class AuthExceptionCode(
     VERIFICATION_CODE_MISMATCH("AUTH301", HttpStatus.BAD_REQUEST, "인증 코드가 올바르지 않습니다."),
     VERIFICATION_CODE_EXPIRED("AUTH302", HttpStatus.BAD_REQUEST, "인증 코드가 만료되었습니다. 다시 요청해 주세요."),
     VERIFICATION_RESEND_TOO_SOON("AUTH303", HttpStatus.TOO_MANY_REQUESTS, "잠시 후에 다시 요청해 주세요."),
+    /** 인증 코드를 여러 번 틀려서 그 코드를 폐기함. 코드를 다시 요청해야 한다 */
+    VERIFICATION_TOO_MANY_ATTEMPTS("AUTH306", HttpStatus.TOO_MANY_REQUESTS, "인증 코드를 너무 많이 틀렸습니다. 코드를 다시 요청해 주세요."),
     /** 인증 코드 확인을 건너뛰고 비밀번호 변경을 시도한 경우 */
     VERIFICATION_REQUIRED("AUTH305", HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 완료해 주세요."),
     SAME_AS_OLD_PASSWORD("AUTH304", HttpStatus.BAD_REQUEST, "기존 비밀번호와 다른 비밀번호를 입력해 주세요.")
