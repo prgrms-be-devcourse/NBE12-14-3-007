@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Heart, ImageOff } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
+import { richTextToPlainText } from "./RichText";
 import { dateText, dateTimeText } from "../lib/format";
 import type { PostSummary } from "../lib/types";
 import { Badge, Photo } from "./ui";
@@ -11,18 +12,49 @@ export function ReviewRow({
 }: {
   post: PostSummary;
   management?: { deletedAt: string | null; onOpen?: () => void };
-  /** 카드형 목록에서 사진이 없을 때 빈 자리 대신 기본 이미지를 보여준다. */
+  /** 카드형 목록에서 사진이 없으면 제목과 본문 미리보기를 보여준다. */
   placeholder?: boolean;
 }) {
   const deletedAt = management?.deletedAt;
   const canOpen = !deletedAt && (!management || !!management.onOpen);
+  const clickableCard = placeholder && canOpen && !management;
+  const hasPhoto = Boolean(post.thumbnail?.trim());
+  const textOnly = placeholder && !hasPhoto;
+  const preview = post.preview ?? (
+    "content" in post && typeof post.content === "string"
+      ? richTextToPlainText(post.content).slice(0, 240)
+      : ""
+  );
+  const title = (
+    <h3>
+      {!canOpen ? post.title : management ? (
+        <button className="post-title-button" onClick={management.onOpen}>{post.title}</button>
+      ) : (
+        <Link to={`/reviews/${post.id}`}>{post.title}</Link>
+      )}
+    </h3>
+  );
   const photo = <Photo src={post.thumbnail} alt="" />;
   return (
     <article
-      className={`post-row${deletedAt ? " post-row-deleted" : ""}`}
+      className={`post-row${textOnly ? " post-row-text" : ""}${clickableCard ? " post-row-clickable" : ""}${deletedAt ? " post-row-deleted" : ""}`}
       aria-label={post.title}
     >
+      {clickableCard && (
+        <Link
+          className="post-card-link"
+          to={`/reviews/${post.id}`}
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      )}
       <div className="post-row-copy">
+        {textOnly && (
+          <div className="post-text-preview">
+            {title}
+            {preview && <p>{preview}</p>}
+          </div>
+        )}
         <span className="review-byline">
           <span className="avatar tiny">{post.member.nickname[0]}</span>
           {post.member.nickname}
@@ -42,17 +74,7 @@ export function ReviewRow({
             </span>
           )}
         </span>
-        <h3>
-          {!canOpen ? (
-            post.title
-          ) : management ? (
-            <button className="post-title-button" onClick={management.onOpen}>
-              {post.title}
-            </button>
-          ) : (
-            <Link to={`/reviews/${post.id}`}>{post.title}</Link>
-          )}
-        </h3>
+        {!textOnly && title}
         <Link
           className="post-event-link small-text"
           to={`/events/${post.festivalId}`}
@@ -68,7 +90,7 @@ export function ReviewRow({
           </p>
         )}
       </div>
-      {post.thumbnail &&
+      {hasPhoto &&
         (!canOpen ? (
           <div className="post-thumbnail">{photo}</div>
         ) : management ? (
@@ -88,12 +110,6 @@ export function ReviewRow({
             {photo}
           </Link>
         ))}
-      {!post.thumbnail && placeholder && (
-        <div className="post-thumbnail post-thumbnail-empty" aria-hidden="true">
-          <ImageOff size={30} />
-          사진 없이 남긴 후기예요
-        </div>
-      )}
       {canOpen &&
         (management ? (
           <button

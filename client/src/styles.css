@@ -475,31 +475,12 @@ select {
   width: 25px;
   height: 28px;
 }
-.footer-top p {
-  color: #646a60;
-  font-size: 13px;
-  margin-top: 13px;
-  line-height: 1.9;
-}
 .footer-links {
   display: flex;
   gap: 27px;
   font-size: 13px;
   color: #616b60;
   margin-top: 13px;
-}
-.footer-message {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: #606b5a;
-  line-height: 1.8;
-  margin-top: 10px;
-}
-.footer-message strong {
-  font-weight: 550;
-  color: #5d6c57;
 }
 .footer-bottom {
   border-top: 1px solid #e9ede3;
@@ -508,9 +489,6 @@ select {
   justify-content: space-between;
   font-size: 11px;
   color: #656a61;
-}
-.footer-bottom > span:last-child {
-  letter-spacing: 1.7px;
 }
 .home-intro {
   padding-top: 28px;
@@ -3500,6 +3478,23 @@ button.post-thumbnail {
   flex: 1;
   min-width: 0;
 }
+.post-row-clickable {
+  position: relative;
+}
+.post-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.post-row-clickable .post-event-link,
+.post-row-clickable h3 a,
+.post-row-clickable .post-thumbnail {
+  position: relative;
+  z-index: 2;
+}
+.post-row-clickable .post-detail-link {
+  z-index: 2;
+}
 .post-row .review-byline {
   margin: 0;
   justify-content: flex-start;
@@ -4293,9 +4288,6 @@ button.post-thumbnail {
   }
   .review-filter select {
     max-width: 265px;
-  }
-  .footer-message {
-    display: none;
   }
   .filter-panel {
     padding: 18px;

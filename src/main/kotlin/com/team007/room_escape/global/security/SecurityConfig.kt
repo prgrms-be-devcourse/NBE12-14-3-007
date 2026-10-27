@@ -50,6 +50,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/community/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/weather").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/support/**").permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                     // 비회원의 R2 용량 남용을 막고, 제재(ROLE_WARNING) 회원은 글쓰기와 같은 기준으로 막는다.
                     .requestMatchers(HttpMethod.POST, "/api/v1/images").hasRole("UNVERIFIED")

@@ -46,16 +46,20 @@ import type {
   FestivalSearchItem,
   WeatherCondition,
   WeatherView,
+  SupportArticle,
+  SupportArticleInput,
 } from "./types";
 import {
   demoEvents,
   previewSubmittedEvents,
   previewPosts,
+  previewNotices,
+  previewFaqs,
   readDemo,
   updateDemo,
   type ReviewSort,
 } from "./demo";
-import { parseDateTime, formatRegionDetail } from "./format";
+import { parseDateTime, formatRegionDetail, normalizeFestivalCategory } from "./format";
 import { matchesRegion } from "./regions";
 
 // 선택 항목을 비운 등록·수정 요청은 DB에 빈 문자열 대신 null로 저장합니다.
@@ -255,12 +259,13 @@ function toEventView(item: FestivalSearchItem): EventView {
     festivalId: item.festivalId,
     source: item.providerType,
     title: item.title,
-    category: item.category,
+    category: normalizeFestivalCategory(item.category),
     instNm: item.instNm,
     manager: null,
     festivalContent: null,
     referenceUrl: null,
     region: item.region,
+    district: item.district,
     regionDetail: formatRegionDetail(item.district, item.regionDetail),
     imgUrl: item.imgUrl,
     beginDe: item.beginDe,
@@ -286,7 +291,7 @@ function toDetailEvent(item: FestivalDetailItem): EventView {
     festivalId: item.festivalId,
     source: item.providerType,
     title: item.title,
-    category: item.category,
+    category: normalizeFestivalCategory(item.category),
     instNm: item.instNm,
     manager: null,
     festivalContent: item.festivalContent,
@@ -367,7 +372,7 @@ export function createApi(mode: Mode) {
                   .includes(keyword)) &&
               (!input.region || matchesRegion(event.region, input.region)) &&
               (!input.providerType || event.source === input.providerType) &&
-              (!input.category || event.category === input.category) &&
+              (!input.category || normalizeFestivalCategory(event.category) === normalizeFestivalCategory(input.category)) &&
               (!input.date ||
                 (event.beginDe.slice(0, 10) <= input.date &&
                   event.endDe.slice(0, 10) >= input.date)) &&
@@ -375,6 +380,7 @@ export function createApi(mode: Mode) {
           )
           .map((event) => ({
             ...event,
+            category: normalizeFestivalCategory(event.category),
             likeCount: demoLikes[`festival:${event.festivalId}`] || 0,
           }))
           .sort((a, b) =>
@@ -400,7 +406,7 @@ export function createApi(mode: Mode) {
       if (input.region) params.set("region", input.region);
       if (input.regionDetail) params.set("regionDetail", input.regionDetail);
       if (input.providerType) params.set("providerType", input.providerType);
-      if (input.category) params.set("category", input.category);
+      if (input.category) params.set("category", normalizeFestivalCategory(input.category));
       if (input.date) params.set("date", input.date);
       if (input.excludeClosed) params.set("excludeClosed", "true");
       if (input.sort === "name") params.set("sort", "title,asc");
@@ -1153,6 +1159,55 @@ export function createApi(mode: Mode) {
       form.append("type", type);
       return transport<{ key: string; url: string }>("/images", "POST", form);
     },
+    /** 고객센터 공지사항. 최신순으로 오고 로그인 없이 볼 수 있다. */
+    async supportNotices(page = 0) {
+      if (demo) return pageOf(previewNotices, page, SUPPORT_PAGE_SIZE);
+      return this.adminSupportNotices(page);
+    },
+    /** 고객센터 자주 묻는 질문 전체. 관리자가 정한 순서로 온다. */
+    async supportFaqs() {
+      if (demo) return previewFaqs;
+      return this.adminSupportFaqs();
+    },
+    /**
+     * [ADMIN] 관리자 화면의 공지사항 목록. 공개 API와 같지만,
+     * 예시 데이터 모드에서도 실제 서버를 불러 방금 고친 글이 바로 보이게 한다.
+     */
+    async adminSupportNotices(page = 0) {
+      return transport<Page<SupportArticle>>(
+        `/support/notices?page=${page}&size=${SUPPORT_PAGE_SIZE}`,
+      );
+    },
+    /** [ADMIN] 관리자 화면의 자주 묻는 질문 목록. */
+    async adminSupportFaqs() {
+      return transport<SupportArticle[]>("/support/faqs");
+    },
+    /** [ADMIN] 고객센터 글 쓰기. 질문의 표시 순서를 비우면 맨 아래에 붙는다. */
+    async createSupportArticle(input: SupportArticleInput) {
+      return transport<SupportArticle>(
+        "/admin/support/articles",
+        "POST",
+        input,
+      );
+    },
+    /** [ADMIN] 고객센터 글 수정. 종류는 바꿀 수 없다. */
+    async updateSupportArticle(articleId: number, input: SupportArticleInput) {
+      return transport<SupportArticle>(
+        `/admin/support/articles/${articleId}`,
+        "PUT",
+        {
+          title: input.title,
+          content: input.content,
+          displayOrder: input.displayOrder,
+        },
+      );
+    },
+    /** [ADMIN] 고객센터 글 삭제. 복구 기능은 없다. */
+    async deleteSupportArticle(articleId: number) {
+      return transport<void>(`/admin/support/articles/${articleId}`, "DELETE");
+    },
   };
 }
+/** 고객센터 공지사항 한 페이지의 개수. */
+export const SUPPORT_PAGE_SIZE = 10;
 export type Api = ReturnType<typeof createApi>;

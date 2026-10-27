@@ -78,7 +78,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 		  AND (:hasRegion = false OR f.region = :region)
 		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
-		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
+		  AND (:hasCategory = false
+               OR LOWER(COALESCE(f.category, '')) = :category
+               OR (:category = '행사/축제' AND LOWER(COALESCE(f.category, '')) = '축제')
+               OR (:category = '교육/체험' AND LOWER(COALESCE(f.category, '')) IN ('교육', '체험')))
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		""")
@@ -121,7 +124,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 		  AND (:hasRegion = false OR f.region = :region)
 		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
-		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
+		  AND (:hasCategory = false
+               OR LOWER(COALESCE(f.category, '')) = :category
+               OR (:category = '행사/축제' AND LOWER(COALESCE(f.category, '')) = '축제')
+               OR (:category = '교육/체험' AND LOWER(COALESCE(f.category, '')) IN ('교육', '체험')))
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		ORDER BY
@@ -146,7 +152,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 		  AND (:hasRegion = false OR f.region = :region)
 		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
-		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
+		  AND (:hasCategory = false
+               OR LOWER(COALESCE(f.category, '')) = :category
+               OR (:category = '행사/축제' AND LOWER(COALESCE(f.category, '')) = '축제')
+               OR (:category = '교육/체험' AND LOWER(COALESCE(f.category, '')) IN ('교육', '체험')))
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		""",
@@ -198,7 +207,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 		  AND (:hasRegion = false OR f.region = :region)
 		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
-		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
+		  AND (:hasCategory = false
+               OR LOWER(COALESCE(f.category, '')) = :category
+               OR (:category = '행사/축제' AND LOWER(COALESCE(f.category, '')) = '축제')
+               OR (:category = '교육/체험' AND LOWER(COALESCE(f.category, '')) IN ('교육', '체험')))
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		ORDER BY COALESCE(lc.likeCount, 0) DESC, f.beginDe ASC, f.id DESC
@@ -215,7 +227,10 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 		  AND (:hasRegion = false OR f.region = :region)
 		  AND (:hasRegionDetail = false OR LOWER(COALESCE(f.district, f.regionDetail, '')) = :regionDetail)
 		  AND (:hasProviderType = false OR f.providerType = :providerType)
-		  AND (:hasCategory = false OR LOWER(COALESCE(f.category, '')) = :category)
+		  AND (:hasCategory = false
+               OR LOWER(COALESCE(f.category, '')) = :category
+               OR (:category = '행사/축제' AND LOWER(COALESCE(f.category, '')) = '축제')
+               OR (:category = '교육/체험' AND LOWER(COALESCE(f.category, '')) IN ('교육', '체험')))
 		  AND (:hasDate = false OR (f.beginDe < :dateEnd AND (f.endDe IS NULL OR f.endDe >= :dateStart)))
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		""",

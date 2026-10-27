@@ -776,6 +776,29 @@ img.adm-avatar {
   border-color: #8d9f7a;
   background: #f6f8f1;
 }
+/* 한 칸에 수정·삭제처럼 버튼이 여러 개일 때 */
+.adm-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-row-button.danger {
+  color: var(--a-red, #b42318);
+}
+/* 탭 오른쪽 버튼이 여러 개인 줄. 좁은 화면에서는 버튼을 탭 아래 줄로 내려 탭이 가려지지 않게 한다. */
+@media (max-width: 640px) {
+  .adm-tab-row.adm-tab-row-wrap {
+    flex-wrap: wrap;
+    padding-right: 0;
+  }
+  .adm-tab-row.adm-tab-row-wrap > .adm-tabs {
+    flex-basis: 100%;
+  }
+  .adm-tab-row.adm-tab-row-wrap > .adm-filters {
+    flex-wrap: wrap;
+    padding: 0 18px 14px;
+  }
+}
 /*
   탭 줄 + 오른쪽 액션. 밑줄은 이 줄 전체에 걸려야 해서
   border-bottom을 .adm-tabs 에서 여기로 올렸다.

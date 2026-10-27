@@ -191,6 +191,8 @@ export interface PostSummary {
   festivalTitle: string;
   title: string;
   thumbnail: string | null;
+  /** 사진 없는 후기 카드에서 사용하는 HTML 없는 본문 미리보기. */
+  preview?: string | null;
   date: string;
   // 목록·상세 응답에 있다. 관리자 목록 응답에는 없다.
   likeCount?: number;
@@ -482,6 +484,27 @@ export interface AdminInquiryQuery {
   page?: number;
   size?: number;
   sort?: string;
+}
+/** 고객센터 글 종류. NOTICE는 최신순, FAQ는 관리자가 정한 순서로 보인다. */
+export type SupportArticleType = "NOTICE" | "FAQ";
+/** 고객센터 공지사항·자주 묻는 질문 하나. 본문은 줄바꿈으로 문단을 나눈 평문이다. */
+export interface SupportArticle {
+  id: number;
+  type: SupportArticleType;
+  title: string;
+  content: string;
+  /** 자주 묻는 질문의 표시 순서. 작을수록 위 */
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+/** 관리자 글 쓰기·수정 입력. 수정할 때 type은 무시된다. */
+export interface SupportArticleInput {
+  type: SupportArticleType;
+  title: string;
+  content: string;
+  /** 비우면 새 질문은 맨 아래, 수정은 지금 순서를 유지한다 */
+  displayOrder?: number;
 }
 export interface SignupInput {
   email: string;

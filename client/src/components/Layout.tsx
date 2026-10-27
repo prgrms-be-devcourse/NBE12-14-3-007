@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { ChevronDown, Compass, Menu, Plus, UserRound, X } from "lucide-react";
+import { ChevronDown, Menu, Plus, UserRound, X } from "lucide-react";
 import { useApp } from "../lib/context";
 import { Logo } from "./ui";
 
@@ -173,34 +173,16 @@ export function Layout() {
               <Link to="/">
                 <Logo />
               </Link>
-              <p>
-                일상 밖, 새로운 즐거움.
-                <br />
-                발견하고, 함께하고, 기록해요.
-              </p>
             </div>
             <div className="footer-links">
-              <Link to="/explore">행사</Link>
-              <Link to="/submissions/new">행사 제보</Link>
-              <Link to="/reviews">후기</Link>
-              <Link to="/community">커뮤니티</Link>
               <Link to="/support/notices">공지사항</Link>
               <Link to="/support/faq">자주 묻는 질문</Link>
               <Link to="/mypage?tab=inquiries">문의하기</Link>
               <Link to="/admin">시스템 관리자</Link>
             </div>
-            <div className="footer-message">
-              <Compass size={24} />
-              <span>
-                우리의 다음 즐거움은
-                <br />
-                <strong>생각보다 가까이에.</strong>
-              </span>
-            </div>
           </div>
           <div className="footer-bottom">
-            <span>© 2026 roomescape. 함께 만드는 즐거운 일상.</span>
-            <span>일상에 즐거움을 더하다</span>
+            <span>© 2026 roomescape.</span>
           </div>
         </div>
       </footer>
