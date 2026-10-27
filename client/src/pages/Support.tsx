@@ -13,6 +13,7 @@ import type { SupportArticle } from "../lib/types";
 
 type Kind = "notices" | "faq";
 
+
 const TABS: { kind: Kind; label: string }[] = [
   { kind: "notices", label: "공지사항" },
   { kind: "faq", label: "자주 묻는 질문" },

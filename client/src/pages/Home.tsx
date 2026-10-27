@@ -13,12 +13,14 @@ import {
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
 import { previewPosts } from "../lib/demo";
-import { categories, dateText, period, regions } from "../lib/format";
+import { dateText, period, regions } from "../lib/format";
+import { FestivalCategorySelect } from "../components/FestivalCategorySelect";
 import { regionGroups } from "../lib/regions";
 import { DISTRICT_POINTS, PROVINCE_ORDER, PROVINCES } from "../lib/koreaMap";
 import { richTextToPlainText } from "../components/RichText";
 import { KoreaMap, zoomFor, type MapPin as Pin } from "../components/KoreaMap";
 import { TrustGradeBadge } from "../components/TrustGradeBadge";
+import { FestivalCover } from "../components/FestivalCover";
 import {
   Empty,
   FESTIVAL_DEFAULT_IMAGE,
@@ -30,6 +32,14 @@ import type { EventView } from "../lib/types";
 
 /** 분류 태그 색. 색은 태그에만 쓰고 카드 바탕에는 쓰지 않는다. */
 const TAG_COLORS: Record<string, string> = {
+  "행사/축제": "#c8401c",
+  "교육/체험": "#5b3a8c",
+  연극: "#2343d1",
+  "음악/콘서트": "#2343d1",
+  "뮤지컬/오페라": "#2343d1",
+  "무용/발레": "#2343d1",
+  국악: "#2343d1",
+  "아동/가족": "#7a5a00",
   축제: "#c8401c",
   공연: "#2343d1",
   전시: "#1b1b1b",
@@ -241,22 +251,14 @@ export function Home() {
     <div className="home-c">
       <section className="home-hero container" aria-labelledby="home-title">
         <h1 id="home-title">이번 주말, 어디로 떠나볼까요?</h1>
-        <div className="category-tabs" role="group" aria-label="행사 종류">
-          {categories.map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={category === c ? "active" : ""}
-              aria-pressed={category === c}
-              onClick={() => {
-                setCategory(c);
-                setHover(null);
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <FestivalCategorySelect
+          value={category}
+          includeAll
+          onChange={(next) => {
+            setCategory(next);
+            setHover(null);
+          }}
+        />
       </section>
 
       <section className="home-map container" aria-label="지역 지도와 행사">
@@ -436,6 +438,7 @@ export function Home() {
           onSubmit={(e) => {
             e.preventDefault();
             const params = new URLSearchParams();
+            if (categoryParam) params.set("category", categoryParam);
             if (region) params.set("region", region);
             if (date) params.set("date", date);
             if (query.trim()) params.set("q", query.trim());
@@ -531,6 +534,7 @@ export function Home() {
                       src={event.imgUrl}
                       alt=""
                       fallbackSrc={FESTIVAL_DEFAULT_IMAGE}
+                      fallback={<FestivalCover event={event} />}
                     />
                     <span className="memo-where">
                       {[regions[event.region], event.regionDetail]

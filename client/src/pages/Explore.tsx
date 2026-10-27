@@ -10,7 +10,8 @@ import {
   Search,
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
-import { categories } from "../lib/format";
+import { normalizeFestivalCategory } from "../lib/format";
+import { FestivalCategorySelect } from "../components/FestivalCategorySelect";
 import { selectedRegion } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
 import {
@@ -28,7 +29,7 @@ export function Explore() {
   const [params, setParams] = useSearchParams();
   const [layout, setLayout] = useState("grid");
 
-  const category = params.get("category") || "전체";
+  const category = normalizeFestivalCategory(params.get("category") || "전체");
   const region = params.get("region") || "";
   const date = params.get("date") || "";
   const query = params.get("q") || "";
@@ -162,18 +163,12 @@ export function Explore() {
         </div>
       </form>
 
-      <div className="filter-bottom">
-        <div className="category-tabs" role="group" aria-label="행사 종류">
-          {categories.map((item) => (
-            <button
-              key={item}
-              className={category === item ? "active" : ""}
-              onClick={() => setFilter("category", item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+      <div className="filter-bottom festival-category-toolbar">
+        <FestivalCategorySelect
+          value={category}
+          includeAll
+          onChange={(next) => setFilter("category", next)}
+        />
         <button
           className="text-button muted"
           onClick={() => {
@@ -212,7 +207,7 @@ export function Explore() {
           >
             <option value="">모든 출처</option>
             <option value="PUBLIC">공공 행사</option>
-            <option value="MEMBER">민간 행사</option>
+            <option value="MEMBER">회원제보 행사</option>
           </select>
           <select
             aria-label="행사 정렬"
