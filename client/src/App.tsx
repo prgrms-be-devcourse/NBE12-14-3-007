@@ -16,6 +16,7 @@ import {
 } from "./pages/Community";
 import { AppProvider } from "./lib/context";
 import { AdminReviews } from "./admin/AdminReviews";
+import { AdminSupport } from "./admin/AdminSupport";
 import { AdminLogin, AdminRoot } from "./admin/AdminAuth";
 import {
   AdminLayout,
@@ -40,6 +41,7 @@ export function App() {
           />
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="inquiries" element={<AdminTickets />} />
+          <Route path="support" element={<AdminSupport />} />
           <Route path="activity" element={<AdminActivity />} />
         </Route>
       </Route>

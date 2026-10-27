@@ -19,6 +19,7 @@ import {
   Eye,
   Flag,
   LayoutDashboard,
+  Megaphone,
   MessageSquare,
   RefreshCw,
   RotateCcw,
@@ -64,6 +65,7 @@ const navigation = [
   { to: "/admin/events", label: "행사 관리", icon: CalendarDays },
   { to: "/admin/reviews", label: "후기 관리", icon: MessageSquare },
   { to: "/admin/inquiries", label: "문의·신고·제보", icon: Flag },
+  { to: "/admin/support", label: "고객센터 관리", icon: Megaphone },
   { to: "/admin/activity", label: "운영 기록", icon: Activity },
 ];
 const tone = (status: string) =>
