@@ -94,7 +94,8 @@ class FestivalSyncExecutorTest {
         assertThat(executor.tryStart()).isTrue()
         awaitStatus { !it.running }
         assertThat(executor.status().lastError)
-            .isNotEqualTo("Cannot invoke because x is null")
+            .isNotEqualTo("Cannot invoke because x is null") // 기술적인 상세 메시지는 안 보여줌
+            .contains("NullPointerException") // 그래도 무슨 종류인지는 알 수 있게
             .contains("개발팀")
     }
 
@@ -125,7 +126,9 @@ class FestivalSyncExecutorTest {
 
         assertThat(executor.tryStart()).isTrue()
         awaitStatus { !it.running }
-        assertThat(executor.status().lastError).contains("개발팀")
+        assertThat(executor.status().lastError)
+            .contains("OutOfMemoryError")
+            .contains("개발팀")
     }
 
     @Test

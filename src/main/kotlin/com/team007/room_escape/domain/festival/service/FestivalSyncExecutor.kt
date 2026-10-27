@@ -101,10 +101,10 @@ class FestivalSyncExecutor(
         }
     }
 
+    /**
+     * BusinessException이 아니면 어떤 예외인지 예상할 수 없어 스택트레이스·상세 메시지는 숨기지만,
+     * 예외 종류 이름 정도는 보여줘야 관리자가 같은 문제인지 아닌지라도 구분할 수 있다.
+     */
     private fun failureMessage(e: Throwable): String? =
-        if (e is BusinessException) e.message else UNEXPECTED_ERROR_MESSAGE
-
-    companion object {
-        private const val UNEXPECTED_ERROR_MESSAGE = "동기화 중 예상치 못한 오류가 발생했어요. 개발팀에 문의해 주세요."
-    }
+        if (e is BusinessException) e.message else "${e.javaClass.simpleName} 오류가 발생했어요. 개발팀에 문의해 주세요."
 }

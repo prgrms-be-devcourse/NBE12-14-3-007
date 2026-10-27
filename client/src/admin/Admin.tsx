@@ -1056,13 +1056,16 @@ function SyncButton() {
     finishedAt: string | null;
   } | null>(null);
   // 폴링 도중 화면을 떠나도 몇 분씩 계속 돌다가 뒤늦게 토스트가 뜨는 걸 막는다.
+  // mount에서도 true로 되돌려야 한다 — StrictMode 개발 모드는 effect를 mount→정리→
+  // 재mount 순서로 한 번 더 시뮬레이션해서, 정리에서만 false로 두면 재mount 후에도
+  // false로 남아 폴링이 시작부터 멈춰버린다.
   const mountedRef = useRef(true);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
       mountedRef.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
   // 화면을 처음 열었을 때도 마지막 자동 동기화 결과를 바로 보여준다.
   useEffect(() => {
     api
