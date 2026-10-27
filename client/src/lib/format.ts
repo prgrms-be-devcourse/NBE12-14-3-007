@@ -53,19 +53,33 @@ export const regions: Record<string, string> = {
     ].map(([key, name]) => [`GYEONGGI_${key}`, `경기도 ${name}`]),
   ),
 };
-export const categories = [
-  "전체",
+/** 등록·수정과 홈·행사 검색에서 함께 사용하는 분류입니다. */
+export const festivalCategories = [
   "연극",
   "음악/콘서트",
   "뮤지컬/오페라",
   "무용/발레",
   "국악",
   "아동/가족",
+  "공연",
   "전시",
   "교육/체험",
   "행사/축제",
+  "플리마켓",
   "기타",
 ];
+export const categories = ["전체", ...festivalCategories];
+
+/** 이전 제보 분류도 현재 검색 분류로 조회하고 수정할 수 있도록 연결합니다. */
+export function normalizeFestivalCategory(value?: string | null) {
+  const category = value?.trim() || "";
+  switch (category) {
+    case "축제": return "행사/축제";
+    case "교육":
+    case "체험": return "교육/체험";
+    default: return category;
+  }
+}
 export const roleNames: Record<string, string> = {
   ROLE_WARNING: "활동 제한",
   ROLE_UNVERIFIED: "탈출 꿈나무",

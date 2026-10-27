@@ -17,6 +17,7 @@ export function ReviewRow({
 }) {
   const deletedAt = management?.deletedAt;
   const canOpen = !deletedAt && (!management || !!management.onOpen);
+  const clickableCard = placeholder && canOpen && !management;
   const hasPhoto = Boolean(post.thumbnail?.trim());
   const textOnly = placeholder && !hasPhoto;
   const preview = post.preview ?? (
@@ -36,9 +37,17 @@ export function ReviewRow({
   const photo = <Photo src={post.thumbnail} alt="" />;
   return (
     <article
-      className={`post-row${textOnly ? " post-row-text" : ""}${deletedAt ? " post-row-deleted" : ""}`}
+      className={`post-row${textOnly ? " post-row-text" : ""}${clickableCard ? " post-row-clickable" : ""}${deletedAt ? " post-row-deleted" : ""}`}
       aria-label={post.title}
     >
+      {clickableCard && (
+        <Link
+          className="post-card-link"
+          to={`/reviews/${post.id}`}
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      )}
       <div className="post-row-copy">
         {textOnly && (
           <div className="post-text-preview">

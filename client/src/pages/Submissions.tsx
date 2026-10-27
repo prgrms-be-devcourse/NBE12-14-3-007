@@ -8,7 +8,8 @@ import {
   Send,
 } from "lucide-react";
 import { useApp, useLoad } from "../lib/context";
-import { errorText, period, regions } from "../lib/format";
+import { errorText, period, regions, normalizeFestivalCategory } from "../lib/format";
+import { FestivalCategorySelect } from "../components/FestivalCategorySelect";
 import { selectedRegion, regionGroups } from "../lib/regions";
 import { RegionSelects } from "../components/RegionSelects";
 import { submissionLimits, submissionLengthMessages, isValidSubmissionReferenceUrl, invalidReferenceUrlMessage } from "../lib/submissionValidation";
@@ -126,6 +127,7 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
     ...(current
       ? {
           title: current.festival.title,
+          category: normalizeFestivalCategory(current.festival.category),
           region: current.festival.district
             ? regionGroups.find(g => g.value === current.festival.region)?.districts
                 .find(d => d.label === current.festival.district)?.value || current.festival.region
@@ -331,31 +333,10 @@ function SubmissionForm({ existing }: { existing?: SubmissionDetail }) {
               <span>
                 행사 종류<b className="required">*</b>
               </span>
-              <div
-                className="category-tabs"
-                role="group"
-                aria-label="행사 종류"
-              >
-                {[
-                  "축제",
-                  "공연",
-                  "전시",
-                  "체험",
-                  "플리마켓",
-                  "교육",
-                  "기타",
-                ].map((category) => (
-                  <button
-                    type="button"
-                    key={category}
-                    className={form.category === category ? "active" : ""}
-                    aria-pressed={form.category === category}
-                    onClick={() => change("category", category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              <FestivalCategorySelect
+                value={form.category}
+                onChange={(next) => change("category", next)}
+              />
             </div>
             <Field label="주최 기관">
               <input

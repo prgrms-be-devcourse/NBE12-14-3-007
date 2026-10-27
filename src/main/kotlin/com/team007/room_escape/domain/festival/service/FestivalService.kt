@@ -121,7 +121,11 @@ class FestivalService(
         pageable: Pageable
     ): Page<FestivalResponse.ListItem> {
         val keyword = normalize(request.keyword)
-        val category = normalize(request.category)
+        val category = when (val value = normalize(request.category)) {
+            "축제" -> "행사/축제"
+            "교육", "체험" -> "교육/체험"
+            else -> value
+        }
         val regionDetail = normalize(request.regionDetail)
 
         val dateStart = request.date?.atStartOfDay()

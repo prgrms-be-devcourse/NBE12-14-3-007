@@ -59,7 +59,7 @@ import {
   updateDemo,
   type ReviewSort,
 } from "./demo";
-import { parseDateTime, formatRegionDetail } from "./format";
+import { parseDateTime, formatRegionDetail, normalizeFestivalCategory } from "./format";
 import { matchesRegion } from "./regions";
 
 // 선택 항목을 비운 등록·수정 요청은 DB에 빈 문자열 대신 null로 저장합니다.
@@ -259,7 +259,7 @@ function toEventView(item: FestivalSearchItem): EventView {
     festivalId: item.festivalId,
     source: item.providerType,
     title: item.title,
-    category: item.category,
+    category: normalizeFestivalCategory(item.category),
     instNm: item.instNm,
     manager: null,
     festivalContent: null,
@@ -291,7 +291,7 @@ function toDetailEvent(item: FestivalDetailItem): EventView {
     festivalId: item.festivalId,
     source: item.providerType,
     title: item.title,
-    category: item.category,
+    category: normalizeFestivalCategory(item.category),
     instNm: item.instNm,
     manager: null,
     festivalContent: item.festivalContent,
@@ -372,7 +372,7 @@ export function createApi(mode: Mode) {
                   .includes(keyword)) &&
               (!input.region || matchesRegion(event.region, input.region)) &&
               (!input.providerType || event.source === input.providerType) &&
-              (!input.category || event.category === input.category) &&
+              (!input.category || normalizeFestivalCategory(event.category) === normalizeFestivalCategory(input.category)) &&
               (!input.date ||
                 (event.beginDe.slice(0, 10) <= input.date &&
                   event.endDe.slice(0, 10) >= input.date)) &&
@@ -380,6 +380,7 @@ export function createApi(mode: Mode) {
           )
           .map((event) => ({
             ...event,
+            category: normalizeFestivalCategory(event.category),
             likeCount: demoLikes[`festival:${event.festivalId}`] || 0,
           }))
           .sort((a, b) =>
@@ -405,7 +406,7 @@ export function createApi(mode: Mode) {
       if (input.region) params.set("region", input.region);
       if (input.regionDetail) params.set("regionDetail", input.regionDetail);
       if (input.providerType) params.set("providerType", input.providerType);
-      if (input.category) params.set("category", input.category);
+      if (input.category) params.set("category", normalizeFestivalCategory(input.category));
       if (input.date) params.set("date", input.date);
       if (input.excludeClosed) params.set("excludeClosed", "true");
       if (input.sort === "name") params.set("sort", "title,asc");
