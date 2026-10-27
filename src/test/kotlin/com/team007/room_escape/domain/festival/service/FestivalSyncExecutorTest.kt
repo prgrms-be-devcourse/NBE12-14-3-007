@@ -1,6 +1,8 @@
 package com.team007.room_escape.domain.festival.service
 
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
+import com.team007.room_escape.global.exception.BusinessException
+import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
@@ -68,18 +70,31 @@ class FestivalSyncExecutorTest {
     }
 
     @Test
-    @DisplayName("동기화 중 예외가 나도 잠금이 풀려서 다음 실행이 막히지 않고, status에 에러가 남는다")
-    fun releasesGateWhenSyncThrowsAndRecordsError() {
+    @DisplayName("BusinessException이 나면 이미 다듬어진 메시지를 그대로 status.lastError에 남긴다")
+    fun recordsBusinessExceptionMessageAsIs() {
         `when`(festivalService.syncPublicFestivals())
-            .thenThrow(IllegalStateException("공공 API 실패"))
+            .thenThrow(BusinessException(FestivalExceptionCode.PUBLIC_API_CALL_FAILED))
             .thenReturn(RESULT)
 
         assertThat(executor.tryStart()).isTrue()
         awaitStatus { !it.running }
-        assertThat(executor.status().lastError).isEqualTo("공공 API 실패")
+        assertThat(executor.status().lastError).isEqualTo(FestivalExceptionCode.PUBLIC_API_CALL_FAILED.message)
+
+        assertThat(executor.tryStart()).isTrue() // 잠금이 풀려서 다음 실행이 막히지 않는다
+        awaitStatus { it.lastResult == RESULT }
+    }
+
+    @Test
+    @DisplayName("예상 못한 예외는 기술적인 메시지 대신 관리자가 읽을 수 있는 일반 문구로 바꿔서 남긴다")
+    fun recordsGenericMessageForUnexpectedException() {
+        `when`(festivalService.syncPublicFestivals())
+            .thenThrow(NullPointerException("Cannot invoke because x is null"))
 
         assertThat(executor.tryStart()).isTrue()
-        awaitStatus { it.lastResult == RESULT }
+        awaitStatus { !it.running }
+        assertThat(executor.status().lastError)
+            .isNotEqualTo("Cannot invoke because x is null")
+            .contains("개발팀")
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.team007.room_escape.domain.festival.service
 
 import com.team007.room_escape.domain.festival.dto.FestivalResponse
+import com.team007.room_escape.global.exception.BusinessException
 import java.time.Instant
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicReference
@@ -72,7 +73,16 @@ class FestivalSyncExecutor(
         status.set(FestivalResponse.SyncStatusResponse(false, result, null, Instant.now()))
     }
 
+    /**
+     * BusinessException은 관리자가 로그 없이 읽어도 이해할 수 있게 이미 다듬어진 메시지라 그대로 쓰고,
+     * 그 외 예상치 못한 예외는 기술적인 메시지(스택트레이스 등)가 그대로 노출되지 않게 일반 문구로 바꾼다.
+     */
     private fun markFailed(e: Exception) {
-        status.set(FestivalResponse.SyncStatusResponse(false, null, e.message, Instant.now()))
+        val message = if (e is BusinessException) e.message else UNEXPECTED_ERROR_MESSAGE
+        status.set(FestivalResponse.SyncStatusResponse(false, null, message, Instant.now()))
+    }
+
+    companion object {
+        private const val UNEXPECTED_ERROR_MESSAGE = "동기화 중 예상치 못한 오류가 발생했어요. 개발팀에 문의해 주세요."
     }
 }
