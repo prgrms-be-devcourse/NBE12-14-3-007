@@ -119,4 +119,18 @@ class UploadedImageTransactionTest @Autowired constructor(
         }
         assertThat(repository.findById(key).orElseThrow().state).isEqualTo(UploadState.DELETING)
     }
+
+    @Test
+    fun recentUploadCountIncludesOnlyThisOwnersUploadsAfterTheCutoff() {
+        val since = Instant.now().minus(Duration.ofHours(24))
+        val someone = UUID.randomUUID()
+        transactions.executeWithoutResult {
+            repository.save(UploadedImage("posts/$someone/${UUID.randomUUID()}.png", someone, since.plusSeconds(60)))
+            repository.save(UploadedImage("posts/$someone/${UUID.randomUUID()}.png", someone, since.plusSeconds(120)))
+            repository.save(UploadedImage("posts/$someone/${UUID.randomUUID()}.png", someone, since.minusSeconds(60))) // 24시간 전
+            repository.save(UploadedImage("posts/$owner/${UUID.randomUUID()}.png", owner, since.plusSeconds(60))) // 다른 회원
+        }
+
+        assertThat(repository.countByOwnerIdAndUploadedAtAfter(someone, since)).isEqualTo(2)
+    }
 }

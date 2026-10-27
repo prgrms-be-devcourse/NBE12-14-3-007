@@ -23,6 +23,7 @@ class ImageController(
     private val r2StorageService: R2StorageService,
     private val imageUrlResolver: ImageUrlResolver,
     private val memberReader: MemberReader,
+    private val uploadQuota: UploadQuota,
 ) {
 
     /** 업로드 폴더 구분. 임의 경로를 못 넘기게 enum으로 고정한다. */
@@ -40,7 +41,8 @@ class ImageController(
     @Operation(
         summary = "이미지 업로드",
         description = "이미지를 업로드하고 저장 key와 공개 URL을 돌려준다. " +
-            "DB에는 URL이 아니라 key를 저장한다. jpeg/png/webp만 허용하며 최대 5MB.",
+            "DB에는 URL이 아니라 key를 저장한다. jpeg/png/webp만 허용하며 최대 5MB. " +
+            "파일 내용을 확인하고 촬영 위치 같은 메타데이터는 지운 뒤 저장한다. 회원당 하루 업로드 수에 한도가 있다.",
     )
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun upload(
@@ -51,6 +53,7 @@ class ImageController(
     ): ResponseEntity<ApiResponse<UploadInfo>> {
         // 토큰 발급 이후 탈퇴·제재됐을 수 있으므로 업로드 전에 DB의 현재 상태를 확인한다.
         memberReader.getUnrestrictedMember(principal.id)
+        uploadQuota.requireAvailable(principal.id)
         val key = r2StorageService.upload(file, type.directory, principal.id)
         return ResponseEntity.ok(ApiResponse.ok(UploadInfo(key, imageUrlResolver.resolve(key))))
     }

@@ -3,6 +3,7 @@ package com.team007.room_escape.global.storage
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.StorageExceptionCode
+import com.team007.room_escape.support.ImageFixtures
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -43,6 +44,7 @@ class R2StorageServiceTest {
         s3Client,
         R2Properties("account", "access", "secret", "my-bucket", "https://img.example.com"),
         uploads,
+        ImageSanitizer(maxPixels = 25_000_000),
     )
 
     private val me = UUID.randomUUID()
@@ -63,7 +65,7 @@ class R2StorageServiceTest {
         verify(s3Client, never()).deleteObject(any(DeleteObjectRequest::class.java))
     }
 
-    private fun pngFile() = MockMultipartFile("file", "a.png", "image/png", byteArrayOf(1, 2, 3))
+    private fun pngFile() = MockMultipartFile("file", "a.png", "image/png", ImageFixtures.png())
 
     private fun uploadedRequest(): PutObjectRequest {
         val captor = ArgumentCaptor.forClass(PutObjectRequest::class.java)
@@ -136,9 +138,35 @@ class R2StorageServiceTest {
         @ParameterizedTest(name = "{0} -> .{1}")
         @CsvSource("image/jpeg,jpg", "image/png,png", "image/webp,webp")
         fun `허용한 형식은 정해진 확장자로 저장한다`(contentType: String, extension: String) {
-            val file = MockMultipartFile("file", "x", contentType, byteArrayOf(1))
+            val content = when (contentType) {
+                "image/jpeg" -> ImageFixtures.jpeg()
+                "image/png" -> ImageFixtures.png()
+                else -> ImageFixtures.webp()
+            }
+            val file = MockMultipartFile("file", "x", contentType, content)
 
             assertThat(service.upload(file, "posts", me)).endsWith(".$extension")
+        }
+
+        @Test
+        fun `이미지가 아닌 파일은 이미지 형식이라고 주장해도 올리지 않는다`() {
+            val fake = MockMultipartFile("file", "a.png", "image/png", "<script>alert(1)</script>".toByteArray())
+
+            assertThatThrownBy { service.upload(fake, "posts", me) }.isBusiness(StorageExceptionCode.INVALID_IMAGE)
+            verify(s3Client, never()).putObject(any(PutObjectRequest::class.java), any(RequestBody::class.java))
+            verify(uploads, never()).register(org.mockito.ArgumentMatchers.anyString(), any(UUID::class.java) ?: me)
+        }
+
+        @Test
+        fun `올라가는 파일에는 위치 정보가 없다`() {
+            val photo = MockMultipartFile("file", "a.jpg", "image/jpeg", ImageFixtures.jpegWithExif())
+
+            service.upload(photo, "posts", me)
+
+            val captor = ArgumentCaptor.forClass(RequestBody::class.java)
+            verify(s3Client).putObject(any(PutObjectRequest::class.java), captor.capture())
+            val stored = captor.value.contentStreamProvider().newStream().use { it.readBytes() }
+            assertThat(ImageFixtures.contains(stored, ImageFixtures.GPS_MARKER)).isFalse()
         }
 
         @Test
