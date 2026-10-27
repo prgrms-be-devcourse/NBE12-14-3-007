@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -1024,6 +1024,14 @@ function MemberDialog({
 function SyncButton() {
   const { api, toast } = useApp();
   const [running, setRunning] = useState(false);
+  // 폴링 도중 화면을 떠나도 몇 분씩 계속 돌다가 뒤늦게 토스트가 뜨는 걸 막는다.
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    [],
+  );
   return (
     <button
       type="button"
@@ -1037,8 +1045,10 @@ function SyncButton() {
           let status = await api.syncStatus();
           while (status.running) {
             await new Promise((resolve) => setTimeout(resolve, 2000));
+            if (!mountedRef.current) return; // 화면을 떠났으면 더 기다리지 않는다
             status = await api.syncStatus();
           }
+          if (!mountedRef.current) return; // 결과를 보여줄 화면이 이미 없다
           if (status.lastError) {
             // 로그를 볼 수 없는 관리자도 이해할 수 있게, 서버가 이미 다듬어서 보낸 문구를 그대로 보여준다.
             toast(`동기화 실패 · ${status.lastError}`);
@@ -1062,9 +1072,9 @@ function SyncButton() {
             }
           }
         } catch (error) {
-          toast(errorText(error));
+          if (mountedRef.current) toast(errorText(error));
         } finally {
-          setRunning(false);
+          if (mountedRef.current) setRunning(false);
         }
       }}
     >

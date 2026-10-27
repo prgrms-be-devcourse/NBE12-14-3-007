@@ -6,6 +6,7 @@ import org.assertj.core.groups.Tuple.tuple
 import com.team007.room_escape.support.anyDateTime
 import com.team007.room_escape.support.anyOf
 import com.team007.room_escape.support.anyStrings
+import com.team007.room_escape.support.anyText
 import com.team007.room_escape.support.capture
 import com.team007.room_escape.support.eqOf
 import org.mockito.ArgumentMatchers.any
@@ -351,6 +352,29 @@ class FestivalServiceTest {
 
 		assertThat(result.requestedCount).isEqualTo(2)
 		assertThat(result.interrupted).isTrue()
+	}
+
+	/**
+	 * 서버 종료 등으로 인터럽트된 것은 공공 API 호출 실패와 다르다.
+	 * 인터럽트 상태를 복구해야 호출자(스레드 풀 등)가 종료 신호를 계속 인식할 수 있고,
+	 * 더 이상 작업을 이어가면 안 되니 이미지 이관 같은 후속 작업도 건너뛰어야 한다.
+	 */
+	@Test
+	@DisplayName("상세조회 도중 인터럽트되면 이미지 이관을 건너뛰고 인터럽트 상태를 복구한다")
+	fun stopsWithoutMigratingImagesWhenInterrupted() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1"), periodRow("seq-2")))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", "29991231"))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-2"))
+				.thenAnswer { throw InterruptedException() } // thenThrow는 checked exception을 못 받는다
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(result.interrupted).isTrue()
+		assertThat(Thread.interrupted()).isTrue() // 확인과 동시에 테스트 스레드의 플래그를 지운다
+		verify(festivalRepository, never())
+				.findLegacyImages(anyText(), anyOf(Pageable::class.java, Pageable.ofSize(1)))
 	}
 
 	/** 종료 처리 목록을 뽑은 뒤, 같은 시각(now)으로 일괄 갱신까지 호출되는지 확인한다. */

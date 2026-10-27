@@ -98,6 +98,31 @@ class FestivalSyncExecutorTest {
     }
 
     @Test
+    @DisplayName("run(스케줄러용)이 끝나도 status에 남아 있는 수동 동기화 결과를 덮어쓰지 않는다")
+    fun scheduledRunDoesNotOverwriteManualStatus() {
+        `when`(festivalService.syncPublicFestivals()).thenReturn(RESULT)
+
+        assertThat(executor.tryStart()).isTrue()
+        awaitStatus { !it.running }
+        val afterManual = executor.status()
+        assertThat(afterManual.lastResult).isEqualTo(RESULT)
+
+        executor.run() // 스케줄러가 바로 뒤이어 도는 상황
+
+        assertThat(executor.status()).isEqualTo(afterManual)
+    }
+
+    @Test
+    @DisplayName("OutOfMemoryError 같은 Error가 나도 상태가 failed로 바뀌고 running에 머물지 않는다")
+    fun recordsGenericMessageForError() {
+        `when`(festivalService.syncPublicFestivals()).thenThrow(OutOfMemoryError("heap"))
+
+        assertThat(executor.tryStart()).isTrue()
+        awaitStatus { !it.running }
+        assertThat(executor.status().lastError).contains("개발팀")
+    }
+
+    @Test
     @DisplayName("run(스케줄러용)은 실행 중이면 끝날 때까지 기다렸다가 자기 회차도 실행한다")
     fun runWaitsForOngoingRunThenExecutes() {
         val started = CountDownLatch(1)
