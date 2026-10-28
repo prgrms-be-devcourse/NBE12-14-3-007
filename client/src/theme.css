@@ -2696,9 +2696,9 @@
 
 /* 행사 분류: 전체는 별도, 나머지는 화면 크기에 따라 6·3·2열로 정렬한다. */
 .explore-page .explore-title {
-  margin: 0 0 12px;
+  margin: -14px 0 28px;
   font-family: var(--c-display);
-  font-size: clamp(36px, 4.6vw, 60px);
+  font-size: clamp(28px, 3.2vw, 40px);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.5px;
@@ -2879,4 +2879,53 @@
   .theme-c .is-refreshing {
     animation-duration: 0s;
   }
+}
+
+/* 행사 구분(공공/민간) 선택 */
+.source-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1.5px solid var(--c-ink);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--c-surface);
+}
+.source-toggle button {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--c-ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.source-toggle button + button { border-left: 1.5px solid var(--c-ink); }
+.source-toggle button:hover { background: #f2f2f2; }
+.source-toggle button.active { background: var(--c-ink); color: #fff; }
+
+/* 행사 페이지: 검색창을 아래 카테고리 줄과 같은 폭으로 맞춘다. */
+.explore-page .home-search .discovery-search {
+  max-width: none;
+  margin-inline: 0;
+}
+@media (min-width: 641px) {
+  .explore-page .home-search .discovery-search { margin-inline: 48px; }
+}
+
+.festival-category-next:disabled { opacity: 0.3; cursor: default; }
+
+/* 행사 페이지: 필터(구분·지역·날짜)를 위, 검색창을 아래에 둔다. */
+.explore-page.home-c .home-search .discovery-search.is-expanded .discovery-search-bar {
+  order: 1;
+  border-radius: 0 0 9px 9px;
+  border-top: 1px solid #eaeaea;
+}
+.explore-page.home-c .home-search .discovery-search.is-expanded .discovery-search-filters {
+  border-top: 0;
+}
+/* 날짜 입력 오른쪽의 기본 달력 아이콘은 숨기고, 입력칸 클릭으로 달력을 연다. */
+.explore-page .filter-chip input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
 }

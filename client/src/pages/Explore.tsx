@@ -122,6 +122,23 @@ export function Explore() {
         }}
       >
         <div className="discovery-search-filters" id="explore-search-options">
+          <div className="source-toggle" role="group" aria-label="행사 구분">
+            {[
+              { value: "", label: "전체" },
+              { value: "PUBLIC", label: "공공행사" },
+              { value: "MEMBER", label: "민간행사" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={providerType === option.value ? "active" : ""}
+                aria-pressed={providerType === option.value}
+                onClick={() => setFilter("providerType", option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
           <div className="filter-chip">
             <MapPin size={15} />
             <span className="home-search-field-label">지역</span>
