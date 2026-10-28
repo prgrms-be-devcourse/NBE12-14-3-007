@@ -1,5 +1,5 @@
 import { ChevronLeft } from "lucide-react";
-import { MAP_VIEWBOX, PROVINCE_ORDER, PROVINCES } from "../lib/koreaMap";
+import { ISLET_SHAPES, MAP_VIEWBOX, PROVINCE_ORDER, PROVINCES } from "../lib/koreaMap";
 
 export interface MapPin {
   no: number;
@@ -85,6 +85,21 @@ export function KoreaMap({
               />
             );
           })}
+          <path
+            className={`map-region lv${counts ? level(counts[ISLET_SHAPES.code] || 0, max) : 1} ${
+              selected === ISLET_SHAPES.code
+                ? "on"
+                : selected
+                  ? "dim"
+                  : highlighted === ISLET_SHAPES.code
+                    ? "on"
+                    : ""
+            }`}
+            d={ISLET_SHAPES.d}
+            onClick={() => onSelect(ISLET_SHAPES.code)}
+          >
+            <title>울릉도·독도</title>
+          </path>
           <g
             className={`map-leaders ${selected ? "hide" : ""}`}
             aria-hidden="true"
@@ -125,6 +140,18 @@ export function KoreaMap({
             </button>
           );
         })}
+
+      {!selected && (
+        <span
+          className="map-islet-label"
+          style={{
+            left: `${((ISLET_SHAPES.label[0] - V.x) / V.w) * 100}%`,
+            top: `${((ISLET_SHAPES.label[1] - V.y) / V.h) * 100}%`,
+          }}
+        >
+          울릉도·독도
+        </span>
+      )}
 
       {selected && (
         <>

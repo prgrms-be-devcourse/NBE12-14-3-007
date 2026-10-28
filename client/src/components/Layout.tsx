@@ -1,10 +1,14 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, Plus, UserRound, X } from "lucide-react";
 import { useApp } from "../lib/context";
 import { Logo } from "./ui";
+import { InquiryModal } from "./InquiryModal";
 
-type SubItem = { label: string; to: string };
+type SubItem = { label: string; to?: string; action?: "inquiry" };
+
+/** 화면(Outlet)에서 바로 문의 창을 열 수 있게 Layout이 내려주는 값. */
+export type LayoutContext = { openInquiry: () => void };
 
 /** 머리 메뉴. 하위 항목이 있는 메뉴(고객센터)만 드롭다운으로 연다. */
 const NAV: { label: string; to: string; items?: SubItem[] }[] = [
@@ -17,7 +21,7 @@ const NAV: { label: string; to: string; items?: SubItem[] }[] = [
     items: [
       { label: "공지사항", to: "/support/notices" },
       { label: "자주 묻는 질문", to: "/support/faq" },
-      { label: "문의하기", to: "/mypage?tab=inquiries" },
+      { label: "문의하기", action: "inquiry" },
     ],
   },
 ];
@@ -37,10 +41,12 @@ function NavGroup({
   label,
   to,
   items,
+  onAction,
 }: {
   label: string;
   to: string;
   items: SubItem[];
+  onAction: (action: "inquiry") => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -77,15 +83,26 @@ function NavGroup({
       </button>
       <ul className="nav-sub" id={menuId} aria-label={`${label} 하위 메뉴`}>
         {items.map((item) => {
+          if (item.action) {
+            const action = item.action;
+            return (
+              <li key={item.label}>
+                <button type="button" onClick={() => onAction(action)}>
+                  {item.label}
+                </button>
+              </li>
+            );
+          }
+          const target = item.to ?? "/";
           const current = isCurrent(
-            item.to,
+            target,
             location.pathname,
             location.search,
           );
           return (
-            <li key={item.to}>
+            <li key={target}>
               <Link
-                to={item.to}
+                to={target}
                 aria-current={current ? "page" : undefined}
                 className={current ? "current" : undefined}
               >
@@ -100,9 +117,19 @@ function NavGroup({
 }
 
 export function Layout() {
-  const { member } = useApp();
+  const { member, toast } = useApp();
   const [open, setOpen] = useState(false);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  function openInquiry() {
+    if (!member) {
+      toast("로그인하면 문의를 남길 수 있어요.");
+      navigate(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+    setInquiryOpen(true);
+  }
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
@@ -129,6 +156,7 @@ export function Layout() {
                   label={item.label}
                   to={item.to}
                   items={item.items}
+                  onAction={openInquiry}
                 />
               ) : (
                 <NavLink key={item.to} to={item.to}>
@@ -164,7 +192,7 @@ export function Layout() {
         </div>
       </header>
       <main id="main" className="main-content">
-        <Outlet />
+        <Outlet context={{ openInquiry } satisfies LayoutContext} />
       </main>
       <footer className="site-footer">
         <div className="container">
@@ -177,7 +205,9 @@ export function Layout() {
             <div className="footer-links">
               <Link to="/support/notices">공지사항</Link>
               <Link to="/support/faq">자주 묻는 질문</Link>
-              <Link to="/mypage?tab=inquiries">문의하기</Link>
+              <button type="button" onClick={openInquiry}>
+                문의하기
+              </button>
               <Link to="/admin">시스템 관리자</Link>
             </div>
           </div>
@@ -186,6 +216,7 @@ export function Layout() {
           </div>
         </div>
       </footer>
+      {inquiryOpen && <InquiryModal onClose={() => setInquiryOpen(false)} />}
     </div>
   );
 }

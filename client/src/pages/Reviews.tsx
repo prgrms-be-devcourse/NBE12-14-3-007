@@ -45,11 +45,8 @@ import {
 export function Reviews() {
   return (
     <div className="container page-space">
-      <PageTitle
-        eyebrow="MOMENTS WE SHARE"
-        title="행사 후기"
-        description="직접 경험한 즐거움을 나누고, 다음 나들이의 힌트를 발견해요."
-      />
+      <p className="page-eyebrow eyebrow">MOMENTS WE SHARE</p>
+      <h1 className="compact-title">행사 후기</h1>
       <FestivalPosts />
     </div>
   );
@@ -422,7 +419,7 @@ function Comments({ postId }: { postId: string }) {
           />
           <div>
             <span className="muted small-text">{content.length} / 500</span>
-            <SubmitButton busy={busy}>댓글 남기기</SubmitButton>
+            <SubmitButton busy={busy}>댓글 등록</SubmitButton>
           </div>
           <FormError message={formError} />
         </form>

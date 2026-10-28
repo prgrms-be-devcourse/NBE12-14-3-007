@@ -65,7 +65,7 @@ export const festivalCategories = [
   "전시",
   "교육/체험",
   "행사/축제",
-  "플리마켓",
+  "플리마켓/팝업",
   "기타",
 ];
 export const categories = ["전체", ...festivalCategories];
@@ -75,6 +75,7 @@ export function normalizeFestivalCategory(value?: string | null) {
   const category = value?.trim() || "";
   switch (category) {
     case "축제": return "행사/축제";
+    case "플리마켓": return "플리마켓/팝업";
     case "교육":
     case "체험": return "교육/체험";
     default: return category;

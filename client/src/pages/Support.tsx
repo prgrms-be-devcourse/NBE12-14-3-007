@@ -1,15 +1,15 @@
-import { Link, NavLink, useSearchParams } from "react-router-dom";
+import { NavLink, useOutletContext, useSearchParams } from "react-router-dom";
 import { ChevronDown, MessageSquareText } from "lucide-react";
 import {
   Empty,
   ErrorState,
   Loading,
-  PageTitle,
   Pagination,
 } from "../components/ui";
 import { useApp, useLoad } from "../lib/context";
 import { dateText } from "../lib/format";
 import type { SupportArticle } from "../lib/types";
+import type { LayoutContext } from "../components/Layout";
 
 type Kind = "notices" | "faq";
 
@@ -22,6 +22,7 @@ const TABS: { kind: Kind; label: string }[] = [
 /** 고객센터: 공지사항과 자주 묻는 질문, 문의하기 바로가기. 글은 관리자 화면에서 쓴다. */
 export function SupportPage({ kind }: { kind: Kind }) {
   const { api } = useApp();
+  const { openInquiry } = useOutletContext<LayoutContext>();
   const [params, setParams] = useSearchParams();
   const page = Math.max(0, Number(params.get("page")) || 0);
   const notices = kind === "notices";
@@ -34,18 +35,17 @@ export function SupportPage({ kind }: { kind: Kind }) {
   );
   return (
     <div className="container page-space support-page">
-      <PageTitle
-        eyebrow="CUSTOMER CENTER"
-        title="고객센터"
-        description="방구석탈출을 쓰다가 궁금한 점이 생기면 여기서 찾아보세요."
-      />
+      <p className="page-eyebrow eyebrow">CUSTOMER CENTER</p>
+      <h1 className="compact-title">고객센터</h1>
       <nav className="support-tabs" aria-label="고객센터 메뉴">
         {TABS.map((tab) => (
           <NavLink key={tab.kind} to={`/support/${tab.kind}`}>
             {tab.label}
           </NavLink>
         ))}
-        <Link to="/mypage?tab=inquiries">문의하기</Link>
+        <button type="button" onClick={openInquiry}>
+          문의하기
+        </button>
       </nav>
       {loading ? (
         <Loading />
@@ -93,9 +93,9 @@ export function SupportPage({ kind }: { kind: Kind }) {
           <h2>찾는 답이 없나요?</h2>
           <p>문의를 남기면 운영진이 확인하고 답변해 드려요.</p>
         </div>
-        <Link className="btn primary" to="/mypage?tab=inquiries">
+        <button type="button" className="btn primary" onClick={openInquiry}>
           문의하기
-        </Link>
+        </button>
       </aside>
     </div>
   );

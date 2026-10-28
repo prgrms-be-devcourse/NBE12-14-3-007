@@ -1,5 +1,5 @@
 import { festivalCategories } from "../lib/format";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LayoutGrid, Music2, Mic2, Ticket, Image, GraduationCap, PartyPopper, ShoppingBag, Ellipsis, ChevronRight, ChevronLeft } from "lucide-react";
 import { StageIcon, BalletShoesIcon, JangguIcon, FamilyIcon } from "./FestivalCategoryIcons";
 
@@ -18,12 +18,25 @@ export function FestivalCategorySelect({
   variant?: "grid" | "icons";
 }) {
   const strip = useRef<HTMLDivElement>(null);
+  const [edge, setEdge] = useState({ start: true, end: false });
+  const updateEdge = useCallback(() => {
+    const list = strip.current;
+    if (!list) return;
+    const start = list.scrollLeft <= 1;
+    const end = list.scrollLeft + list.clientWidth >= list.scrollWidth - 1;
+    setEdge((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+  }, []);
+  useEffect(() => {
+    updateEdge();
+    window.addEventListener("resize", updateEdge);
+    return () => window.removeEventListener("resize", updateEdge);
+  }, [updateEdge, variant]);
   if (variant === "icons") {
     const items = includeAll ? ["전체", ...festivalCategories] : festivalCategories;
     return (
       <div className="festival-category-navigation">
-        <button type="button" className="festival-category-next" aria-label="이전 행사 분류 보기" onClick={() => strip.current?.scrollBy({ left: -330, behavior: "smooth" })}><ChevronLeft size={19} /></button>
-        <div className="festival-category-strip" ref={strip} role="group" aria-label="행사 종류">
+        <button type="button" className="festival-category-next" aria-label="이전 행사 분류 보기" disabled={edge.start} onClick={() => strip.current?.scrollBy({ left: -330, behavior: "smooth" })}><ChevronLeft size={19} /></button>
+        <div className="festival-category-strip" ref={strip} onScroll={updateEdge} role="group" aria-label="행사 종류">
           {items.map((category) => {
             const Icon = category === "전체" ? LayoutGrid : categoryIcons[festivalCategories.indexOf(category)];
             return <button key={category} type="button" className={value === category ? "active" : ""} aria-pressed={value === category} onClick={() => onChange(category)}>
@@ -32,7 +45,7 @@ export function FestivalCategorySelect({
             </button>;
           })}
         </div>
-        <button type="button" className="festival-category-next" aria-label="다음 행사 분류 보기" onClick={() => {
+        <button type="button" className="festival-category-next" aria-label="다음 행사 분류 보기" disabled={edge.end} onClick={() => {
           const list = strip.current;
           if (!list) return;
           list.scrollBy({ left: 330, behavior: "smooth" });

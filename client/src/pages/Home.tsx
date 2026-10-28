@@ -33,42 +33,42 @@ import {
 import type { EventView } from "../lib/types";
 
 /** 행사 분류 태그는 동일한 색으로 표시합니다. */
-const CATEGORY_TAG_COLOR = "#875b3e";
-const NOTES = ["#f7e27a", "#f6c6c0", "#cfe3c4"];
+const CATEGORY_TAG_COLOR = "#e23e96";
+const NOTES = ["#eef34f", "#e5833a", "#f7f9a8"];
 /** 홈 포스터 4종. 지도 옆 게시판에서만 장식으로 쓴다. */
 const PAPERS = [
   {
     r: -1.6,
     bg: NOTES[0],
-    fg: "#222321",
+    fg: "#111111",
     tape: {
       left: "50%",
       marginLeft: -39,
       transform: "rotate(3deg)",
-      background: "#d9a05ad9",
+      background: "#e5833ad9",
     },
     line: "#dedfd9",
   },
   {
     r: 1.4,
     bg: NOTES[1],
-    fg: "#222321",
+    fg: "#111111",
     tape: { left: 18, transform: "rotate(-5deg)", background: "#fffdf6b3" },
-    line: "#dedfd9",
+    line: "#11111159",
     gray: true,
   },
   {
     r: 1.1,
-    bg: NOTES[2],
-    fg: "#222321",
-    tape: { right: 22, transform: "rotate(4deg)", background: "#fffdf6cc" },
-    line: "#dedfd9",
+    bg: "#111111",
+    fg: "#ffffff",
+    tape: { right: 22, transform: "rotate(4deg)", background: "#e5833ad9" },
+    line: "#ffffff59",
   },
   {
     r: -1.3,
-    bg: "#d4e7f5",
-    fg: "#222321",
-    tape: { left: "40%", transform: "rotate(-3deg)", background: "#d9a05ad9" },
+    bg: NOTES[0],
+    fg: "#111111",
+    tape: { left: "40%", transform: "rotate(-3deg)", background: "#e5833ad9" },
     line: "#dedfd9",
   },
 ] as const;
@@ -118,12 +118,12 @@ function stampOf(event: EventView) {
 }
 
 export function Home() {
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [regionExpanded, setRegionExpanded] = useState(false);
   const { mode, api } = useApp();
   const navigate = useNavigate();
   const [category, setCategory] = useState("전체");
   const [region, setRegion] = useState("");
+  const [providerType, setProviderType] = useState("");
   const [date, setDate] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
@@ -239,18 +239,15 @@ export function Home() {
 
       <section className="home-search container" aria-label="조건으로 행사 검색">
         <form
-          className={`discovery-search${searchExpanded ? " is-expanded" : ""}`}
-          onFocus={() => setSearchExpanded(true)}
+          className="discovery-search is-expanded"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-              setSearchExpanded(false);
               setRegionExpanded(false);
             }
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
-              setSearchExpanded(false);
               setRegionExpanded(false);
               (event.target as HTMLElement).blur();
             }
@@ -260,6 +257,7 @@ export function Home() {
             const params = new URLSearchParams();
             if (categoryParam) params.set("category", categoryParam);
             if (region) params.set("region", region);
+            if (providerType) params.set("providerType", providerType);
             if (date) params.set("date", date);
             if (query.trim()) params.set("q", query.trim());
             navigate(`/explore?${params}`);
@@ -268,15 +266,30 @@ export function Home() {
           <div className="discovery-search-bar">
             <input
               aria-label="행사 검색어"
-              aria-expanded={searchExpanded}
-              aria-controls="home-search-options"
               placeholder="행사명 또는 지역 검색"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
             <button type="submit" className="home-search-submit" aria-label="행사 검색"><Search size={21} /></button>
           </div>
-          <div className="discovery-search-filters" id="home-search-options" hidden={!searchExpanded}>
+          <div className="discovery-search-filters" id="home-search-options">
+            <div className="source-toggle" role="group" aria-label="행사 구분">
+              {[
+                { value: "", label: "전체" },
+                { value: "PUBLIC", label: "공공행사" },
+                { value: "MEMBER", label: "회원 제보" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={providerType === option.value ? "active" : ""}
+                  aria-pressed={providerType === option.value}
+                  onClick={() => setProviderType(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <div className="filter-chip">
               <MapPin size={15} />
               <span className="home-search-field-label">지역</span>
@@ -339,11 +352,6 @@ export function Home() {
           </div>
 
         </form>
-        {!searchExpanded && (region || date) && (
-          <p className="home-search-selection">
-            {[region ? regions[region] || region : "전국", date ? dateText(date) : null].filter(Boolean).join(" · ")}
-          </p>
-        )}
       </section>
 
       <section className="home-hero container" aria-label="행사 분류 선택">
