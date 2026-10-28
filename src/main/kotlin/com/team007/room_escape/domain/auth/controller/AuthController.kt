@@ -3,11 +3,13 @@ package com.team007.room_escape.domain.auth.controller
 import com.team007.room_escape.domain.auth.dto.AuthRequest
 import com.team007.room_escape.domain.auth.dto.AuthResponse
 import com.team007.room_escape.domain.auth.service.AuthService
+import com.team007.room_escape.global.ratelimit.AuthRateLimiter
 import com.team007.room_escape.global.response.ApiResponse
 import com.team007.room_escape.global.util.CookieUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -25,11 +27,16 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val authService: AuthService,
     private val cookieUtil: CookieUtil,
+    private val rateLimiter: AuthRateLimiter,
 ) {
 
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
-    fun signup(@Valid @RequestBody request: AuthRequest.Signup): ResponseEntity<ApiResponse<Void?>> {
+    fun signup(
+        @Valid @RequestBody request: AuthRequest.Signup,
+        httpRequest: HttpServletRequest,
+    ): ResponseEntity<ApiResponse<Void?>> {
+        rateLimiter.requireSignupAllowed(httpRequest)
         authService.signup(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.noContent())
     }
@@ -39,8 +46,9 @@ class AuthController(
     fun login(
         @Valid @RequestBody request: AuthRequest.Login,
         response: HttpServletResponse,
+        httpRequest: HttpServletRequest,
     ): ResponseEntity<ApiResponse<AuthResponse.Token>> {
-        val pair = authService.login(request.email, request.password)
+        val pair = rateLimiter.guardLogin(request.email, httpRequest) { authService.login(request.email, request.password) }
         cookieUtil.addRefreshCookie(response, pair.refreshToken)
         return ResponseEntity.ok(ApiResponse.ok(AuthResponse.Token.bearer(pair.accessToken)))
     }

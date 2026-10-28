@@ -14,6 +14,13 @@ spring:
     username: ${DATASOURCE_USERNAME}
     password: ${DATASOURCE_PASSWORD}
 
+# 운영은 Vercel(rewrite) -> Railway 프록시 뒤에 있다. 사용자 IP를 믿을 수 있는 구성을 확인한 뒤에 켠다.
+#   CLIENT_IP_MODE=FORWARDED_FOR, CLIENT_IP_PROXY_HOPS=<사용자 IP 뒤에 붙는 프록시 수>
+# 켜기 전에는 IP를 쓰지 않아서, 로그인은 이메일만으로 제한하고 가입은 제한하지 않는다.
+client-ip:
+  mode: ${CLIENT_IP_MODE:NONE}
+  proxy-hops: ${CLIENT_IP_PROXY_HOPS:1}
+
 app:
   cors:
     # 프론트는 Vercel rewrite(/api → Railway)로 붙어서 같은 출처라 보통 비워 둔다.

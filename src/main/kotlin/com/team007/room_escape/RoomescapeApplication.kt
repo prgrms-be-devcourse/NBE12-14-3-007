@@ -1,6 +1,8 @@
 package com.team007.room_escape
 
 import com.team007.room_escape.global.config.AuthMailProperties
+import com.team007.room_escape.global.ratelimit.AuthRateLimitProperties
+import com.team007.room_escape.global.ratelimit.ClientIpProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
@@ -13,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableScheduling
 // 메일 발송(SMTP)이 요청 스레드를 붙잡지 않도록 비동기를 켠다.
 @EnableAsync
-@EnableConfigurationProperties(AuthMailProperties::class)
+@EnableConfigurationProperties(AuthMailProperties::class, AuthRateLimitProperties::class, ClientIpProperties::class)
 class RoomescapeApplication
 
 fun main(args: Array<String>) {

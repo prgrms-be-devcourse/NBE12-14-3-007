@@ -94,6 +94,25 @@ auth-mail:
   resend-cooldown-seconds: 60
   # 인증 통과 후 새 비밀번호를 입력할 때까지 주는 시간(분)
   verified-valid-minutes: 5
+  # 인증 코드를 이만큼 틀리면 그 코드를 폐기한다. 6자리 숫자라 횟수를 막지 않으면 대입으로 뚫린다.
+  max-code-attempts: 5
+
+auth-rate-limit:
+  # 로그인을 이 시간 안에 이만큼 틀리면, 시간이 끝날 때까지 로그인을 막는다. (429)
+  login-max-failures: 5
+  login-window: 5m
+  # 같은 IP의 가입 시도 횟수. client-ip 를 켜지 않으면 가입은 제한하지 않는다.
+  signup-max-attempts: 5
+  signup-window: 1h
+
+# 사용자 IP를 어디서 읽을지. 프록시 뒤에서는 연결된 상대의 IP가 모든 사용자에게 같아서,
+# 믿을 수 있을 때만 켠다. NONE 이면 IP 없이 이메일만으로 로그인을 제한하고 가입은 제한하지 않는다.
+#   NONE          IP를 쓰지 않는다 (기본)
+#   REMOTE_ADDR   연결된 상대의 IP (프록시 없이 직접 접속하는 로컬)
+#   FORWARDED_FOR X-Forwarded-For 의 오른쪽에서 proxy-hops 번째 주소 (운영)
+client-ip:
+  mode: NONE
+  proxy-hops: 1
 
 r2:
   account-id: ${R2_ACCOUNT_ID}

@@ -29,7 +29,7 @@
   --c-yellow-soft: #f6e6ca;
   --c-blue: #986039;
   --c-green: #1f6b4a;
-  --c-display: "Black Han Sans", Pretendard, "Malgun Gothic", sans-serif;
+  --c-display: Pretendard, "Malgun Gothic", sans-serif;
   background: var(--c-bg);
   color: var(--c-ink);
   min-height: 100vh;
@@ -55,7 +55,7 @@
 }
 .theme-c .logo {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 27px;
   letter-spacing: -0.5px;
   color: var(--c-ink);
@@ -152,7 +152,7 @@
 .theme-c .page-heading h1,
 .theme-c .section-heading h2 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--c-ink);
 }
@@ -279,7 +279,7 @@
 }
 .theme-c .results-toolbar strong {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 22px;
 }
 .theme-c .result-options select,
@@ -664,7 +664,7 @@
 }
 .theme-c .auth-collage h2 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(36px, 4.4vw, 60px);
   line-height: 1.06;
   letter-spacing: -0.5px;
@@ -706,7 +706,7 @@
 }
 .theme-c .auth-panel h1 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 34px;
 }
 .theme-c .consent-box {
@@ -763,8 +763,8 @@
 }
 .poster-title {
   display: block;
-  font-family: "Black Han Sans", Pretendard, sans-serif;
-  font-weight: 400;
+  font-family: var(--c-display);
+  font-weight: 700;
   font-size: 22px;
   line-height: 1.16;
   margin-top: 8px;
@@ -801,7 +801,7 @@
 }
 .home-c .home-hero h1 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(38px, 5vw, 66px);
   line-height: 1.08;
   letter-spacing: -0.5px;
@@ -1339,7 +1339,7 @@
 }
 .map-board-empty strong {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 26px;
 }
 
@@ -1347,7 +1347,7 @@
 .home-band {
   border-top: 0;
   border-bottom: 0;
-  background: #e5d2be;
+  background: #eeefed;
   padding: 80px 0 88px;
 }
 .home-band .home-band-head h2 { color: #382d25; }
@@ -1382,7 +1382,7 @@
 .home-notes-intro h2,
 .home-cta h2 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(30px, 3.4vw, 44px);
   line-height: 1.1;
   letter-spacing: -0.5px;
@@ -1479,7 +1479,7 @@
 }
 .memo-card h3 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 26px;
   line-height: 1.14;
   padding: 0 6px;
@@ -1547,7 +1547,7 @@
 }
 .home-c .review-teaser h3 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 24px;
   line-height: 1.15;
   letter-spacing: -0.3px;
@@ -1638,7 +1638,7 @@
 }
 .auth-note-title {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 20px;
 }
 .auth-note-body {
@@ -1772,7 +1772,7 @@
 }
 .theme-c .my-profile h2 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 24px;
   letter-spacing: -0.3px;
   color: var(--c-ink);
@@ -1824,7 +1824,7 @@
 }
 .theme-c .trust-panel h3 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: 26px;
   letter-spacing: -0.3px;
   color: var(--c-ink);
@@ -2002,7 +2002,7 @@
 .theme-c .review-article > h1,
 .theme-c .community-detail h1 {
   font-family: var(--c-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(30px, 3.4vw, 40px);
   line-height: 1.15;
   letter-spacing: -0.5px;
@@ -2172,7 +2172,7 @@
   margin: 10px 0 14px;
   font-family: var(--c-display);
   font-size: 19px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.35;
   color: var(--c-ink);
 }
@@ -2413,7 +2413,7 @@
   margin: 0 0 4px;
   font-family: var(--c-display);
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--c-ink);
 }
 .theme-c .support-contact p {
@@ -2524,7 +2524,7 @@
   margin: 16px 0 12px;
   font-family: var(--c-display);
   font-size: 34px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.3;
   color: var(--c-ink);
 }
@@ -2694,7 +2694,7 @@
   margin: 0 0 12px;
   font-family: var(--c-display);
   font-size: clamp(36px, 4.6vw, 60px);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.5px;
 }
@@ -2709,13 +2709,13 @@
 .explore-region-options { flex-basis: 100%; min-width: 0; }
 .explore-region-options .home-region-grid + .home-region-grid { margin-top: 12px; max-height: 240px; overflow-y: auto; }
 .theme-c .btn.primary,
-.theme-c .header-submit { background: var(--brand); color: #fffdf9; }
+.theme-c .header-submit { background: var(--brand); color: #fffdf9; border-color: transparent; }
 .theme-c .btn.primary:hover,
 .theme-c .header-submit:hover { background: var(--brand-dark); }
 .theme-c .source-badge.member,
 .theme-c .source-badge.public,
 .theme-c .image-label { background: #875b3e; color: #fffdf9; }
-.theme-c .site-footer { background: #512b20; }
+.theme-c .site-footer { background: #1b1b1b; }
 .theme-c .festival-cover { color: var(--c-ink); }
 .theme-c .post-text-preview p { color: var(--c-text); }
 .theme-c .home-region-trigger,

@@ -1,7 +1,8 @@
 @font-face {
   font-family: Pretendard;
   src: url("/PretendardVariable.woff2") format("woff2");
-  font-weight: 100 900;
+  font-weight: 45 920;
+  font-style: normal;
   font-display: swap;
 }
 :root {
