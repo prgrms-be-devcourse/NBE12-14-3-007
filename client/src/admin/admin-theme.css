@@ -4,18 +4,23 @@
  */
 .adm-shell,
 .adm-login {
-  --a-bg: #f1f2ef;
+  --a-bg: #f8f8f8;
   --a-surface: #ffffff;
-  --a-paper: #fffdf6;
-  --a-ink: #1b1b1b;
-  --a-text: #3d3a35;
-  --a-muted: #5c574d;
-  --a-line: #d9d7cf;
-  --a-line-soft: #ecebe5;
-  --a-red: #c8401c;
-  --a-yellow: #f2c14e;
-  --a-yellow-soft: #fff4c7;
-  --a-green: #1f6b4a;
+  --a-paper: #ffffff;
+  --a-ink: #111111;
+  --a-text: #252525;
+  --a-muted: #6a6a6a;
+  --a-line: #dcdcdc;
+  --a-line-soft: #ececec;
+  --a-red: #ea5252;
+  --a-yellow: #eef34f;
+  --a-yellow-soft: #fafbd0;
+  --a-orange: #e5833a;
+  --a-orange-soft: #fdebd9;
+  --a-brand-soft: #fde3f1;
+  --a-brand: #e23e96;
+  --a-brand-dark: #c92e82;
+  --a-green: #111111;
   --a-display: Pretendard, "Malgun Gothic", sans-serif;
   background: var(--a-bg);
   color: var(--a-ink);
@@ -30,7 +35,7 @@
 .adm-login a:focus-visible,
 .adm-login button:focus-visible,
 .adm-login input:focus-visible {
-  outline: 3px solid #f2b705;
+  outline: 3px solid #f2057f;
   outline-offset: 2px;
 }
 
@@ -41,7 +46,7 @@
   border-radius: 0;
   position: relative;
   box-shadow:
-    0 2px 0 #b7b2a6,
+    0 2px 0 #b7a6af,
     0 26px 40px -30px #0009;
 }
 .adm-login-card::before {
@@ -51,7 +56,7 @@
   left: 32px;
   width: 96px;
   height: 22px;
-  background: #f2c14ed9;
+  background: #eef34fd9;
   transform: rotate(-3deg);
 }
 .adm-login .logo,
@@ -69,7 +74,7 @@
   color: var(--a-ink);
 }
 .adm-login input {
-  border: 2px solid var(--a-ink);
+  border: 1.5px solid var(--a-ink);
   border-radius: 0;
   background: var(--a-yellow-soft);
   box-shadow: inset 4px 0 0 var(--a-yellow);
@@ -90,7 +95,7 @@
 }
 .adm-sidebar {
   background: var(--a-surface);
-  border-right: 3px solid var(--a-ink);
+  border-right: 1.5px solid var(--a-ink);
 }
 .adm-brand > span:last-child,
 .adm-nav-label {
@@ -99,7 +104,7 @@
 .adm-workspace {
   background: var(--a-surface);
   border: 1px solid var(--a-line);
-  border-left: 5px solid var(--a-yellow);
+  border-left: 5px solid var(--a-brand);
   border-radius: 0;
 }
 .adm-workspace-icon {
@@ -122,7 +127,7 @@
   font-weight: 600;
 }
 .adm-sidebar nav b {
-  background: var(--a-red);
+  background: var(--a-brand);
   color: #fff;
 }
 .adm-demo-note {
@@ -137,7 +142,7 @@
 /* ---------- 상단 ---------- */
 .adm-topbar {
   background: var(--a-surface);
-  border-bottom: 3px solid var(--a-ink);
+  border-bottom: 1.5px solid var(--a-ink);
 }
 .adm-breadcrumb {
   color: var(--a-muted);
@@ -148,7 +153,7 @@
 }
 .adm-storage-warning,
 .adm-preview-strip {
-  background: var(--a-yellow-soft);
+  background: var(--a-orange-soft);
   border-color: var(--a-line);
   color: var(--a-ink);
 }
@@ -207,17 +212,17 @@
 .adm-stat-icon.orange,
 .adm-ticket-icon,
 .adm-log-icon {
-  background: var(--a-yellow-soft);
+  background: var(--a-brand-soft);
   color: var(--a-ink);
   border-radius: 999px;
 }
 .adm-ticket-icon.report {
-  background: #fde4df;
+  background: #fddfee;
   color: var(--a-red);
 }
 .adm-welcome {
   background: var(--a-surface);
-  border: 3px dashed var(--a-ink);
+  border: 1.5px dashed var(--a-ink);
   border-radius: 0;
 }
 .adm-welcome h2 {
@@ -227,7 +232,7 @@
   color: var(--a-ink);
 }
 .adm-welcome-art > div {
-  background: var(--a-yellow-soft);
+  background: var(--a-brand-soft);
   border-color: var(--a-line);
 }
 .adm-welcome-art > svg {
@@ -241,7 +246,7 @@
 .adm-review-callout {
   background: var(--a-surface);
   border: 1px solid var(--a-line);
-  border-left: 5px solid var(--a-yellow);
+  border-left: 5px solid var(--a-brand);
   border-radius: 0;
 }
 .adm-progress {
@@ -307,7 +312,7 @@
   color: var(--a-ink);
 }
 .adm-table tbody tr:hover {
-  background: #faf9f5;
+  background: #f8f8f8;
 }
 .adm-thumbnail,
 .adm-content-image {
@@ -333,7 +338,7 @@
 .adm-pagination button {
   min-width: 36px;
   height: 36px;
-  border: 2px solid var(--a-ink);
+  border: 1.5px solid var(--a-ink);
   border-radius: 999px;
   background: var(--a-surface);
   color: var(--a-ink);
@@ -348,13 +353,13 @@
 /* ---------- 버튼·배지 ---------- */
 .adm-shell .btn {
   border-radius: 999px;
-  border-width: 2px;
+  border-width: 1.5px;
   font-weight: 600;
 }
 .adm-shell .btn.primary,
 .adm-login .btn.primary {
-  background: var(--a-red);
-  border-color: var(--a-red);
+  background: var(--a-brand);
+  border-color: var(--a-brand);
   color: #fff;
   border-radius: 999px;
 }
@@ -379,23 +384,23 @@
 }
 .adm-shell .badge.green,
 .theme-c .badge.green {
-  background: #e3f1e8;
-  color: var(--a-green, #1f6b4a);
+  background: var(--a-orange);
+  color: #111111;
 }
 .adm-shell .badge.orange,
 .theme-c .badge.orange {
-  background: #fde4d8;
-  color: #a9330f;
+  background: #fdd8eb;
+  color: #a90f5f;
 }
 .adm-shell .badge.blue,
 .theme-c .badge.blue {
-  background: #e4e9fb;
-  color: #2343d1;
+  background: #fbe3d0;
+  color: #7a3d0c;
 }
 .adm-shell .badge.gray,
 .theme-c .badge.gray {
-  background: #ecebe5;
-  color: #3d3a35;
+  background: #e9e9e9;
+  color: #1f1f1f;
 }
 
 /* ---------- 입력 양식·대화상자 ---------- */
@@ -405,7 +410,7 @@
 .adm-shell dialog input,
 .adm-shell dialog select,
 .adm-shell dialog textarea {
-  border: 2px solid var(--a-ink);
+  border: 1.5px solid var(--a-ink);
   border-radius: 0;
 }
 .adm-shell .modal-inner {
@@ -416,7 +421,7 @@
 .adm-event-deletion-reason,
 .adm-restore-hint {
   border-radius: 0;
-  border-left: 4px solid var(--a-yellow);
+  border-left: 4px solid var(--a-ink);
 }
 .adm-footer {
   border-top-color: var(--a-line);
@@ -434,13 +439,13 @@
 }
 .adm-welcome-art > div {
   border-color: var(--a-line);
-  background: var(--a-yellow-soft);
+  background: var(--a-brand-soft);
   box-shadow:
     0 0 0 15px var(--a-bg),
     0 0 0 16px var(--a-line);
 }
 .adm-welcome-art > svg {
-  fill: var(--a-yellow);
+  fill: var(--a-brand);
 }
 .adm-welcome-art > span {
   border-radius: 0;
@@ -461,7 +466,7 @@
   color: #fff;
 }
 .adm-login .field input {
-  border: 2px solid var(--a-ink);
+  border: 1.5px solid var(--a-ink);
   border-radius: 0;
 }
 @media (max-width: 900px) {
@@ -471,7 +476,7 @@
   }
   .adm-sidebar {
     border-right: 0;
-    border-bottom: 3px solid var(--a-ink);
+    border-bottom: 1.5px solid var(--a-ink);
   }
 }
 .adm-demo-note p {
@@ -486,4 +491,13 @@
 }
 .adm-shell .is-refreshing {
   animation: adm-refresh-dim 0.15s ease 0.25s forwards;
+}
+
+/* 입력칸 포커스는 얇은 검정 선 */
+.adm-shell input:focus-visible,
+.adm-shell select:focus-visible,
+.adm-shell textarea:focus-visible,
+.adm-login input:focus-visible {
+  outline: 1px solid #111111;
+  outline-offset: 0;
 }
