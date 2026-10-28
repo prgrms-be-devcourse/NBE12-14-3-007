@@ -70,7 +70,9 @@ class FestivalService(
         val existingTitleBySeq = festivalRepository
             .findExistingExternalIdTitles(ProviderType.PUBLIC, seqs) // 이미 DB에 저장된 것의 (seq, title)만 조회
             .associate { it.externalId to it.title }
-        val titleBySeq = allRows.associate { it.seq to it.title }
+        // DB의 title은 이미 HTML 엔티티가 디코딩된 채로 저장돼 있다. period 응답의 title을
+        // 그대로 비교하면(이스케이프된 원본) 내용이 안 바뀐 행사까지 전부 "달라졌다"고 오판된다.
+        val titleBySeq = allRows.associate { it.seq to it.unescapedTitle() }
 
         val newSeqs = seqs.filter { it !in existingTitleBySeq } // DB에 없음 → 신규
         val changedSeqs = seqs.filter { seq -> // DB에 있지만 제목이 다름 → 갱신 대상
