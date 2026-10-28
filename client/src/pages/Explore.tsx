@@ -29,7 +29,6 @@ export function Explore() {
   const { api, mode } = useApp();
   const [params, setParams] = useSearchParams();
   const [layout, setLayout] = useState("grid");
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [regionExpanded, setRegionExpanded] = useState(false);
 
   const category = normalizeFestivalCategory(params.get("category") || "전체");
@@ -101,21 +100,18 @@ export function Explore() {
 
   return (
     <div className="container page-space explore-page home-c">
-      <h1 className="explore-title">행사</h1>
+      <h1 className="explore-title">행사 몰아보기</h1>
 
       <section className="home-search" aria-label="행사 검색 조건">
       <form
-        className={`discovery-search${searchExpanded ? " is-expanded" : ""}`}
-        onFocus={() => setSearchExpanded(true)}
+        className="discovery-search is-expanded"
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-            setSearchExpanded(false);
             setRegionExpanded(false);
           }
         }}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
-            setSearchExpanded(false);
             setRegionExpanded(false);
             (event.target as HTMLElement).blur();
           }
@@ -125,7 +121,7 @@ export function Explore() {
           setFilter("q", text.trim());
         }}
       >
-        <div className="discovery-search-filters" id="explore-search-options" hidden={!searchExpanded}>
+        <div className="discovery-search-filters" id="explore-search-options">
           <div className="filter-chip">
             <MapPin size={15} />
             <span className="home-search-field-label">지역</span>
@@ -184,8 +180,6 @@ export function Explore() {
           <input
             aria-label="행사 검색"
             placeholder="행사명 또는 지역 검색"
-            aria-expanded={searchExpanded}
-            aria-controls="explore-search-options"
             value={text}
             onChange={(event) => setText(event.target.value)}
           />

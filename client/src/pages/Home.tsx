@@ -34,13 +34,13 @@ import type { EventView } from "../lib/types";
 
 /** 행사 분류 태그는 동일한 색으로 표시합니다. */
 const CATEGORY_TAG_COLOR = "#e23e96";
-const NOTES = ["#f7e27a", "#f6c6c0", "#f8d3b0"];
+const NOTES = ["#eef34f", "#e5833a", "#f7f9a8"];
 /** 홈 포스터 4종. 지도 옆 게시판에서만 장식으로 쓴다. */
 const PAPERS = [
   {
     r: -1.6,
     bg: NOTES[0],
-    fg: "#222321",
+    fg: "#111111",
     tape: {
       left: "50%",
       marginLeft: -39,
@@ -52,22 +52,22 @@ const PAPERS = [
   {
     r: 1.4,
     bg: NOTES[1],
-    fg: "#222321",
+    fg: "#111111",
     tape: { left: 18, transform: "rotate(-5deg)", background: "#fffdf6b3" },
-    line: "#dedfd9",
+    line: "#11111159",
     gray: true,
   },
   {
     r: 1.1,
-    bg: NOTES[2],
-    fg: "#222321",
-    tape: { right: 22, transform: "rotate(4deg)", background: "#fffdf6cc" },
-    line: "#dedfd9",
+    bg: "#111111",
+    fg: "#ffffff",
+    tape: { right: 22, transform: "rotate(4deg)", background: "#e5833ad9" },
+    line: "#ffffff59",
   },
   {
     r: -1.3,
-    bg: "#f9dcea",
-    fg: "#222321",
+    bg: NOTES[0],
+    fg: "#111111",
     tape: { left: "40%", transform: "rotate(-3deg)", background: "#e5833ad9" },
     line: "#dedfd9",
   },
