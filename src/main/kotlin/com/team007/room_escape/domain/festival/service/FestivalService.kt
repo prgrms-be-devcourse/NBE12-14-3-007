@@ -70,7 +70,13 @@ class FestivalService(
         if (newSeqs.isEmpty()) {
             log.info("신규 행사 없음 ({}년 전체 {}건, 신규 0건)", currentYear, allRows.size)
             migrateLegacyImages()
-            return FestivalResponse.SyncResponse(closedFestivals, emptyList(), 0, 0, false)
+            return FestivalResponse.SyncResponse(
+                closedFestivals = closedFestivals,
+                savedFestivals = emptyList(),
+                detailLookupCount = 0,
+                skippedCount = 0,
+                interrupted = false
+            )
         }
 
         val savedFestivals = mutableListOf<FestivalResponse.SyncedFestival>()
@@ -108,13 +114,25 @@ class FestivalService(
             Thread.currentThread().interrupt()
             interrupted = true
             log.warn("신규 행사 저장 중단됨 (서버 종료 등, 지금까지 {}건 저장됨)", savedFestivals.size)
-            return FestivalResponse.SyncResponse(closedFestivals, savedFestivals, newSeqs.size, skippedCount, interrupted)
+            return FestivalResponse.SyncResponse(
+                closedFestivals = closedFestivals,
+                savedFestivals = savedFestivals,
+                detailLookupCount = newSeqs.size,
+                skippedCount = skippedCount,
+                interrupted = interrupted
+            )
         } catch (e: Exception) {
             interrupted = true
             log.error("신규 행사 저장 실패 (지금까지 {}건 저장됨), 원본 스냅샷은 반영됨", savedFestivals.size, e)
         }
         migrateLegacyImages()
-        return FestivalResponse.SyncResponse(closedFestivals, savedFestivals, newSeqs.size, skippedCount, interrupted)
+        return FestivalResponse.SyncResponse(
+            closedFestivals = closedFestivals,
+            savedFestivals = savedFestivals,
+            detailLookupCount = newSeqs.size,
+            skippedCount = skippedCount,
+            interrupted = interrupted
+        )
     }
 
     /** 이미지 처리까지 끝난 행사 묶음을 한 트랜잭션으로 저장한다. 저장 후에 id가 채워진 목록을 돌려준다. */

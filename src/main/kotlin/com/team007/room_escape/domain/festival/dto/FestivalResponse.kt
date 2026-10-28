@@ -11,6 +11,7 @@ import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.member.dto.MemberResponse
 import com.team007.room_escape.global.storage.ImageUrlResolver
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.Instant
 import java.time.LocalDateTime
 
 class FestivalResponse private constructor() {
@@ -214,7 +215,7 @@ class FestivalResponse private constructor() {
         val savedFestivals: List<SyncedFestival>?,
 
         @field:Schema(description = "이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수")
-        val requestedCount: Int,
+        val detailLookupCount: Int,
 
         @field:Schema(description = "상세조회 응답이 비어서 저장하지 못하고 건너뛴 행사 수")
         val skippedCount: Int,
@@ -236,7 +237,7 @@ class FestivalResponse private constructor() {
         val lastError: String?,
 
         @field:Schema(description = "마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
-        val finishedAt: java.time.Instant?,
+        val finishedAt: Instant?,
 
         @field:Schema(description = "스케줄러가 마지막으로 끝낸 자동 동기화 결과. 아직 끝난 적이 없으면 null")
         val lastScheduledResult: SyncResponse?,
@@ -245,7 +246,7 @@ class FestivalResponse private constructor() {
         val lastScheduledError: String?,
 
         @field:Schema(description = "스케줄러의 마지막 시도가 끝난 시각. 아직 끝난 적이 없으면 null")
-        val lastScheduledFinishedAt: java.time.Instant?
+        val lastScheduledFinishedAt: Instant?
     )
 
     @Schema(description = "동기화된 행사 요약")

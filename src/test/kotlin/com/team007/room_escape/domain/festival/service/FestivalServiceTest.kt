@@ -314,7 +314,7 @@ class FestivalServiceTest {
 		assertThat(result.savedFestivals)
 			.extracting(java.util.function.Function<FestivalResponse.SyncedFestival, String?> { it.title })
 			.containsExactly("남한산성문화제", "남한산성문화제")
-		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.detailLookupCount).isEqualTo(2)
 		assertThat(result.skippedCount).isEqualTo(0)
 		assertThat(result.interrupted).isFalse()
 	}
@@ -332,7 +332,7 @@ class FestivalServiceTest {
 		val result = festivalService.syncPublicFestivals()
 
 		assertThat(result.savedFestivals).hasSize(1)
-		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.detailLookupCount).isEqualTo(2)
 		assertThat(result.skippedCount).isEqualTo(1)
 		assertThat(result.interrupted).isFalse()
 	}
@@ -350,7 +350,7 @@ class FestivalServiceTest {
 
 		val result = festivalService.syncPublicFestivals()
 
-		assertThat(result.requestedCount).isEqualTo(2)
+		assertThat(result.detailLookupCount).isEqualTo(2)
 		assertThat(result.interrupted).isTrue()
 	}
 
@@ -411,7 +411,7 @@ class FestivalServiceTest {
 
 		assertThat(result.closedFestivals).hasSize(1)
 		assertThat(result.savedFestivals).isEmpty()
-		assertThat(result.requestedCount).isEqualTo(0)
+		assertThat(result.detailLookupCount).isEqualTo(0)
 		assertThat(result.interrupted).isFalse()
 	}
 

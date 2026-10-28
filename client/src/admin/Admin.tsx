@@ -1020,6 +1020,9 @@ function MemberDialog({
   );
 }
 
+/** 상태 폴링이 몇 번 연속 실패해야 "진짜 문제"로 보고 포기할지. 네트워크 순단 정도는 봐준다. */
+const MAX_POLL_FAILURE_STREAK = 3;
+
 /** 동기화 한 건의 결과를 사람이 읽는 문장으로 바꾼다. 수동·자동 토스트와 안내문에서 같이 쓴다. */
 function syncResultText(result: SyncResult): string {
   const { savedFestivals, closedFestivals, skippedCount, interrupted } = result;
@@ -1094,10 +1097,19 @@ function SyncButton() {
           try {
             await api.syncFestivals(); // 시작만 하고 바로 응답이 온다. 결과는 상태를 폴링해서 받는다.
             let status = await api.syncStatus();
+            let pollFailureStreak = 0;
             while (status.running) {
               await new Promise((resolve) => setTimeout(resolve, 2000));
               if (!mountedRef.current) return; // 화면을 떠났으면 더 기다리지 않는다
-              status = await api.syncStatus();
+              try {
+                status = await api.syncStatus();
+                pollFailureStreak = 0;
+              } catch (error) {
+                // 네트워크 순단처럼 한두 번 실패하는 건 봐준다. 동기화 자체는 서버에서
+                // 계속 도는데, 상태를 못 받아온 것뿐인 걸 "실패"로 오해하면 안 된다.
+                pollFailureStreak++;
+                if (pollFailureStreak >= MAX_POLL_FAILURE_STREAK) throw error;
+              }
             }
             if (!mountedRef.current) return; // 결과를 보여줄 화면이 이미 없다
             setLastScheduled({
