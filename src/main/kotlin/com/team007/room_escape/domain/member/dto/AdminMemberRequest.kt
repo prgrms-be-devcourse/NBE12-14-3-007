@@ -5,6 +5,7 @@ import com.team007.room_escape.global.util.isBlankLikeJava
 import com.team007.room_escape.global.util.trimLikeJava
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import java.util.Locale
 
 class AdminMemberRequest private constructor() {
@@ -37,5 +38,9 @@ class AdminMemberRequest private constructor() {
         @field:NotNull
         @field:Schema(description = "변경할 등급. ROLE_ADMIN은 부여할 수 없다", example = "ROLE_TRUSTED")
         val role: MemberRole?,
+
+        @field:Size(max = 500)
+        @field:Schema(description = "변경 사유. 제재(ROLE_WARNING)로 바꿀 때만 필수, 그 밖에는 선택. 500자 이하", example = "허위 행사 제보 반복", nullable = true)
+        val reason: String? = null,
     )
 }

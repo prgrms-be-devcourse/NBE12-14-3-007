@@ -23,6 +23,7 @@ import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
 import com.team007.room_escape.domain.member.service.MemberReader
+import com.team007.room_escape.domain.member.infra.repository.MemberTrustGradeRepository
 import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
@@ -56,7 +57,7 @@ import java.util.UUID
     FestivalDeletionService::class, FestivalSubmissionService::class, AdminDeletionFacade::class,
     FestivalDuplicateValidator::class, DeletionHistoryService::class, FestivalDeletionHandler::class,
     InquiryDeletionProcessor::class, MemberReader::class, MemberTrustGradeService::class,
-    RichTextSanitizer::class, FestivalAccuracyVoteService::class,
+    MemberTrustGradeRepository::class, RichTextSanitizer::class, FestivalAccuracyVoteService::class,
 )
 class FestivalDeletionIntegrationTest @Autowired constructor(
     private val submissions: FestivalSubmissionService,
@@ -68,6 +69,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     private val accuracy: FestivalAccuracyVoteService,
     private val likes: LikeRepository,
     private val votes: FestivalAccuracyVoteRepository,
+    private val grades: MemberTrustGradeService,
 ) {
     @field:MockitoBean
     private lateinit var storage: R2StorageService
@@ -141,6 +143,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val eventId = checkNotNull(history.festival).requiredId
 
         submissions.delete(owner, id)
+        em.flush()
         em.clear()
         assertThat(festivals.findByIdAndDeletedAtIsNull(eventId)).isNull()
         val item = submissions.findAllByMemberId(owner).first()
@@ -153,7 +156,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
     }
 
     @Test
-    fun administratorCanRestoreMemberSubmittedEventAndGradeIsRecalculated() {
+    fun administratorCanRestoreMemberSubmittedEventAndGradeFollowsAtNightlyRecalculation() {
         val history = history()
         val author = checkNotNull(history.festival.member)
         repeat(10) {
@@ -176,15 +179,22 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val operator = operator()
         val id = history.festival.requiredId
         deleteAsAdmin(id, operator, "  행사 취소 확인  ")
-        assertThat(author.role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
+        em.flush()
 
+        // 삭제된 행사의 반응은 세지 않는다. 등급은 삭제하는 순간이 아니라 자정 집계가 반영한다.
+        grades.recalculateAll()
         em.clear()
+        assertThat(members.findById(author.id).orElseThrow().role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
         assertThat(admin.latest(operator, DeletionTargetType.FESTIVAL, id.toString())?.actorType())
             .isEqualTo(DeletionActorType.ADMIN)
         admin.restore(operator, DeletionTargetType.FESTIVAL, id.toString())
         em.flush()
         em.clear()
         assertThat(festivals.findByIdAndDeletedAtIsNull(id)).isNotNull()
+        // 복구한 직후에는 아직 반영되지 않고, 다음 집계에서 반영된다.
+        assertThat(members.findById(author.id).orElseThrow().role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
+        grades.recalculateAll()
+        em.clear()
         assertThat(members.findById(author.id).orElseThrow().role).isEqualTo(MemberRole.ROLE_TRUSTED)
     }
 
@@ -203,6 +213,7 @@ class FestivalDeletionIntegrationTest @Autowired constructor(
         val event = history.festival
         val operator = operator()
         deleteAsAdmin(event.requiredId, operator, "오등록")
+        em.flush() // 삭제를 먼저 DB에 반영해야, 같은 조건의 새 행사가 중복으로 걸리지 않는다.
         festivals.saveAndFlush(Festival(
             providerType = ProviderType.MEMBER,
             url = "https://different.example.com",

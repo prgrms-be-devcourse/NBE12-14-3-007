@@ -4,8 +4,6 @@ import com.team007.room_escape.domain.deletion.service.DeletionHistoryService
 import com.team007.room_escape.domain.festival.infra.entity.Festival
 import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
-import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import org.assertj.core.api.Assertions.assertThat
@@ -20,11 +18,9 @@ import java.time.LocalDateTime
 
 class FestivalDeletionServiceTest {
 
-    private val festivals = mock(FestivalRepository::class.java)
-    private val grades = mock(MemberTrustGradeService::class.java)
     private val histories = mock(DeletionHistoryService::class.java)
     private val duplicates = mock(FestivalDuplicateValidator::class.java)
-    private val service = FestivalDeletionService(festivals, grades, histories, duplicates)
+    private val service = FestivalDeletionService(histories, duplicates)
 
     private val begin = LocalDateTime.of(2026, 10, 3, 10, 0)
     private val end = LocalDateTime.of(2026, 10, 3, 18, 0)
@@ -75,7 +71,6 @@ class FestivalDeletionServiceTest {
 
         assertThat(festival.isDeleted()).isFalse()
         verify(duplicates).validate(7L, begin, end, FestivalRegion.GYEONGGI, "행사", "수원시")
-        verify(grades).refreshForFestival(festival)
     }
 
     @Test

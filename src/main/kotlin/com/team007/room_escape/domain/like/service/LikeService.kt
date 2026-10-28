@@ -5,7 +5,6 @@ import com.team007.room_escape.domain.like.dto.LikeResponse
 import com.team007.room_escape.domain.like.infra.entity.Like
 import com.team007.room_escape.domain.like.infra.repository.LikeRepository
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.domain.post.infra.repository.PostRepository
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
@@ -21,7 +20,6 @@ class LikeService(
     private val postRepository: PostRepository,
     private val festivalRepository: FestivalRepository,
     private val memberReader: MemberReader,
-    private val memberTrustGradeService: MemberTrustGradeService,
 ) {
 
     /** 후기 */
@@ -77,8 +75,6 @@ class LikeService(
         }
 
         likeRepository.save(Like.of(festival, member))
-        likeRepository.flush()
-        memberTrustGradeService.refreshForFestival(festival)
 
         return LikeResponse(likeRepository.countByFestivalId(festivalId))
     }
@@ -101,10 +97,8 @@ class LikeService(
         val like = likeRepository.findByFestivalIdAndMemberId(festivalId, memberId)
             ?: throw BusinessException(LikeExceptionCode.LIKE_NOT_FOUND)
 
-        val festival = checkNotNull(like.festival) { "행사 좋아요에는 행사가 있다." }
         likeRepository.delete(like)
         likeRepository.flush()
-        memberTrustGradeService.refreshForFestival(festival)
 
         return LikeResponse(likeRepository.countByFestivalId(festivalId))
     }

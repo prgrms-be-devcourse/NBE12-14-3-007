@@ -8,7 +8,6 @@ import com.team007.room_escape.domain.like.infra.repository.LikeRepository
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.domain.post.infra.entity.Post
 import com.team007.room_escape.domain.post.infra.repository.PostRepository
 import com.team007.room_escape.global.exception.BusinessException
@@ -37,10 +36,9 @@ class LikeServiceTest {
     @field:Mock private lateinit var postRepository: PostRepository
     @field:Mock private lateinit var festivalRepository: FestivalRepository
     @field:Mock private lateinit var memberReader: MemberReader
-    @field:Mock private lateinit var memberTrustGradeService: MemberTrustGradeService
 
     private val likeService by lazy {
-        LikeService(likeRepository, postRepository, festivalRepository, memberReader, memberTrustGradeService)
+        LikeService(likeRepository, postRepository, festivalRepository, memberReader)
     }
 
     private val memberId: UUID = UUID.randomUUID()

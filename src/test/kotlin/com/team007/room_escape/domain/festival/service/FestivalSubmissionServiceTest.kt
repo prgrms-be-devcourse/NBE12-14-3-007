@@ -18,7 +18,6 @@ import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
 import com.team007.room_escape.domain.festival.infra.repository.FestivalSubmissionRepository
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.storage.R2StorageService
@@ -46,9 +45,7 @@ class FestivalSubmissionServiceTest {
     private val submissions = mock(FestivalSubmissionRepository::class.java)
     private val members = mock(MemberReader::class.java)
     private val deletionHistories = mock(DeletionHistoryService::class.java)
-    private val deletion = FestivalDeletionService(
-        festivals, mock(MemberTrustGradeService::class.java), deletionHistories, FestivalDuplicateValidator(festivals),
-    )
+    private val deletion = FestivalDeletionService(deletionHistories, FestivalDuplicateValidator(festivals))
     private val storage = mock(R2StorageService::class.java)
     private val service = FestivalSubmissionService(
         festivals, submissions, members, mock(RichTextSanitizer::class.java), deletion,

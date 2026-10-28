@@ -36,20 +36,6 @@ interface LikeRepository : JpaRepository<Like, Long> {
     )
     fun countByFestivalIds(@Param("festivalIds") festivalIds: Collection<Long>): List<FestivalLikeCount>
 
-    /** 회원이 작성한 삭제되지 않은 행사 제보들이 받은 좋아요 합계 */
-    @Query(
-        """
-        SELECT COUNT(l)
-        FROM Like l
-        JOIN l.festival f
-        WHERE f.member.id = :authorId
-          AND f.providerType = com.team007.room_escape.domain.festival.infra.entity.ProviderType.MEMBER
-          AND f.deletedAt IS NULL
-          AND l.member.id <> f.member.id
-        """
-    )
-    fun countReceivedFestivalLikesByAuthorId(@Param("authorId") authorId: UUID): Long
-
     /**
      * 마이페이지: 회원이 좋아요한 후기. 최근에 누른 것부터, 삭제된 후기는 뺀다.
      * 순서는 이 쿼리가 정하므로 정렬 없는 Pageable을 넘긴다.

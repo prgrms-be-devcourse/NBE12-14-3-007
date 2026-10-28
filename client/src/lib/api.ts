@@ -31,6 +31,7 @@ import type {
   AdminInquiryDetail,
   AdminInquiryQuery,
   AdminMemberInfo,
+  MemberRoleHistoryItem,
   AdminMemberQuery,
   AdminFestivalQuery,
   AdminFestivalDetail,
@@ -1130,14 +1131,21 @@ export function createApi(mode: Mode) {
       );
     },
     /**
-     * [ADMIN] 회원 등급 변경.
+     * [ADMIN] 회원 등급 변경. 바꾼 회원은 '수동 고정'이 되어 자정 집계가 건드리지 않는다.
      * 본인·관리자 계정·탈퇴 회원은 서버가 거부한다(403/409).
+     * 주의(제재) 등급으로 바꿀 때 사유가 없으면 400(MEMBER011)이다.
      */
-    async changeMemberRole(memberId: string, role: Role) {
+    async changeMemberRole(memberId: string, role: Role, reason?: string) {
       return transport<AdminMemberInfo>(
         `/admin/members/${encodeURIComponent(memberId)}/role`,
         "PATCH",
-        { role },
+        { role, reason: reason?.trim() || undefined },
+      );
+    },
+    /** [ADMIN] 회원 등급 변경 이력. 최근 순. */
+    async memberRoleHistory(memberId: string, page = 0) {
+      return transport<Page<MemberRoleHistoryItem>>(
+        `/admin/members/${encodeURIComponent(memberId)}/role-history?page=${page}&size=20`,
       );
     },
     /** [ADMIN] 문의 상세. 목록에 없는 본문·첨부·답변이 여기서 온다. */

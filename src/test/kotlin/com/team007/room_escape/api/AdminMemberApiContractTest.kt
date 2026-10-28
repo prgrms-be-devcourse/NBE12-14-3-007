@@ -68,6 +68,60 @@ class AdminMemberApiContractTest : ApiContractSupport() {
     }
 
     @Test
+    fun 등급을_바꾸면_고정되고_이력에_사유와_함께_남는다() {
+        val target = saveMember(MemberRole.ROLE_UNVERIFIED)
+
+        mvc.patch("/api/v1/admin/members/${target.id}/role") {
+            auth(tokenOf(MemberRole.ROLE_ADMIN))
+            json("""{"role":"ROLE_TRUSTED","reason":"행사 제보 품질이 좋음"}""")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.roleLocked") { value(true) }
+        }
+
+        mvc.get("/api/v1/admin/members/${target.id}/role-history") { auth(tokenOf(MemberRole.ROLE_ADMIN)) }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.content[0].oldRole") { value("ROLE_UNVERIFIED") }
+            jsonPath("$.data.content[0].newRole") { value("ROLE_TRUSTED") }
+            jsonPath("$.data.content[0].reason") { value("행사 제보 품질이 좋음") }
+        }
+    }
+
+    @Test
+    fun 제재로_바꿀_때_사유가_없으면_400으로_거절한다() {
+        val target = saveMember(MemberRole.ROLE_UNVERIFIED)
+
+        mvc.patch("/api/v1/admin/members/${target.id}/role") {
+            auth(tokenOf(MemberRole.ROLE_ADMIN))
+            json("""{"role":"ROLE_WARNING"}""")
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.code") { value("MEMBER011") }
+        }
+    }
+
+    @Test
+    fun 사유가_500자를_넘으면_거절한다() {
+        val target = saveMember(MemberRole.ROLE_UNVERIFIED)
+
+        mvc.patch("/api/v1/admin/members/${target.id}/role") {
+            auth(tokenOf(MemberRole.ROLE_ADMIN))
+            json("""{"role":"ROLE_TRUSTED","reason":"${"가".repeat(501)}"}""")
+        }.andExpect {
+            status { isBadRequest() }
+        }
+    }
+
+    @Test
+    fun 일반_회원은_등급_변경_이력을_볼_수_없다() {
+        val target = saveMember(MemberRole.ROLE_UNVERIFIED)
+
+        mvc.get("/api/v1/admin/members/${target.id}/role-history") { auth(tokenOf(MemberRole.ROLE_UNVERIFIED)) }.andExpect {
+            status { isForbidden() }
+        }
+    }
+
+    @Test
     fun 일반_회원은_등급을_변경할_수_없다() {
         val target = saveMember(MemberRole.ROLE_UNVERIFIED)
 
