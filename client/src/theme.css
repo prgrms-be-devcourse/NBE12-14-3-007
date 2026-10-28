@@ -3104,3 +3104,14 @@
   outline: 1px solid #111111;
   outline-offset: 0;
 }
+
+/* 지도 속 울릉도·독도 이름 */
+.map-islet-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-ink);
+  white-space: nowrap;
+  pointer-events: none;
+}
