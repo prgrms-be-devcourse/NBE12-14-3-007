@@ -31,6 +31,7 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
+import com.team007.room_escape.domain.festival.infra.repository.ExternalIdTitle
 import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracyVoteRepository
 import com.team007.room_escape.domain.festival.infra.repository.PublicFestivalSourceRepository
 import com.team007.room_escape.domain.like.infra.dto.FestivalLikeCount
@@ -119,7 +120,8 @@ class FestivalServiceTest {
 	fun setUpDefaultStubs() {
 		lenient().`when`(festivalImageProcessor.process(any())).thenAnswer { it.getArgument<String?>(0) }
 		lenient().`when`(accuracyVoteRepository.countByFestivalIds(anyList())).thenReturn(listOf())
-		lenient().`when`(festivalRepository.findExistingExternalIds(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())).thenReturn(listOf())
+		lenient().`when`(festivalRepository.findExistingExternalIdTitles(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())).thenReturn(listOf())
+		lenient().`when`(festivalRepository.findByProviderTypeAndExternalIdIn(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())).thenReturn(listOf())
 		// 실제 트랜잭션 매니저는 항상 TransactionStatus를 돌려준다. mock은 스텁 없으면 null이라 Kotlin 람다에서 NPE가 난다.
 		lenient().`when`(transactionManager.getTransaction(any())).thenReturn(Mockito.mock(TransactionStatus::class.java))
 	}
@@ -128,6 +130,9 @@ class FestivalServiceTest {
 	private fun periodRow(seq: String): CultureInfoPeriodRow {
 		return CultureInfoPeriodRow(seq, "남한산성문화제")
 	}
+
+	/** "이미 저장돼 있고 제목도 안 바뀐" 기존 행사를 표현한다. periodRow와 title이 같아야 갱신 대상으로 안 잡힌다. */
+	private fun unchangedExisting(seq: String): ExternalIdTitle = ExternalIdTitle(seq, periodRow(seq).title)
 
 	/** 같은 seq를 가진 period 응답을 count개 반복해서 만든다 (페이지네이션 테스트용). */
 	private fun dummyPeriodRows(count: Int, seq: String): List<CultureInfoPeriodRow> {
@@ -149,12 +154,54 @@ class FestivalServiceTest {
 	fun doesNotSaveWhenNoNewFestivals() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
-				.thenReturn(listOf("seq-1")) // 이미 저장돼 있음
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-1"))) // 이미 저장돼 있고 제목도 안 바뀜
 
 		festivalService.syncPublicFestivals()
 
 		verify(festivalPublicApiClientV2, never()).fetchDetail(anyString())
+		verify(festivalRepository, never()).saveAll(any<List<Festival>>())
+	}
+
+	/** 제목이 같으면 "안 바뀐 것"으로 보고 upsert 대상 조회(findByProviderTypeAndExternalIdIn)도 안 탄다. */
+	@Test
+	@DisplayName("신규 seq가 없으면 upsert 대상 조회도 하지 않는다")
+	fun doesNotLookUpUpdateTargetsWhenNoNewFestivals() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(periodRow("seq-1")))
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-1")))
+
+		festivalService.syncPublicFestivals()
+
+		verify(festivalRepository, never())
+			.findByProviderTypeAndExternalIdIn(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())
+	}
+
+	/** 이미 저장된 행사라도 공공 API의 제목이 달라졌으면, 상세조회해서 내용을 최신으로 갱신해야 한다(upsert). */
+	@Test
+	@DisplayName("기존 행사의 제목이 바뀌었으면 상세조회해서 내용을 갱신한다")
+	fun updatesExistingFestivalWhenTitleChanged() {
+		val existing = Festival(
+			providerType = ProviderType.PUBLIC,
+			externalId = "seq-1",
+			title = "옛날 제목",
+		)
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(CultureInfoPeriodRow("seq-1", "새 제목")))
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(ExternalIdTitle("seq-1", "옛날 제목")))
+		`when`(festivalRepository.findByProviderTypeAndExternalIdIn(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(existing))
+		`when`(festivalPublicApiClientV2.fetchDetail("seq-1"))
+				.thenReturn(detailRow("seq-1", "${CURRENT_YEAR}0101", "29991231"))
+
+		val result = festivalService.syncPublicFestivals()
+
+		assertThat(existing.title).isEqualTo("남한산성문화제") // 상세조회로 받은 최신 제목으로 갱신됨
+		assertThat(result.updatedFestivals).hasSize(1)
+		assertThat(result.savedFestivals).isEmpty() // 신규가 아니라 saveAll(INSERT)로는 안 저장됨
+		assertThat(result.detailLookupCount).isEqualTo(1)
 		verify(festivalRepository, never()).saveAll(any<List<Festival>>())
 	}
 
@@ -167,8 +214,8 @@ class FestivalServiceTest {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(2), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-last")))
 		// 전부 이미 저장된 것으로 처리해서, 상세조회 루프(호출 간 대기 포함)는 안 타게 하고 페이지네이션만 확인한다.
-		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
-				.thenReturn(listOf("seq-full", "seq-last"))
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-full"), unchangedExisting("seq-last")))
 
 		festivalService.syncPublicFestivals()
 
@@ -271,8 +318,8 @@ class FestivalServiceTest {
 	fun savesLatestRawSourceOnly() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
-				.thenReturn(listOf("seq-1")) // 신규 없음, 원본 저장 순서만 확인
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-1"))) // 신규·변경 없음, 원본 저장 순서만 확인
 		`when`(objectMapper.writeValueAsString(Mockito.any<List<CultureInfoPeriodRow>>())).thenReturn("[]")
 
 		festivalService.syncPublicFestivals()
@@ -383,8 +430,8 @@ class FestivalServiceTest {
 	fun closesExpiredFestivalsWithSameNowAsLookup() {
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
-				.thenReturn(listOf("seq-1"))
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-1")))
 
 		festivalService.syncPublicFestivals()
 
@@ -404,8 +451,8 @@ class FestivalServiceTest {
 			.thenReturn(listOf(expiredOpenFestival(3L, "지난 음악회")))
 		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
 				.thenReturn(listOf(periodRow("seq-1")))
-		`when`(festivalRepository.findExistingExternalIds(eqOf(ProviderType.PUBLIC), anyStrings()))
-				.thenReturn(listOf("seq-1"))
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(unchangedExisting("seq-1")))
 
 		val result = festivalService.syncPublicFestivals()
 

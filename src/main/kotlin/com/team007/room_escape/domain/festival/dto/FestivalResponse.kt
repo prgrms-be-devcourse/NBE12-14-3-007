@@ -214,7 +214,10 @@ class FestivalResponse private constructor() {
         @field:Schema(description = "새로 저장된 행사 목록")
         val savedFestivals: List<SyncedFestival>?,
 
-        @field:Schema(description = "이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수")
+        @field:Schema(description = "이미 있었지만 제목이 바뀌어 내용을 갱신한 행사 목록")
+        val updatedFestivals: List<SyncedFestival>?,
+
+        @field:Schema(description = "이번 회차에 신규이거나 제목이 바뀌어 상세조회 대상이 된 행사 수")
         val detailLookupCount: Int,
 
         @field:Schema(description = "상세조회 응답이 비어서 저장하지 못하고 건너뛴 행사 수")

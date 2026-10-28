@@ -1025,7 +1025,11 @@ const MAX_POLL_FAILURE_STREAK = 3;
 
 /** 동기화 한 건의 결과를 사람이 읽는 문장으로 바꾼다. 수동·자동 토스트와 안내문에서 같이 쓴다. */
 function syncResultText(result: SyncResult): string {
-  const { savedFestivals, closedFestivals, skippedCount, interrupted } = result;
+  const { savedFestivals, updatedFestivals, closedFestivals, skippedCount, interrupted } =
+    result;
+  // 갱신된 게 없으면 문구에서 아예 뺀다. 공공 API 제목이 안 바뀐 날이 대부분이라 매번 "0건 갱신"을 보여주면 소음이다.
+  const updatedText =
+    updatedFestivals.length > 0 ? `, ${updatedFestivals.length}건 내용 갱신` : "";
   if (interrupted) {
     return (
       `중간에 멈췄어요 · 그래도 ${savedFestivals.length}건은 저장됐어요. ` +
@@ -1034,11 +1038,11 @@ function syncResultText(result: SyncResult): string {
   }
   if (skippedCount > 0) {
     return (
-      `새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리 · ` +
+      `새 행사 ${savedFestivals.length}건 저장${updatedText}, ${closedFestivals.length}건 종료 처리 · ` +
       `${skippedCount}건은 공공 API가 상세 정보를 비워서 보내 건너뛰었어요(다음 동기화 때 다시 시도돼요).`
     );
   }
-  return `새 행사 ${savedFestivals.length}건 저장, ${closedFestivals.length}건 종료 처리`;
+  return `새 행사 ${savedFestivals.length}건 저장${updatedText}, ${closedFestivals.length}건 종료 처리`;
 }
 
 /**

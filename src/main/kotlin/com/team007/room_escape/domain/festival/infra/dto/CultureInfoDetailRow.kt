@@ -55,6 +55,25 @@ data class CultureInfoDetailRow(
         )
     }
 
+    /** 이미 저장돼 있던 같은 external_id의 행사에, 이번 조회로 받은 최신 내용을 덮어쓴다. */
+    fun applyTo(festival: Festival, processedImgUrl: String?) {
+        festival.updateFromPublicSource(
+            title = unescapeHtml(title),
+            category = realmName,
+            content = unescapeHtml(contents1),
+            url = url,
+            telnoInfo = phone,
+            partcptExpnInfo = price,
+            imgUrl = processedImgUrl,
+            beginDe = parseDate(startDate),
+            endDe = parseEndDate(endDate),
+            region = FestivalRegion.fromDisplayName(area),
+            regionDetail = sigungu,
+            place = unescapeHtml(place),
+            placeAddress = placeAddr,
+        )
+    }
+
     companion object {
         private val API_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 

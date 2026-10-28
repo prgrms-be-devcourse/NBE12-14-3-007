@@ -56,12 +56,24 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
         yearEnd: LocalDateTime,
     ): Long
 
-    /** 전달한 external_id 중 이미 저장된 것만 돌려준다. 신규 판별(차집합)에 쓴다. */
-    @Query("SELECT f.externalId FROM Festival f WHERE f.providerType = :providerType AND f.externalId IN :externalIds")
-    fun findExistingExternalIds(
+    /**
+     * 전달한 external_id 중 이미 저장된 것의 (external_id, title)을 돌려준다.
+     * 신규 판별(차집합)과, 제목이 바뀐 기존 행사 판별(upsert 대상)에 함께 쓴다.
+     */
+    @Query(
+        "SELECT new com.team007.room_escape.domain.festival.infra.repository.ExternalIdTitle(f.externalId, f.title) " +
+            "FROM Festival f WHERE f.providerType = :providerType AND f.externalId IN :externalIds"
+    )
+    fun findExistingExternalIdTitles(
         @Param("providerType") providerType: ProviderType,
         @Param("externalIds") externalIds: Collection<String>,
-    ): List<String>
+    ): List<ExternalIdTitle>
+
+    /** upsert 대상(이미 있지만 내용이 바뀐 행사)의 엔티티 자체를 가져온다. */
+    fun findByProviderTypeAndExternalIdIn(
+        providerType: ProviderType,
+        externalIds: Collection<String>,
+    ): List<Festival>
 
     // TODO: PostgreSQL의 null 파라미터 타입 오류로 사용 중인 hasXxx 플래그를 QueryDSL 도입 시 제거
     /** 목록 카드에 제보자 닉네임·등급을 보여줘서 회원을 함께 불러온다. */
@@ -321,3 +333,6 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
         pageable: Pageable,
     ): Page<Festival>
 }
+
+/** JPQL의 new 표현식으로 만드는 (external_id, title) 조회 결과. */
+data class ExternalIdTitle(val externalId: String?, val title: String?)
