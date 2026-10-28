@@ -35,6 +35,20 @@ class FestivalSyncExecutorTest {
     private lateinit var executor: FestivalSyncExecutor
 
     @Test
+    @DisplayName("아무것도 안 돌렸으면 모든 필드가 비어있는 대기 상태다")
+    fun initialStatusIsIdle() {
+        val status = executor.status()
+
+        assertThat(status.running).isFalse()
+        assertThat(status.lastResult).isNull()
+        assertThat(status.lastError).isNull()
+        assertThat(status.finishedAt).isNull()
+        assertThat(status.lastScheduledResult).isNull()
+        assertThat(status.lastScheduledError).isNull()
+        assertThat(status.lastScheduledFinishedAt).isNull()
+    }
+
+    @Test
     @DisplayName("실행 중이 아니면 tryStart는 즉시 true를 돌려주고, runAsync가 넘긴 결과를 status에 남긴다")
     fun tryStartRunsAsyncAndRecordsResult() {
         stubRunAsyncToFinishWith(RESULT)
