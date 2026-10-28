@@ -118,12 +118,12 @@ function stampOf(event: EventView) {
 }
 
 export function Home() {
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [regionExpanded, setRegionExpanded] = useState(false);
   const { mode, api } = useApp();
   const navigate = useNavigate();
   const [category, setCategory] = useState("전체");
   const [region, setRegion] = useState("");
+  const [providerType, setProviderType] = useState("");
   const [date, setDate] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
@@ -239,18 +239,15 @@ export function Home() {
 
       <section className="home-search container" aria-label="조건으로 행사 검색">
         <form
-          className={`discovery-search${searchExpanded ? " is-expanded" : ""}`}
-          onFocus={() => setSearchExpanded(true)}
+          className="discovery-search is-expanded"
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-              setSearchExpanded(false);
               setRegionExpanded(false);
             }
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
-              setSearchExpanded(false);
               setRegionExpanded(false);
               (event.target as HTMLElement).blur();
             }
@@ -260,6 +257,7 @@ export function Home() {
             const params = new URLSearchParams();
             if (categoryParam) params.set("category", categoryParam);
             if (region) params.set("region", region);
+            if (providerType) params.set("providerType", providerType);
             if (date) params.set("date", date);
             if (query.trim()) params.set("q", query.trim());
             navigate(`/explore?${params}`);
@@ -268,15 +266,30 @@ export function Home() {
           <div className="discovery-search-bar">
             <input
               aria-label="행사 검색어"
-              aria-expanded={searchExpanded}
-              aria-controls="home-search-options"
               placeholder="행사명 또는 지역 검색"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
             <button type="submit" className="home-search-submit" aria-label="행사 검색"><Search size={21} /></button>
           </div>
-          <div className="discovery-search-filters" id="home-search-options" hidden={!searchExpanded}>
+          <div className="discovery-search-filters" id="home-search-options">
+            <div className="source-toggle" role="group" aria-label="행사 구분">
+              {[
+                { value: "", label: "전체" },
+                { value: "PUBLIC", label: "공공행사" },
+                { value: "MEMBER", label: "회원 제보" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={providerType === option.value ? "active" : ""}
+                  aria-pressed={providerType === option.value}
+                  onClick={() => setProviderType(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <div className="filter-chip">
               <MapPin size={15} />
               <span className="home-search-field-label">지역</span>
@@ -339,11 +352,6 @@ export function Home() {
           </div>
 
         </form>
-        {!searchExpanded && (region || date) && (
-          <p className="home-search-selection">
-            {[region ? regions[region] || region : "전국", date ? dateText(date) : null].filter(Boolean).join(" · ")}
-          </p>
-        )}
       </section>
 
       <section className="home-hero container" aria-label="행사 분류 선택">

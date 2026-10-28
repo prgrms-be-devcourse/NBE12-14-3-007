@@ -100,6 +100,7 @@ export function Explore() {
 
   return (
     <div className="container page-space explore-page home-c">
+      <p className="page-eyebrow eyebrow">ESCAPE THE ORDINARY</p>
       <h1 className="explore-title">행사 몰아보기</h1>
 
       <section className="home-search" aria-label="행사 검색 조건">
@@ -126,7 +127,7 @@ export function Explore() {
             {[
               { value: "", label: "전체" },
               { value: "PUBLIC", label: "공공행사" },
-              { value: "MEMBER", label: "민간행사" },
+              { value: "MEMBER", label: "회원 제보" },
             ].map((option) => (
               <button
                 key={option.value}

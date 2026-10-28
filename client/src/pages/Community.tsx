@@ -94,11 +94,8 @@ export function CommunityPage() {
 
   return (
     <div className="container page-space community-page">
-      <PageTitle
-        eyebrow="COMMUNITY"
-        title="커뮤니티"
-        description="밖으로 나갈 이유와 즐거운 이야기를 이웃과 나눠보세요."
-      />
+      <p className="page-eyebrow eyebrow">COMMUNITY</p>
+      <h1 className="compact-title">커뮤니티</h1>
 
       <div className="community-toolbar">
         <nav className="community-categories" aria-label="커뮤니티 카테고리">
@@ -521,8 +518,12 @@ export function CommunityDetailPage() {
           댓글 <span>{data.commentCount}</span>
         </h2>
         {member ? (
-          <form className="community-comment-form" onSubmit={submitComment}>
+          <form className="comment-form" onSubmit={submitComment}>
+            <label className="sr-only" htmlFor="new-community-comment">
+              댓글 내용
+            </label>
             <textarea
+              id="new-community-comment"
               value={comment}
               onChange={(event) => setComment(event.target.value)}
               placeholder="함께 나누고 싶은 이야기를 남겨주세요."
@@ -530,9 +531,12 @@ export function CommunityDetailPage() {
               rows={3}
               required
             />
-            <button className="btn primary small" disabled={busy}>
-              댓글 등록
-            </button>
+            <div>
+              <span className="muted small-text">{comment.length} / 500</span>
+              <button className="btn primary small" disabled={busy}>
+                댓글 등록
+              </button>
+            </div>
           </form>
         ) : (
           <p className="community-login-note">

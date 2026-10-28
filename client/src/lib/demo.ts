@@ -90,7 +90,7 @@ export const demoEvents: EventView[] = [
     submissionId: "demo-submission-1",
     source: "MEMBER",
     title: "이웃과 함께하는 주말 플리마켓",
-    category: "플리마켓",
+    category: "플리마켓/팝업",
     region: "GYEONGGI_SUWON",
     regionDetail: "행궁동 공방거리",
     imgUrl: "/images/market.jpg",
