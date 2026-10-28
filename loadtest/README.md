@@ -1,7 +1,7 @@
 # 부하 테스트
 
-Railway 무료 플랜과 **같은 자원 한도(1 vCPU / 512MB)** 로 앱과 DB를 로컬 Docker에 띄우고, [k6](https://k6.io)로 부하를 줍니다.
-Railway에서 직접 부하 테스트를 하면 크레딧이 빠르게 소모되고 서버가 죽을 수 있어서 로컬에서 합니다.
+운영 서버(Render 무료 플랜)와 **같은 메모리 한도(512MB)** 로 앱과 DB를 로컬 Docker에 띄우고, [k6](https://k6.io)로 부하를 줍니다.
+운영 서버에 직접 부하를 주면 무료 서버가 죽고 실제 사용자도 영향을 받아서 로컬에서 합니다.
 
 ## 필요한 것
 
@@ -40,14 +40,14 @@ docker stats roomescape-loadtest-app-1 roomescape-loadtest-db-1
 ## 자원 한도 바꾸기
 
 기본값은 서비스당 **1 vCPU / 512MB, 스왑 없음** 입니다.
-Railway 대시보드의 서비스 → Settings → Resource Limits 값이 다르면 `.env`에 추가해서 맞춥니다.
+운영(Render 무료 플랜)은 512MB / 0.1 CPU라 CPU는 운영보다 넉넉합니다. 운영과 CPU까지 맞추거나 한도를 바꾸려면 `.env`에 추가합니다.
 
 ```properties
-LOADTEST_CPUS=2
-LOADTEST_MEMORY=1g
+LOADTEST_CPUS=0.1
+LOADTEST_MEMORY=512m
 ```
 
-스왑을 막아둔 이유: 스왑으로 버티면 실제 Railway보다 결과가 좋게 나옵니다.
+스왑을 막아둔 이유: 스왑으로 버티면 실제 운영보다 결과가 좋게 나옵니다.
 
 ## 시나리오 (`scenario.js`)
 
@@ -99,9 +99,9 @@ LOADTEST_MEMORY=1g
 | `-XX:MaxDirectMemorySize=32m` | NIO 다이렉트 버퍼 상한 |
 | `-Xss512k` | 스레드 스택 (기본 1MB). Tomcat 스레드가 많아져도 덜 먹음 |
 | `-XX:+UseSerialGC` | CPU 1개에선 G1보다 부가 메모리가 적음 |
-| `-XX:+ExitOnOutOfMemoryError` | OOM 시 좀비로 남지 않고 죽어서 Railway가 재시작 |
+| `-XX:+ExitOnOutOfMemoryError` | OOM 시 좀비로 남지 않고 죽어서 Render가 재시작 |
 
-이 `Dockerfile`은 **Railway 배포에도 그대로 쓰입니다.** 로컬에서 버티면 Railway에서도 같은 조건입니다.
+이 `Dockerfile`은 **Render 배포에도 그대로 쓰입니다.** 다만 운영은 Render 환경 변수 `JAVA_TOOL_OPTIONS`로 위 값을 더 줄여 덮어씁니다 (루트 README의 운영(Render) Environment).
 
 ## 결과 보는 법
 
@@ -115,7 +115,7 @@ http_reqs............: 6299        ← 총 요청 수
 ```
 
 `docker stats`에서는 **앱 메모리가 한도에 얼마나 붙는지**가 제일 중요합니다.
-한도에 닿으면 Railway에서도 앱이 재시작됩니다.
+한도에 닿으면 운영 서버도 재시작됩니다.
 
 ### 기준 결과 (2026-09-28, 시드 데이터만 있는 상태)
 

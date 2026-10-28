@@ -70,24 +70,50 @@ docker compose down
 | --- | --- | --- |
 | `application.yaml` | 항상 | 공통 설정 (JPA, 메일, JWT, R2, 배치 주기 …) |
 | `application-local.yaml` | 로컬 (프로필 미지정 시 기본) | `.env` 로딩, 개발 DB 기본값, CORS `localhost:3000/3001`, 쿠키 `Secure=false` |
-| `application-prod.yaml` | 운영 (Railway) | `.env` 안 읽음, 모든 값은 Railway Variables, `PORT` 사용, 쿠키 `Secure=true` |
+| `application-prod.yaml` | 운영 (Render) | `.env` 안 읽음, 모든 값은 Render Environment, `PORT` 사용, 쿠키 `Secure=true` |
 
 - IDE나 `bootRun`으로 켜면 아무 설정 없이 **local**입니다.
-- Docker 이미지로 뜨면 `Dockerfile`의 `SPRING_PROFILES_ACTIVE=prod` 때문에 **prod**입니다 (Railway, 부하 테스트).
+- Docker 이미지로 뜨면 `Dockerfile`의 `SPRING_PROFILES_ACTIVE=prod` 때문에 **prod**입니다 (Render, 부하 테스트).
 - 로컬에서 운영 설정으로 켜 보고 싶으면 `SPRING_PROFILES_ACTIVE=prod` 환경 변수를 주면 됩니다. 이때는 `.env`를 읽지 않습니다.
 
-### 운영(Railway) Variables
+### 운영 배포 (Vercel → Render → Supabase)
 
-`application.yaml`의 공통 키(아래 표) + 이것들을 Railway 서비스 Variables에 넣습니다.
+```text
+브라우저 ──▶ Vercel (프론트, /api 프록시) ──▶ Render (서버) ──▶ Supabase (PostgreSQL)
+```
+
+| 구성 | 서비스 | 메모 |
+| --- | --- | --- |
+| 프론트 | Vercel `roomescape-one.vercel.app` | `client/vercel.json`의 rewrite가 `/api/*`를 Render로 넘깁니다. `client/`에서 Vercel CLI(`vercel deploy --prod`)로 올렸습니다 |
+| 서버 | Render 무료 `roomescape-api.onrender.com` (싱가포르, 512MB / 0.1 CPU) | 루트 `Dockerfile`로 빌드합니다. `dev` 브랜치를 보지만 자동 배포는 꺼져 있어서 대시보드의 **Manual Deploy**로 올립니다 |
+| DB | Supabase (도쿄) | Session pooler(5432)로 접속합니다 |
+
+- 무료 서버는 15분 동안 요청이 없으면 잠들고, 깨는 데 1~3분 걸립니다. 그동안 Vercel 프록시는 120초에서 끊고 `502`를 돌려줍니다. 시연 전에는 외부 크론(cron-job.org 등)으로 `/actuator/health`를 10분마다 불러 깨워 둡니다.
+- 공공 행사 자동 동기화(6·14·22시)도 그 시각에 서버가 깨어 있어야 돕니다.
+
+### 운영(Render) Environment
+
+`application.yaml`의 공통 키(아래 표) + 이것들을 Render 서비스 Environment에 넣습니다.
 
 | 키 | 값 |
 | --- | --- |
-| `DATASOURCE_URL` | `jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}` |
-| `DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
-| `DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+| `DATASOURCE_URL` | `jdbc:postgresql://aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require` (Supabase → Connect → Session pooler) |
+| `DATASOURCE_USERNAME` | `postgres.<project-ref>` |
+| `DATASOURCE_PASSWORD` | Supabase DB 비밀번호 |
+| `TZ` | `Asia/Seoul` |
 | `CORS_ALLOWED_ORIGINS` | (선택) 쉼표 구분. 프론트가 Vercel rewrite로 붙으면 필요 없음 |
 
-`${{Postgres.…}}`는 Railway의 참조 변수 문법입니다. DB 서비스 이름이 `Postgres`가 아니면 그 이름으로 바꿉니다.
+`Dockerfile` 기본값으로는 첫 요청 직후 512MB를 넘어 재시작돼서, 메모리를 더 줄이는 값도 넣습니다.
+
+| 키 | 값 |
+| --- | --- |
+| `JAVA_TOOL_OPTIONS` | `-XX:MaxRAMPercentage=40 -XX:MaxMetaspaceSize=150m -XX:ReservedCodeCacheSize=32m -XX:MaxDirectMemorySize=16m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError` |
+| `SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE` | `5` |
+| `SERVER_TOMCAT_THREADS_MAX` | `20` |
+| `MALLOC_ARENA_MAX` | `2` |
+
+- 운영에는 `SPRING_FLYWAY_LOCATIONS`를 넣지 않습니다. `db/seed`가 들어가면 데모 데이터가 운영 DB에 들어갑니다.
+- Supabase에서 DB 비밀번호를 바꾸면 Render의 `DATASOURCE_PASSWORD`도 같이 바꿔야 서버가 DB에 붙습니다.
 
 ## 설정 (.env)
 
@@ -402,7 +428,7 @@ r2StorageService.delete(oldKey);   // 삭제 실패는 로그만 남고 흐름�
 
 ## 부하 테스트
 
-Railway 무료 플랜과 같은 자원 한도(1 vCPU / 512MB)로 로컬에서 부하 테스트를 합니다.
+운영 서버(Render 무료)와 같은 메모리 한도(512MB)로 로컬에서 부하 테스트를 합니다. CPU는 기본 1개라 운영(0.1 CPU)보다 넉넉합니다.
 실행 방법과 결과 보는 법은 [loadtest/README.md](loadtest/README.md)를 보세요.
 
 ```bash
