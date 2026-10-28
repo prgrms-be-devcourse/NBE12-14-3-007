@@ -104,7 +104,7 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
                 left: "34%",
                 top: 0,
                 width: "44%",
-                background: "#2343d1",
+                background: "#e23e96",
                 color: "#fff",
                 zIndex: 1,
               } as CSSProperties
