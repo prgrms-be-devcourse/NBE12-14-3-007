@@ -1,12 +1,12 @@
-# Railway 무료 플랜과 같은 자원 한도로 앱 + DB를 띄워 부하 테스트한다.
+# 운영 서버(Render 무료)와 같은 메모리 한도로 앱 + DB를 띄워 부하 테스트한다.
 # 개발용 docker-compose.yml과 별개라 포트·데이터가 겹치지 않는다.
 #
 #   docker compose -f docker-compose.loadtest.yml up -d --build      # 앱 + DB 기동
 #   docker compose -f docker-compose.loadtest.yml run --rm k6          # 부하 테스트 실행
 #   docker compose -f docker-compose.loadtest.yml down                 # 정리 (볼륨 없음 → 데이터 삭제)
 #
-# 한도는 Railway 대시보드의 서비스 → Settings → Resource Limits 값에 맞춘다.
-# 기본값은 서비스당 1 vCPU / 512MB. 다르면 .env에 LOADTEST_CPUS, LOADTEST_MEMORY를 넣어 덮어쓴다.
+# 운영(Render 무료 플랜)은 512MB / 0.1 CPU다. 기본값은 서비스당 1 vCPU / 512MB라 CPU는 운영보다 넉넉하다.
+# 운영과 CPU까지 맞추거나 한도를 바꾸려면 .env에 LOADTEST_CPUS, LOADTEST_MEMORY를 넣어 덮어쓴다.
 
 name: roomescape-loadtest
 
@@ -41,7 +41,7 @@ services:
       TZ: Asia/Seoul
     cpus: ${LOADTEST_CPUS:-1}
     mem_limit: ${LOADTEST_MEMORY:-512m}
-    # 스왑으로 버티면 실제 Railway보다 좋게 나오므로 스왑을 막는다.
+    # 스왑으로 버티면 실제 운영보다 좋게 나오므로 스왑을 막는다.
     memswap_limit: ${LOADTEST_MEMORY:-512m}
     ports:
       - "18080:8080"

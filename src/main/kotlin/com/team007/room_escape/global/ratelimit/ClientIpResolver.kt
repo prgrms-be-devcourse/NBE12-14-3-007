@@ -19,7 +19,7 @@ enum class ClientIpMode {
 /**
  * client-ip.* 설정.
  *
- * 운영은 프록시(Vercel, Railway) 뒤에 있어서 연결된 상대의 IP가 모든 사용자에게 같다.
+ * 운영은 프록시(Vercel, Render) 뒤에 있어서 연결된 상대의 IP가 모든 사용자에게 같다.
  * 그 값으로 IP별 제한을 걸면 전체 사용자가 한 묶음으로 막히므로, 사용자 IP를 믿을 수 있을 때만 켠다.
  */
 @ConfigurationProperties(prefix = "client-ip")
