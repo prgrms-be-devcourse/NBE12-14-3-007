@@ -5,6 +5,8 @@ import com.team007.room_escape.domain.festival.infra.entity.FestivalRegion
 import com.team007.room_escape.domain.festival.infra.entity.FestivalStatus
 import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
+import com.team007.room_escape.domain.member.infra.entity.Member
+import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
@@ -178,6 +180,49 @@ class FestivalRepositoryQueryTest @Autowired constructor(
         assertThat(withoutDeleted.content.map { it.title }).containsExactly("$token-visible")
         assertThat(withDeleted.content.map { it.title }).containsExactlyInAnyOrder("$token-visible", "$token-removed")
         assertThat(deletedOnly.content.map { it.title }).containsExactly("$token-removed")
+    }
+
+    @Test
+    fun `관리자 검색은 행사 번호로 정확히 찾는다`() {
+        val target = festival("target")
+        festival("other")
+        em.flush()
+        val pageable = PageRequest.of(0, 10)
+
+        val byId = festivals.searchForAdmin(target.requiredId.toString(), null, false, false, false, pageable)
+
+        assertThat(byId.content.map { it.requiredId }).containsExactly(target.requiredId)
+        assertThat(byId.totalElements).isEqualTo(1)
+    }
+
+    @Test
+    fun `관리자 검색은 제보자 닉네임으로 찾고 목록에서 닉네임을 바로 읽는다`() {
+        val member = Member(
+            email = "$token@example.com",
+            password = "password1!",
+            role = MemberRole.ROLE_UNVERIFIED,
+            nickname = "닉네임$token",
+        )
+        em.persist(member)
+        val submitted = Festival(
+            providerType = ProviderType.MEMBER,
+            title = "$token-submitted",
+            beginDe = now.plusDays(1),
+            endDe = now.plusDays(3),
+            status = FestivalStatus.OPEN,
+            region = FestivalRegion.values()[0],
+            member = member,
+        )
+        em.persist(submitted)
+        festival("public")
+        flushAndClear()
+        val pageable = PageRequest.of(0, 10)
+
+        val byNickname = festivals.searchForAdmin("닉네임$token".lowercase(), null, false, false, false, pageable)
+
+        assertThat(byNickname.content.map { it.title }).containsExactly("$token-submitted")
+        assertThat(byNickname.totalElements).isEqualTo(1)
+        assertThat(byNickname.content.single().member?.nickname).isEqualTo("닉네임$token")
     }
 
     @Test
