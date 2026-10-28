@@ -359,7 +359,7 @@ export interface SyncResult {
   /** 새로 저장된 행사 */
   savedFestivals: { festivalId: number; title: string }[];
   /** 이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수 */
-  requestedCount: number;
+  detailLookupCount: number;
   /** 상세조회 응답이 비어서 건너뛴 행사 수 */
   skippedCount: number;
   /** 상세조회 도중 예외가 나서 중간에 중단됐는지 */
