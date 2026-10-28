@@ -178,6 +178,26 @@ class FestivalServiceTest {
 			.findByProviderTypeAndExternalIdIn(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())
 	}
 
+	/**
+	 * 회귀 테스트. DB의 title은 이미 디코딩돼 저장돼 있는데, period 응답의 title은 공공 API가
+	 * 이스케이프한 원본 그대로다. 디코딩 없이 그대로 비교하면 내용이 같은데도 "다르다"고 오판해서
+	 * 특수문자 들어간 행사 대부분이 불필요하게 갱신 대상으로 잡혔던 적이 있다.
+	 */
+	@Test
+	@DisplayName("제목이 같아도 공공 API가 HTML 엔티티로 이스케이프해서 보내면 갱신 대상으로 보지 않는다")
+	fun doesNotTreatHtmlEscapedTitleAsChanged() {
+		`when`(festivalPublicApiClientV2.fetchPeriod(eq(1), eq(PAGE_SIZE), anyString(), anyString()))
+				.thenReturn(listOf(CultureInfoPeriodRow("seq-1", "어린이 &amp; 가족 축제"))) // API는 이스케이프해서 줌
+		`when`(festivalRepository.findExistingExternalIdTitles(eqOf(ProviderType.PUBLIC), anyStrings()))
+				.thenReturn(listOf(ExternalIdTitle("seq-1", "어린이 & 가족 축제"))) // DB엔 디코딩된 채로 저장돼 있음
+
+		festivalService.syncPublicFestivals()
+
+		verify(festivalPublicApiClientV2, never()).fetchDetail(anyString())
+		verify(festivalRepository, never())
+			.findByProviderTypeAndExternalIdIn(anyOf(ProviderType::class.java, ProviderType.PUBLIC), anyStrings())
+	}
+
 	/** 이미 저장된 행사라도 공공 API의 제목이 달라졌으면, 상세조회해서 내용을 최신으로 갱신해야 한다(upsert). */
 	@Test
 	@DisplayName("기존 행사의 제목이 바뀌었으면 상세조회해서 내용을 갱신한다")

@@ -92,20 +92,23 @@ data class CultureInfoDetailRow(
             }
             return LocalDate.parse(yyyyMMdd, API_DATE_FORMAT).atTime(LocalTime.MAX)
         }
+    }
+}
 
-        /**
-         * 공공 API가 title/contents1/place에 &lt;, &amp;, &#39; 같은 HTML 엔티티를 이스케이프해서 보낸다.
-         * 간혹 &amp;lsquo; 처럼 이중 이스케이프된 값도 있어 더 이상 안 바뀔 때까지 반복 디코딩한다.
-         */
-        private fun unescapeHtml(value: String?): String? {
-            var result: String = value ?: return null
-            while (true) {
-                val decoded = HtmlUtils.htmlUnescape(result)
-                if (decoded == result) {
-                    return result
-                }
-                result = decoded
-            }
+/**
+ * 공공 API가 title/contents1/place에 &lt;, &amp;, &#39; 같은 HTML 엔티티를 이스케이프해서 보낸다.
+ * 간혹 &amp;lsquo; 처럼 이중 이스케이프된 값도 있어 더 이상 안 바뀔 때까지 반복 디코딩한다.
+ *
+ * /period2(목록)의 title과 /detail2(상세)의 title을 똑같이 디코딩해야, "제목이 바뀌었는지" 비교할 때
+ * 한쪽만 이스케이프된 상태로 남아서 멀쩡한 행사가 전부 바뀐 것처럼 오판되는 걸 막을 수 있다.
+ */
+internal fun unescapeHtml(value: String?): String? {
+    var result: String = value ?: return null
+    while (true) {
+        val decoded = HtmlUtils.htmlUnescape(result)
+        if (decoded == result) {
+            return result
         }
+        result = decoded
     }
 }
