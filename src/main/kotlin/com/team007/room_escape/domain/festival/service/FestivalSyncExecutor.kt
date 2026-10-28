@@ -12,10 +12,14 @@ import org.springframework.stereotype.Component
  * 동기화가 동시에 두 번 돌지 않게 막는다. [status]는 수동 동기화(관리자 화면)와 스케줄러(자동) 결과를
  * 각각 별도 필드에 담는다 — 같은 필드를 같이 쓰면 수동 동기화가 끝나자마자 대기하던 스케줄 실행이
  * 바로 시작되면서 관리자가 보기도 전에 수동 결과를 덮어써 버린다.
+ *
+ * 실제 실행은 [FestivalSyncRunner]에 맡긴다. 여기서 직접 스레드를 만들면 이 프로젝트가 이미
+ * 메일 발송에 쓰는 @Async 방식과 따로 놀고, 실행 개수 제한 같은 걸 스프링이 관리해주는
+ * 이점도 못 받는다.
  */
 @Component
 class FestivalSyncExecutor(
-    private val festivalService: FestivalService
+    private val syncRunner: FestivalSyncRunner
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -31,13 +35,13 @@ class FestivalSyncExecutor(
 
     fun status(): FestivalResponse.SyncStatusResponse = status.get()
 
-    /** 수동 동기화용: 이미 실행 중이면 시작하지 않고 false. 아니면 백그라운드에서 돌리고 바로 true를 돌려준다. */
+    /** 수동 동기화용: 이미 실행 중이면 시작하지 않고 false. 아니면 @Async로 돌리고 바로 true를 돌려준다. */
     fun tryStart(): Boolean {
         if (!gate.tryAcquire()) {
             return false
         }
         markRunning()
-        Thread({ runAndRelease() }, "festival-sync-manual").start()
+        syncRunner.runAsync(onFinished = ::markFinished, onFailed = ::markFailed, onDone = gate::release)
         return true
     }
 
@@ -45,42 +49,15 @@ class FestivalSyncExecutor(
     fun run(): FestivalResponse.SyncResponse {
         gate.acquire()
         try {
-            // 스케줄러 호출이라 실패를 Spring이 로깅하도록 그대로 다시 던진다.
-            return runSyncRecordingResult("공공 행사 자동 동기화 실패", ::markScheduledFinished, ::markScheduledFailed)
-        } finally {
-            gate.release()
-        }
-    }
-
-    private fun runAndRelease() {
-        try {
-            runSyncRecordingResult("공공 행사 동기화 실패", ::markFinished, ::markFailed)
-        } catch (e: Throwable) {
-            // 이미 로그 남기고 상태에도 기록했다. 여기는 백그라운드 스레드의 시작점이라
-            // 더 던질 곳이 없어서 삼킨다 — 안 삼키면 스레드가 죽어 스택트레이스만 콘솔에 남고 끝난다.
-        } finally {
-            gate.release()
-        }
-    }
-
-    /**
-     * 동기화를 실행하고 결과를 [onFinished]/[onFailed]로 상태에 반영한다.
-     * OutOfMemoryError 같은 Error까지 잡아야 한다. Exception만 잡으면 잠금은 풀려도
-     * status가 running=true로 남아 관리자 화면이 영원히 "동기화 중…"에 머문다.
-     */
-    private fun runSyncRecordingResult(
-        failureLogMessage: String,
-        onFinished: (FestivalResponse.SyncResponse) -> Unit,
-        onFailed: (Throwable) -> Unit
-    ): FestivalResponse.SyncResponse {
-        try {
-            val result = festivalService.syncPublicFestivals()
-            onFinished(result)
+            val result = syncRunner.runSync()
+            markScheduledFinished(result)
             return result
         } catch (e: Throwable) {
-            log.error(failureLogMessage, e)
-            onFailed(e)
+            log.error("공공 행사 자동 동기화 실패", e)
+            markScheduledFailed(e)
             throw e
+        } finally {
+            gate.release()
         }
     }
 
