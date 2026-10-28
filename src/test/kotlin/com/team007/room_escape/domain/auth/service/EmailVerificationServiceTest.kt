@@ -18,7 +18,10 @@ class EmailVerificationServiceTest {
         expireMinutes: Long = 5,
         resendCooldownSeconds: Long = 60,
         verifiedValidMinutes: Long = 30,
-    ) = EmailVerificationService(AuthMailProperties(expireMinutes, resendCooldownSeconds, verifiedValidMinutes))
+        maxCodeAttempts: Int = 5,
+    ) = EmailVerificationService(
+        AuthMailProperties(expireMinutes, resendCooldownSeconds, verifiedValidMinutes, maxCodeAttempts)
+    )
 
     private val member = UUID.randomUUID()
     private val purpose = Purpose.PASSWORD_CHANGE
@@ -87,6 +90,89 @@ class EmailVerificationServiceTest {
             assertThatThrownBy { service.verifyCode(member, purpose, wrong) }
                 .isBusiness(AuthExceptionCode.VERIFICATION_CODE_MISMATCH)
             assertThatCode { service.verifyCode(member, purpose, code) }.doesNotThrowAnyException()
+        }
+
+        private fun wrongCodeFor(code: String) = if (code == "000000") "000001" else "000000"
+
+        @Test
+        fun `정해진 횟수만큼 틀리면 코드를 폐기하고 맞는 코드도 더는 받지 않는다`() {
+            val service = serviceOf(maxCodeAttempts = 3)
+            val code = service.issueCode(member, purpose)
+            val wrong = wrongCodeFor(code)
+
+            repeat(2) {
+                assertThatThrownBy { service.verifyCode(member, purpose, wrong) }
+                    .isBusiness(AuthExceptionCode.VERIFICATION_CODE_MISMATCH)
+            }
+            assertThatThrownBy { service.verifyCode(member, purpose, wrong) }
+                .isBusiness(AuthExceptionCode.VERIFICATION_TOO_MANY_ATTEMPTS)
+
+            // 폐기된 뒤에는 맞는 코드를 넣어도 통하지 않고, 코드를 다시 요청해야 한다.
+            assertThatThrownBy { service.verifyCode(member, purpose, code) }
+                .isBusiness(AuthExceptionCode.VERIFICATION_NOT_FOUND)
+        }
+
+        @Test
+        fun `한도 안에서 틀린 뒤에는 맞는 코드로 통과한다`() {
+            val service = serviceOf(maxCodeAttempts = 3)
+            val code = service.issueCode(member, purpose)
+            val wrong = wrongCodeFor(code)
+            repeat(2) { assertThatThrownBy { service.verifyCode(member, purpose, wrong) }.isInstanceOf(BusinessException::class.java) }
+
+            assertThatCode { service.verifyCode(member, purpose, code) }.doesNotThrowAnyException()
+        }
+
+        @Test
+        fun `새 코드를 받으면 틀린 횟수가 다시 0부터 시작한다`() {
+            val service = serviceOf(resendCooldownSeconds = 0, maxCodeAttempts = 3)
+            var code = service.issueCode(member, purpose)
+            repeat(2) { assertThatThrownBy { service.verifyCode(member, purpose, wrongCodeFor(code)) }.isInstanceOf(BusinessException::class.java) }
+
+            code = service.issueCode(member, purpose)
+
+            repeat(2) {
+                assertThatThrownBy { service.verifyCode(member, purpose, wrongCodeFor(code)) }
+                    .isBusiness(AuthExceptionCode.VERIFICATION_CODE_MISMATCH)
+            }
+        }
+
+        @Test
+        fun `회원마다 틀린 횟수를 따로 센다`() {
+            val service = serviceOf(maxCodeAttempts = 2)
+            val other = UUID.randomUUID()
+            val code = service.issueCode(member, purpose)
+            val otherCode = service.issueCode(other, purpose)
+
+            assertThatThrownBy { service.verifyCode(member, purpose, wrongCodeFor(code)) }.isInstanceOf(BusinessException::class.java)
+
+            assertThatCode { service.verifyCode(other, purpose, otherCode) }.doesNotThrowAnyException()
+        }
+
+        @Test
+        fun `동시에 틀려도 횟수가 빠지지 않고 한도에서 폐기된다`() {
+            val service = serviceOf(maxCodeAttempts = 5)
+            val code = service.issueCode(member, purpose)
+            val wrong = wrongCodeFor(code)
+            val pool = java.util.concurrent.Executors.newFixedThreadPool(16)
+            val start = java.util.concurrent.CountDownLatch(1)
+            try {
+                val results = (1..40).map {
+                    pool.submit(java.util.concurrent.Callable {
+                        start.await()
+                        runCatching { service.verifyCode(member, purpose, wrong) }.exceptionOrNull()
+                    })
+                }
+                start.countDown()
+                val errors = results.map { it.get(10, java.util.concurrent.TimeUnit.SECONDS) as BusinessException }
+                val codes = errors.map { it.exceptionCode }
+
+                // 정확히 5번째 틀린 요청에서 폐기되고, 그 뒤는 코드가 없다고 답한다.
+                assertThat(codes.count { it == AuthExceptionCode.VERIFICATION_CODE_MISMATCH }).isEqualTo(4)
+                assertThat(codes.count { it == AuthExceptionCode.VERIFICATION_TOO_MANY_ATTEMPTS }).isEqualTo(1)
+                assertThat(codes.count { it == AuthExceptionCode.VERIFICATION_NOT_FOUND }).isEqualTo(35)
+            } finally {
+                pool.shutdownNow()
+            }
         }
 
         @Test

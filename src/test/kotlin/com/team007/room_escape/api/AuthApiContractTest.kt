@@ -88,6 +88,43 @@ class AuthApiContractTest : ApiContractSupport() {
         }
     }
 
+    /** 같은 이메일을 다섯 번 틀리면 맞는 비밀번호도 막고, 몇 초 뒤에 다시 시도할 수 있는지 알려 준다. */
+    @Test
+    fun 로그인을_다섯_번_틀리면_맞는_비밀번호도_429로_막는다() {
+        val email = signedUpEmail()
+        repeat(5) {
+            mvc.post("/api/v1/auth/login") {
+                json(loginBody(email, "WrongPass1!"))
+            }.andExpect {
+                status { isUnauthorized() }
+            }
+        }
+
+        mvc.post("/api/v1/auth/login") {
+            json(loginBody(email, PASSWORD))
+        }.andExpect {
+            status { isTooManyRequests() }
+            jsonPath("$.code") { value("AUTH007") }
+            jsonPath("$.data.retryAfterSeconds") { isNumber() }
+            header { exists(HttpHeaders.RETRY_AFTER) }
+        }
+    }
+
+    @Test
+    fun 다른_이메일은_로그인을_틀린_횟수의_영향을_받지_않는다() {
+        val locked = signedUpEmail()
+        val other = signedUpEmail()
+        repeat(5) {
+            mvc.post("/api/v1/auth/login") { json(loginBody(locked, "WrongPass1!")) }
+        }
+
+        mvc.post("/api/v1/auth/login") {
+            json(loginBody(other, PASSWORD))
+        }.andExpect {
+            status { isOk() }
+        }
+    }
+
     @Test
     fun 리프레시_쿠키가_없으면_재발급할_수_없다() {
         mvc.post("/api/v1/auth/refresh").andExpect {
