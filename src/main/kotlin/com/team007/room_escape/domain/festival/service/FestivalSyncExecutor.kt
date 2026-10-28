@@ -45,13 +45,8 @@ class FestivalSyncExecutor(
     fun run(): FestivalResponse.SyncResponse {
         gate.acquire()
         try {
-            val result = festivalService.syncPublicFestivals()
-            markScheduledFinished(result)
-            return result
-        } catch (e: Throwable) {
-            log.error("공공 행사 자동 동기화 실패", e)
-            markScheduledFailed(e)
-            throw e
+            // 스케줄러 호출이라 실패를 Spring이 로깅하도록 그대로 다시 던진다.
+            return runSyncRecordingResult("공공 행사 자동 동기화 실패", ::markScheduledFinished, ::markScheduledFailed)
         } finally {
             gate.release()
         }
@@ -59,15 +54,33 @@ class FestivalSyncExecutor(
 
     private fun runAndRelease() {
         try {
-            val result = festivalService.syncPublicFestivals()
-            markFinished(result)
+            runSyncRecordingResult("공공 행사 동기화 실패", ::markFinished, ::markFailed)
         } catch (e: Throwable) {
-            // OutOfMemoryError 같은 Error까지 잡아야 한다. Exception만 잡으면 잠금은 풀려도
-            // status가 running=true로 남아 관리자 화면이 영원히 "동기화 중…"에 머문다.
-            log.error("공공 행사 동기화 실패", e)
-            markFailed(e)
+            // 이미 로그 남기고 상태에도 기록했다. 여기는 백그라운드 스레드의 시작점이라
+            // 더 던질 곳이 없어서 삼킨다 — 안 삼키면 스레드가 죽어 스택트레이스만 콘솔에 남고 끝난다.
         } finally {
             gate.release()
+        }
+    }
+
+    /**
+     * 동기화를 실행하고 결과를 [onFinished]/[onFailed]로 상태에 반영한다.
+     * OutOfMemoryError 같은 Error까지 잡아야 한다. Exception만 잡으면 잠금은 풀려도
+     * status가 running=true로 남아 관리자 화면이 영원히 "동기화 중…"에 머문다.
+     */
+    private fun runSyncRecordingResult(
+        failureLogMessage: String,
+        onFinished: (FestivalResponse.SyncResponse) -> Unit,
+        onFailed: (Throwable) -> Unit
+    ): FestivalResponse.SyncResponse {
+        try {
+            val result = festivalService.syncPublicFestivals()
+            onFinished(result)
+            return result
+        } catch (e: Throwable) {
+            log.error(failureLogMessage, e)
+            onFailed(e)
+            throw e
         }
     }
 
