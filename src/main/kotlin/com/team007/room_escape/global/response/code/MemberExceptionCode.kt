@@ -41,6 +41,8 @@ enum class MemberExceptionCode(
     MEMBER_PASSWORD_MISMATCH("MEMBER008", HttpStatus.UNAUTHORIZED,
         "비밀번호가 일치하지 않습니다."),
     /** 관리자가 탈퇴하면 그 계정으로 하던 운영 업무를 이어받을 수 없다 */
+    /** 제재(ROLE_WARNING)로 바꾸는데 사유가 없는 경우. 제재는 회원에게 불이익이 커서 이유를 남긴다 */
+    MEMBER_ROLE_REASON_REQUIRED("MEMBER011", HttpStatus.BAD_REQUEST, "제재 등급으로 바꿀 때는 사유를 입력해 주세요."),
     MEMBER_ADMIN_WITHDRAW_DENIED("MEMBER009", HttpStatus.FORBIDDEN,
         "관리자 계정은 탈퇴할 수 없습니다. 다른 관리자에게 문의해 주세요.")
 }

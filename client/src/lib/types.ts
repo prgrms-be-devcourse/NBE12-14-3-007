@@ -320,6 +320,18 @@ export interface AdminMemberInfo {
   updatedAt: string;
   /** 탈퇴 시각. 탈퇴하지 않았으면 null */
   deletedAt: string | null;
+  /** 관리자가 직접 바꿔 고정된 등급이면 true. 자정 자동 집계가 건드리지 않는다. */
+  roleLocked: boolean;
+}
+/** 관리자가 회원 등급을 바꾼 기록 한 건. 서버 MemberResponse.RoleHistoryItem 과 같은 모양. */
+export interface MemberRoleHistoryItem {
+  oldRole: Role;
+  newRole: Role;
+  /** 제재(주의 등급)로 바꿀 때만 필수라 비어 있을 수 있다. */
+  reason: string | null;
+  /** 바꾼 관리자 닉네임. 탈퇴 등으로 찾을 수 없으면 null */
+  actorNickname: string | null;
+  changedAt: string;
 }
 /**
  * 관리자 문의 목록의 한 줄. 서버 AdminInquiryResponse.ListItem과 같은 모양.

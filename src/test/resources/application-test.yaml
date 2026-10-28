@@ -17,6 +17,8 @@ jwt:
   secret: test-only-access-key-at-least-sixty-four-characters-long-for-hmac-signing-2026
   refresh-secret: test-only-refresh-key-at-least-sixty-four-characters-long-for-hmac-signing-2026
   refresh-cleanup-cron: "-"
+trust-grade:
+  cron: "-"
 privacy:
   purge-cron: "-"
 app:

@@ -10,7 +10,6 @@ import com.team007.room_escape.domain.festival.infra.repository.FestivalReposito
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import com.team007.room_escape.global.response.code.MemberExceptionCode
@@ -44,9 +43,6 @@ class FestivalAccuracyVoteServiceTest {
     @field:Mock
     private lateinit var memberReader: MemberReader
 
-    @field:Mock
-    private lateinit var memberTrustGradeService: MemberTrustGradeService
-
     @field:InjectMocks
     private lateinit var accuracyVoteService: FestivalAccuracyVoteService
 
@@ -68,7 +64,7 @@ class FestivalAccuracyVoteServiceTest {
                 assertThat(it.exceptionCode).isEqualTo(code)
             }
 
-        verifyNoInteractions(festivalRepository, accuracyVoteRepository, memberTrustGradeService)
+        verifyNoInteractions(festivalRepository, accuracyVoteRepository)
     }
 
     @Test

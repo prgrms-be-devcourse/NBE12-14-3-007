@@ -965,6 +965,73 @@ img.adm-avatar {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.modal.wide {
+  width: min(900px, calc(100vw - 36px));
+}
+.adm-member-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  gap: 28px;
+  align-items: start;
+}
+.adm-member-main {
+  min-width: 0;
+}
+.adm-member-history {
+  min-width: 0;
+  border-left: 1px solid #edf0e7;
+  padding-left: 24px;
+  max-height: 460px;
+  overflow-y: auto;
+}
+.adm-member-history h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+.adm-member-history .adm-dialog-note {
+  margin: 0;
+}
+.adm-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.adm-history-list li {
+  display: grid;
+  gap: 3px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf0e7;
+  font-size: 13px;
+}
+.adm-history-list li:first-child {
+  padding-top: 0;
+}
+.adm-history-list small {
+  color: #65745b;
+  font-size: 11px;
+}
+.adm-history-list p {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: #f8f6ed;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #716447;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .adm-member-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .adm-member-history {
+    border-left: 0;
+    border-top: 1px solid #edf0e7;
+    padding: 18px 0 0;
+    max-height: none;
+  }
+}
 .adm-dialog-copy {
   font-size: 13px;
   color: #65745b;

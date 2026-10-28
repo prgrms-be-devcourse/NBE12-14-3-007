@@ -45,6 +45,8 @@ class MemberResponse private constructor() {
         val profileImg: String?,
         val phone: String?,
         val role: MemberRole,
+        /** 관리자가 직접 바꿔 고정한 등급인지. 고정이면 자정 집계가 등급을 바꾸지 않는다 */
+        val roleLocked: Boolean,
         val createdAt: LocalDateTime?,
         val updatedAt: LocalDateTime?,
         /** 탈퇴 시각. 탈퇴하지 않았으면 null */
@@ -60,12 +62,25 @@ class MemberResponse private constructor() {
                 profileImg = profileImgUrl,
                 phone = member.phone,
                 role = member.role,
+                roleLocked = member.roleLocked,
                 createdAt = member.createdAt,
                 updatedAt = member.updatedAt,
                 deletedAt = member.deletedAt,
             )
         }
     }
+
+    /** 관리자 등급 변경 이력 한 건. */
+    @Schema(name = "MemberRoleHistoryItem", description = "관리자 등급 변경 이력")
+    data class RoleHistoryItem(
+        val oldRole: MemberRole,
+        val newRole: MemberRole,
+        /** 변경 사유. 제재가 아닌 변경은 비어 있을 수 있다 */
+        val reason: String?,
+        /** 바꾼 관리자의 닉네임. 알 수 없으면 null */
+        val actorNickname: String?,
+        val changedAt: LocalDateTime,
+    )
 
     /** 다른 도메인 응답에 붙는 작성자 정보. 탈퇴 회원은 닉네임만 "탈퇴한 사용자"로 내려준다. */
     @Schema(name = "MemberInfo", description = "작성자 정보")

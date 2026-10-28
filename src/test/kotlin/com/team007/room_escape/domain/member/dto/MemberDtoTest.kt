@@ -83,6 +83,13 @@ class MemberDtoTest {
             assertThat(violationsOf(AdminMemberRequest.ChangeRole(null)))
                 .containsExactly("role: {jakarta.validation.constraints.NotNull.message}")
         }
+
+        @Test
+        fun `등급 변경 사유는 500자까지다`() {
+            assertThat(violationsOf(AdminMemberRequest.ChangeRole(MemberRole.ROLE_WARNING, "가".repeat(500)))).isEmpty()
+            assertThat(violationsOf(AdminMemberRequest.ChangeRole(MemberRole.ROLE_WARNING, "가".repeat(501))))
+                .containsExactly("reason: $size")
+        }
     }
 
     @Nested
