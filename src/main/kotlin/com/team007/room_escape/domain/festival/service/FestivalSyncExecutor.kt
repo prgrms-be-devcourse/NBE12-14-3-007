@@ -9,115 +9,93 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
- * 동기화가 동시에 두 번 돌지 않게 막는다. [status]는 수동 동기화(관리자 화면)와 스케줄러(자동) 결과를
- * 각각 별도 필드에 담는다 — 같은 필드를 같이 쓰면 수동 동기화가 끝나자마자 대기하던 스케줄 실행이
- * 바로 시작되면서 관리자가 보기도 전에 수동 결과를 덮어써 버린다.
+ * 동기화가 동시에 두 번 돌지 않게 막는다. 수동 동기화(관리자 화면) 상태는 [SyncState]로,
+ * 스케줄러(자동) 상태는 [ScheduledSyncState]로 따로 들고 있는다 — 같은 걸 같이 쓰면 수동
+ * 동기화가 끝나자마자 대기하던 스케줄 실행이 바로 시작되면서 관리자가 보기도 전에
+ * 수동 결과를 덮어써 버린다.
+ *
+ * 실제 실행은 [FestivalSyncRunner]에 맡긴다. 여기서 직접 스레드를 만들면 이 프로젝트가 이미
+ * 메일 발송에 쓰는 @Async 방식과 따로 놀고, 실행 개수 제한 같은 걸 스프링이 관리해주는
+ * 이점도 못 받는다.
  */
 @Component
 class FestivalSyncExecutor(
-    private val festivalService: FestivalService
+    private val syncRunner: FestivalSyncRunner
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     // Semaphore는 ReentrantLock과 달리 획득한 스레드가 아니어도 release할 수 있어,
     // tryStart()가 다른 스레드에서 끝나는 비동기 실행과 맞는다.
     private val gate = Semaphore(1)
-    private val status = AtomicReference(
-        FestivalResponse.SyncStatusResponse(
-            running = false, lastResult = null, lastError = null, finishedAt = null,
-            lastScheduledResult = null, lastScheduledError = null, lastScheduledFinishedAt = null
+    private val manualState = AtomicReference<SyncState>(SyncState.Idle)
+    private val scheduledState = AtomicReference<ScheduledSyncState>(ScheduledSyncState.Idle)
+
+    /** 내부 상태(SyncState)를 API가 주고받는 평평한 응답 모양으로 바꾼다. */
+    fun status(): FestivalResponse.SyncStatusResponse {
+        val manual = manualState.get()
+        val scheduled = scheduledState.get()
+        return FestivalResponse.SyncStatusResponse(
+            running = manual is SyncState.Running,
+            lastResult = (manual as? SyncState.Succeeded)?.result,
+            lastError = (manual as? SyncState.Failed)?.error,
+            finishedAt = manual.finishedAtOrNull(),
+            lastScheduledResult = (scheduled as? ScheduledSyncState.Succeeded)?.result,
+            lastScheduledError = (scheduled as? ScheduledSyncState.Failed)?.error,
+            lastScheduledFinishedAt = scheduled.finishedAtOrNull()
         )
-    )
+    }
 
-    fun status(): FestivalResponse.SyncStatusResponse = status.get()
-
-    /** 수동 동기화용: 이미 실행 중이면 시작하지 않고 false. 아니면 백그라운드에서 돌리고 바로 true를 돌려준다. */
+    /** 수동 동기화용: 이미 실행 중이면 시작하지 않고 false. 아니면 @Async로 돌리고 바로 true를 돌려준다. */
     fun tryStart(): Boolean {
         if (!gate.tryAcquire()) {
             return false
         }
-        markRunning()
-        Thread({ runAndRelease() }, "festival-sync-manual").start()
+        manualState.set(SyncState.Running)
+        syncRunner.runAsync(
+            onFinished = { result -> manualState.set(SyncState.Succeeded(result, Instant.now())) },
+            onFailed = { e -> manualState.set(SyncState.Failed(failureMessage(e), Instant.now())) },
+            onDone = gate::release
+        )
         return true
     }
 
-    /** 스케줄러용: 이미 실행 중이면 끝날 때까지 기다렸다가 이번 회차도 실행하고, 결과를 자동 동기화 전용 필드에 남긴다. */
+    /** 스케줄러용: 이미 실행 중이면 끝날 때까지 기다렸다가 이번 회차도 실행하고, 결과를 자동 동기화 전용 상태에 남긴다. */
     fun run(): FestivalResponse.SyncResponse {
         gate.acquire()
         try {
-            // 스케줄러 호출이라 실패를 Spring이 로깅하도록 그대로 다시 던진다.
-            return runSyncRecordingResult("공공 행사 자동 동기화 실패", ::markScheduledFinished, ::markScheduledFailed)
-        } finally {
-            gate.release()
-        }
-    }
-
-    private fun runAndRelease() {
-        try {
-            runSyncRecordingResult("공공 행사 동기화 실패", ::markFinished, ::markFailed)
-        } catch (e: Throwable) {
-            // 이미 로그 남기고 상태에도 기록했다. 여기는 백그라운드 스레드의 시작점이라
-            // 더 던질 곳이 없어서 삼킨다 — 안 삼키면 스레드가 죽어 스택트레이스만 콘솔에 남고 끝난다.
-        } finally {
-            gate.release()
-        }
-    }
-
-    /**
-     * 동기화를 실행하고 결과를 [onFinished]/[onFailed]로 상태에 반영한다.
-     * OutOfMemoryError 같은 Error까지 잡아야 한다. Exception만 잡으면 잠금은 풀려도
-     * status가 running=true로 남아 관리자 화면이 영원히 "동기화 중…"에 머문다.
-     */
-    private fun runSyncRecordingResult(
-        failureLogMessage: String,
-        onFinished: (FestivalResponse.SyncResponse) -> Unit,
-        onFailed: (Throwable) -> Unit
-    ): FestivalResponse.SyncResponse {
-        try {
-            val result = festivalService.syncPublicFestivals()
-            onFinished(result)
+            val result = syncRunner.runSync()
+            scheduledState.set(ScheduledSyncState.Succeeded(result, Instant.now()))
             return result
         } catch (e: Throwable) {
-            log.error(failureLogMessage, e)
-            onFailed(e)
+            log.error("공공 행사 자동 동기화 실패", e)
+            scheduledState.set(ScheduledSyncState.Failed(failureMessage(e), Instant.now()))
             throw e
+        } finally {
+            gate.release()
         }
     }
 
-    private fun markRunning() {
-        status.updateAndGet { it.copy(running = true, lastResult = null, lastError = null, finishedAt = null) }
+    private fun SyncState.finishedAtOrNull(): Instant? = when (this) {
+        is SyncState.Succeeded -> finishedAt
+        is SyncState.Failed -> finishedAt
+        SyncState.Idle, SyncState.Running -> null
     }
 
-    private fun markFinished(result: FestivalResponse.SyncResponse) {
-        status.updateAndGet { it.copy(running = false, lastResult = result, lastError = null, finishedAt = Instant.now()) }
+    private fun ScheduledSyncState.finishedAtOrNull(): Instant? = when (this) {
+        is ScheduledSyncState.Succeeded -> finishedAt
+        is ScheduledSyncState.Failed -> finishedAt
+        ScheduledSyncState.Idle -> null
     }
 
     /**
      * BusinessException은 관리자가 로그 없이 읽어도 이해할 수 있게 이미 다듬어진 메시지라 그대로 쓰고,
      * 그 외 예상치 못한 예외는 기술적인 메시지(스택트레이스 등)가 그대로 노출되지 않게 일반 문구로 바꾼다.
-     */
-    private fun markFailed(e: Throwable) {
-        val message = failureMessage(e)
-        status.updateAndGet { it.copy(running = false, lastResult = null, lastError = message, finishedAt = Instant.now()) }
-    }
-
-    private fun markScheduledFinished(result: FestivalResponse.SyncResponse) {
-        status.updateAndGet {
-            it.copy(lastScheduledResult = result, lastScheduledError = null, lastScheduledFinishedAt = Instant.now())
-        }
-    }
-
-    private fun markScheduledFailed(e: Throwable) {
-        val message = failureMessage(e)
-        status.updateAndGet {
-            it.copy(lastScheduledResult = null, lastScheduledError = message, lastScheduledFinishedAt = Instant.now())
-        }
-    }
-
-    /**
-     * BusinessException이 아니면 어떤 예외인지 예상할 수 없어 스택트레이스·상세 메시지는 숨기지만,
      * 예외 종류 이름 정도는 보여줘야 관리자가 같은 문제인지 아닌지라도 구분할 수 있다.
      */
-    private fun failureMessage(e: Throwable): String? =
-        if (e is BusinessException) e.message else "${e.javaClass.simpleName} 오류가 발생했어요. 개발팀에 문의해 주세요."
+    private fun failureMessage(e: Throwable): String =
+        if (e is BusinessException) {
+            e.message ?: e.javaClass.simpleName
+        } else {
+            "${e.javaClass.simpleName} 오류가 발생했어요. 개발팀에 문의해 주세요."
+        }
 }
