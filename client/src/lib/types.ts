@@ -358,7 +358,9 @@ export interface SyncResult {
   closedFestivals: { festivalId: number; title: string }[];
   /** 새로 저장된 행사 */
   savedFestivals: { festivalId: number; title: string }[];
-  /** 이번 회차에 신규로 판별되어 상세조회 대상이 된 행사 수 */
+  /** 이미 있었지만 제목이 바뀌어 내용을 갱신한 행사 */
+  updatedFestivals: { festivalId: number; title: string }[];
+  /** 이번 회차에 신규이거나 제목이 바뀌어 상세조회 대상이 된 행사 수 */
   detailLookupCount: number;
   /** 상세조회 응답이 비어서 건너뛴 행사 수 */
   skippedCount: number;

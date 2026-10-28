@@ -7,6 +7,7 @@ import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -104,17 +105,31 @@ class FestivalRepositoryQueryTest @Autowired constructor(
     }
 
     @Test
-    fun `이미 저장된 external_id만 돌려준다`() {
+    fun `이미 저장된 external_id의 title을 돌려준다`() {
         festival("saved", externalId = "ext-$token-1")
         em.flush()
 
-        val existing = festivals.findExistingExternalIds(
+        val existing = festivals.findExistingExternalIdTitles(
             ProviderType.PUBLIC,
             listOf("ext-$token-1", "ext-$token-2"),
         )
 
-        assertThat(existing).containsExactly("ext-$token-1")
-        assertThat(festivals.findExistingExternalIds(ProviderType.MEMBER, listOf("ext-$token-1"))).isEmpty()
+        assertThat(existing).extracting("externalId", "title")
+            .containsExactly(tuple("ext-$token-1", "$token-saved"))
+        assertThat(
+            festivals.findExistingExternalIdTitles(ProviderType.MEMBER, listOf("ext-$token-1"))
+        ).isEmpty()
+    }
+
+    @Test
+    fun `providerType과 external_id가 일치하는 행사만 upsert 대상으로 돌려준다`() {
+        val target = festival("target", externalId = "ext-$token-1")
+        festival("other", externalId = "ext-$token-2")
+        em.flush()
+
+        val found = festivals.findByProviderTypeAndExternalIdIn(ProviderType.PUBLIC, listOf("ext-$token-1"))
+
+        assertThat(found).extracting("id").containsExactly(target.id)
     }
 
     @Test

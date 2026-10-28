@@ -170,4 +170,27 @@ class Festival(
     fun updateImgUrl(imgUrl: String?) {
         this.imgUrl = imgUrl
     }
+
+    /** 공공 API 동기화 때, 이미 저장돼 있던 행사의 내용을 최신 값으로 갱신한다. */
+    fun updateFromPublicSource(
+        title: String?, category: String?, content: String?, url: String?,
+        telnoInfo: String?, partcptExpnInfo: String?, imgUrl: String?,
+        beginDe: LocalDateTime?, endDe: LocalDateTime?,
+        region: FestivalRegion?, regionDetail: String?, place: String?, placeAddress: String?
+    ) {
+        this.title = title
+        this.category = category
+        this.content = content
+        this.url = url
+        this.telnoInfo = telnoInfo
+        this.partcptExpnInfo = partcptExpnInfo
+        this.imgUrl = imgUrl
+        this.beginDe = beginDe
+        this.endDe = endDe
+        this.status = FestivalStatus.from(endDe)
+        this.region = region
+        this.regionDetail = regionDetail
+        this.place = place
+        this.placeAddress = placeAddress
+    }
 }

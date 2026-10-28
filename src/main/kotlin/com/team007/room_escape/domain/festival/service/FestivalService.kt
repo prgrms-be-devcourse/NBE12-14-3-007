@@ -62,74 +62,105 @@ class FestivalService(
         // 원본 스냅샷 저장
         saveRawSource(allRows)
 
-        // seq 존재 여부로 신규 행사를 정확히 판별한다 (건수 비교보다 API 응답 순서에 안전하다).
+        // seq 존재 여부로 신규 행사를, 제목이 달라졌는지로 내용이 바뀐 기존 행사를 판별한다
+        // (건수 비교보다 API 응답 순서에 안전하다). 목록 응답(/period2)엔 수정일시가 없어서
+        // 제목 변경만으로 "내용이 바뀐 것 같은" 행사를 추정한다 — 완벽하진 않지만,
+        // 모든 기존 행사를 매번 상세조회하는 건 API 호출량이 감당 안 된다.
         val seqs = allRows.map { it.seq } // 14,592건에서 seq 값들만 뽑아서 리스트로 만듦
-        val existingSeqs = festivalRepository.findExistingExternalIds(ProviderType.PUBLIC, seqs) // seq들 중 이미 DB에 저장된 것만 조회
-        val newSeqs = seqs.filter { it !in existingSeqs } // seqs에서 existingSeqs에 없는 것만 걸러냄 → 신규 행사
+        val existingTitleBySeq = festivalRepository
+            .findExistingExternalIdTitles(ProviderType.PUBLIC, seqs) // 이미 DB에 저장된 것의 (seq, title)만 조회
+            .associate { it.externalId to it.title }
+        val titleBySeq = allRows.associate { it.seq to it.title }
 
-        if (newSeqs.isEmpty()) {
-            log.info("신규 행사 없음 ({}년 전체 {}건, 신규 0건)", currentYear, allRows.size)
+        val newSeqs = seqs.filter { it !in existingTitleBySeq } // DB에 없음 → 신규
+        val changedSeqs = seqs.filter { seq -> // DB에 있지만 제목이 다름 → 갱신 대상
+            existingTitleBySeq[seq].let { it != null && it != titleBySeq[seq] }
+        }
+        val targetSeqs = newSeqs + changedSeqs
+
+        if (targetSeqs.isEmpty()) {
+            log.info("신규·변경 행사 없음 ({}년 전체 {}건)", currentYear, allRows.size)
             migrateLegacyImages()
             return FestivalResponse.SyncResponse(
                 closedFestivals = closedFestivals,
                 savedFestivals = emptyList(),
+                updatedFestivals = emptyList(),
                 detailLookupCount = 0,
                 skippedCount = 0,
                 interrupted = false
             )
         }
 
+        val newSeqSet = newSeqs.toSet()
         val savedFestivals = mutableListOf<FestivalResponse.SyncedFestival>()
+        val updatedFestivals = mutableListOf<FestivalResponse.SyncedFestival>()
         var skippedCount = 0
         var interrupted = false
         // 원본 스냅샷은 이미 커밋돼서 여기서 실패해도 남는다.
         try {
-            // 신규 건만 상세조회(가격 등 포함)까지 받아서 엔티티로 변환한다.
-            // 호출 사이에 간격을 둬서 429 Too Many Requests를 피하고, DETAIL_SAVE_BATCH_SIZE건마다 중간 저장한다
+            // 신규·변경 건만 상세조회(가격 등 포함)까지 받아서 엔티티로 반영한다.
+            // 호출 사이에 간격을 둬서 429 Too Many Requests를 피하고, DETAIL_SAVE_BATCH_SIZE건마다 중간 반영한다
             // (실패해도 그때까지 모은 건 안 날아가고, DB에서 진행 상황을 바로 확인할 수 있다).
-            var buffer = mutableListOf<Festival>()
+            var newBuffer = mutableListOf<Festival>()
+            var updateBuffer = mutableListOf<PendingUpdate>()
             var processed = 0
-            for (seq in newSeqs) {
+            for (seq in targetSeqs) {
                 val detail: CultureInfoDetailRow? = festivalPublicApiClientV2.fetchDetail(seq)
                 if (detail != null) { // 상세 조회가 빈 값으로 오는 경우 방어
-                    buffer.add(toCultureInfoFestival(detail)) // 이미지 다운로드·업로드가 여기서 일어난다
+                    if (seq in newSeqSet) {
+                        newBuffer.add(toCultureInfoFestival(detail)) // 이미지 다운로드·업로드가 여기서 일어난다
+                    } else {
+                        // 갱신 대상도 이미지 처리는 미리 끝내둬서, 뒤의 짧은 트랜잭션 안에는
+                        // DB 작업만 남긴다(트랜잭션 중에 네트워크 호출을 하지 않는다).
+                        updateBuffer.add(PendingUpdate(detail, festivalImageProcessor.process(detail.imgUrl)))
+                    }
                 } else {
                     skippedCount++
                 }
                 processed++
 
-                // 버퍼가 다 찼거나, 마지막 건이라 더 안 채워져도 남은 걸 지금 저장해야 할 때
-                if (buffer.size >= DETAIL_SAVE_BATCH_SIZE || processed == newSeqs.size) {
-                    savedFestivals.addAll(saveBatch(buffer))
-                    buffer = mutableListOf() // 저장에 쓴 리스트는 그대로 두고, 다음 배치는 새 리스트에 담는다.
-                    log.info("공공 행사 동기화 진행 중 ({}/{}건)", processed, newSeqs.size)
+                // 버퍼가 다 찼거나, 마지막 건이라 더 안 채워져도 남은 걸 지금 반영해야 할 때
+                if (newBuffer.size + updateBuffer.size >= DETAIL_SAVE_BATCH_SIZE || processed == targetSeqs.size) {
+                    savedFestivals.addAll(saveBatch(newBuffer))
+                    updatedFestivals.addAll(applyUpdates(updateBuffer))
+                    newBuffer = mutableListOf() // 저장에 쓴 리스트는 그대로 두고, 다음 배치는 새 리스트에 담는다.
+                    updateBuffer = mutableListOf()
+                    log.info("공공 행사 동기화 진행 중 ({}/{}건)", processed, targetSeqs.size)
                 }
 
                 Thread.sleep(DETAIL_FETCH_INTERVAL)
             }
-            log.info("공공 행사 {}건 저장 완료 (건너뜀 {}건)", savedFestivals.size, skippedCount)
+            log.info("공공 행사 {}건 저장, {}건 갱신 완료 (건너뜀 {}건)", savedFestivals.size, updatedFestivals.size, skippedCount)
         } catch (e: InterruptedException) {
             // 서버 종료 등으로 중단된 것이지 공공 API 호출 실패가 아니다. 인터럽트 상태를 복구해서
             // 호출자(스레드 풀 등)가 종료 신호를 계속 인식하게 하고, 더 이상 작업을 이어가지 않는다.
             Thread.currentThread().interrupt()
             interrupted = true
-            log.warn("신규 행사 저장 중단됨 (서버 종료 등, 지금까지 {}건 저장됨)", savedFestivals.size)
+            log.warn(
+                "신규·변경 행사 처리 중단됨 (서버 종료 등, 지금까지 저장 {}건·갱신 {}건)",
+                savedFestivals.size, updatedFestivals.size
+            )
             return FestivalResponse.SyncResponse(
                 closedFestivals = closedFestivals,
                 savedFestivals = savedFestivals,
-                detailLookupCount = newSeqs.size,
+                updatedFestivals = updatedFestivals,
+                detailLookupCount = targetSeqs.size,
                 skippedCount = skippedCount,
                 interrupted = interrupted
             )
         } catch (e: Exception) {
             interrupted = true
-            log.error("신규 행사 저장 실패 (지금까지 {}건 저장됨), 원본 스냅샷은 반영됨", savedFestivals.size, e)
+            log.error(
+                "신규·변경 행사 처리 실패 (지금까지 저장 {}건·갱신 {}건), 원본 스냅샷은 반영됨",
+                savedFestivals.size, updatedFestivals.size, e
+            )
         }
         migrateLegacyImages()
         return FestivalResponse.SyncResponse(
             closedFestivals = closedFestivals,
             savedFestivals = savedFestivals,
-            detailLookupCount = newSeqs.size,
+            updatedFestivals = updatedFestivals,
+            detailLookupCount = targetSeqs.size,
             skippedCount = skippedCount,
             interrupted = interrupted
         )
@@ -142,6 +173,29 @@ class FestivalService(
         }
         festivalRepository.saveAll(batch)
         return batch.map { FestivalResponse.SyncedFestival.from(it) }
+    }
+
+    /** 상세조회를 마쳤지만 아직 엔티티에 반영하지 않은, 갱신 대기 중인 한 건. */
+    private data class PendingUpdate(val row: CultureInfoDetailRow, val processedImgUrl: String?)
+
+    /**
+     * 이미 저장돼 있던 행사들을 한 트랜잭션에서 조회해 최신 내용으로 덮어쓴다.
+     * 영속 상태인 엔티티의 필드만 바꾸면 커밋 시점에 변경 감지(dirty checking)로 UPDATE된다.
+     */
+    private fun applyUpdates(pending: List<PendingUpdate>): List<FestivalResponse.SyncedFestival> {
+        if (pending.isEmpty()) {
+            return emptyList()
+        }
+        val bySeq = pending.associateBy { it.row.seq }
+        return transactionTemplate.execute {
+            val festivals = festivalRepository.findByProviderTypeAndExternalIdIn(
+                ProviderType.PUBLIC, bySeq.keys.filterNotNull()
+            )
+            festivals.forEach { festival ->
+                bySeq[festival.externalId]?.let { update -> update.row.applyTo(festival, update.processedImgUrl) }
+            }
+            festivals.map { FestivalResponse.SyncedFestival.from(it) }
+        } ?: emptyList()
     }
 
     /** 검색어와 선택 필터로 공공행사와 사용자 등록 행사를 통합 검색한다. */
