@@ -51,6 +51,8 @@ export interface AdminMember {
   profileImg: string | null;
   /** 탈퇴 시각. 탈퇴하지 않았으면 null */
   deletedAt: string | null;
+  /** 관리자가 직접 바꿔 고정된 등급. 자정 자동 집계가 건드리지 않는다 */
+  roleLocked: boolean;
 }
 /**
  * 행사 진행 상태. 서버 FestivalStatus 와 같은 값으로, 종료일에서 계산된다.
@@ -281,6 +283,7 @@ export function toMember(item: AdminMemberInfo): AdminMember {
     joined: dateText(item.createdAt),
     profileImg: item.profileImg,
     deletedAt: item.deletedAt,
+    roleLocked: item.roleLocked,
   };
 }
 /**
@@ -347,9 +350,7 @@ interface AdminContextValue {
    * 등급 변경. 서버에 저장하므로 실패할 수 있다.
    * 현재 페이지에 없는 회원(신고 문의에서 바로 연 회원)도 바꿀 수 있게 회원 자체를 받는다.
    *
-   * TODO reason을 서버로 보낼 것. 저장할 이력 테이블이 없어 지금은
-   *      입력칸을 잠가 뒀고(MemberDialog), 운영 기록(로컬)에만 남는다.
-   *      파라미터는 이력 테이블이 생기면 바로 쓰려고 남겨 둔다.
+   * reason은 서버의 등급 변경 이력에 저장된다. 주의(제재) 등급으로 바꿀 때만 필수다.
    */
   changeRole: (
     member: AdminMember,
@@ -723,7 +724,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             role === member.role
           )
             return;
-          const saved = await api.changeMemberRole(id, role);
+          const saved = await api.changeMemberRole(id, role, reason);
           // 서버가 돌려준 값으로 갈아끼운다. 낙관적 갱신을 하면
           // 저장에 실패했을 때 화면만 바뀐 채로 남는다.
           setMembers((current) =>
@@ -734,8 +735,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             area: "회원",
             action: "등급 변경",
             target: member.name,
-            // TODO 사유가 서버에 저장되면 항상 붙여서 남길 것.
-            //      지금은 입력칸을 잠가 둬서 reason이 항상 빈 문자열로 들어온다.
             reason: reason.trim() ? `${change} · ${reason.trim()}` : change,
           });
           // 등급이 바뀌었으니 대시보드의 신뢰·주의 회원 수도 다시 센다.

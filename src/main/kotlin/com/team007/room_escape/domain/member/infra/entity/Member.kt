@@ -58,6 +58,11 @@ class Member(
     var phone: String? = phone
         protected set
 
+    /** 관리자가 직접 바꿔 고정한 등급인지. 고정되면 자정 집계가 이 회원의 등급을 건드리지 않는다. 해제는 DB에서 직접 한다. */
+    @Column(name = "role_locked", nullable = false)
+    var roleLocked: Boolean = false
+        protected set
+
     init {
         if (id != null) this.id = id
     }
@@ -81,10 +86,10 @@ class Member(
         password = encodedPassword
     }
 
-    /** 관리자가 직접 권한을 바꿀 때만 사용한다. */
-    // TODO 변경 사유를 이력 테이블에 남길 것 (행사·후기 숨김 사유와 함께 설계)
+    /** 관리자가 직접 등급을 바꿀 때만 사용한다. 바꾼 등급은 자정 집계가 덮어쓰지 못하게 고정한다. 사유는 AdminMemberService가 이력에 남긴다. */
     fun changeRole(role: MemberRole) {
         this.role = role
+        this.roleLocked = true
     }
 
     companion object {

@@ -37,7 +37,6 @@ import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MyContentRepository
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.domain.member.service.MyContentService
 import com.team007.room_escape.domain.post.infra.entity.Post
 import com.team007.room_escape.domain.post.service.PostDeletionHandler
@@ -81,7 +80,6 @@ import java.util.function.Consumer
     FestivalDeletionService::class, AdminFestivalService::class, FestivalSubmissionService::class,
     FestivalDuplicateValidator::class, MyContentService::class, MyContentRepository::class,
     MemberReader::class, PostService::class, CommentService::class, CommunityService::class,
-    MemberTrustGradeService::class,
 )
 class DeletionHistoryRepositoryTest @Autowired constructor(
     private val entityManager: EntityManager,

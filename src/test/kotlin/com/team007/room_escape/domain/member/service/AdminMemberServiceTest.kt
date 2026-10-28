@@ -3,7 +3,13 @@ package com.team007.room_escape.domain.member.service
 import com.team007.room_escape.domain.member.dto.AdminMemberRequest
 import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
+import com.team007.room_escape.domain.member.infra.entity.MemberRoleHistory
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
+import com.team007.room_escape.domain.member.infra.repository.MemberRoleHistoryRepository
+import com.team007.room_escape.support.capture
+import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoInteractions
 import com.team007.room_escape.global.config.R2Properties
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.MemberExceptionCode
@@ -22,9 +28,10 @@ import java.util.UUID
 class AdminMemberServiceTest {
 
     private val memberRepository = mock(MemberRepository::class.java)
+    private val roleHistories = mock(MemberRoleHistoryRepository::class.java)
     private val imageUrlResolver =
         ImageUrlResolver(R2Properties("account", "access", "secret", "bucket", "https://img.example.com"))
-    private val service = AdminMemberService(memberRepository, imageUrlResolver)
+    private val service = AdminMemberService(memberRepository, roleHistories, imageUrlResolver)
 
     private val actorId = UUID.randomUUID()
     private val targetId = UUID.randomUUID()
@@ -90,8 +97,87 @@ class AdminMemberServiceTest {
     @Nested
     inner class `등급 변경` {
 
-        private fun change(role: MemberRole?, actor: UUID = actorId) =
-            service.changeRole(actor, targetId, AdminMemberRequest.ChangeRole(role))
+        private fun change(role: MemberRole?, actor: UUID = actorId, reason: String? = null) =
+            service.changeRole(actor, targetId, AdminMemberRequest.ChangeRole(role, reason))
+
+        private fun savedHistory(): MemberRoleHistory {
+            val captor = ArgumentCaptor.forClass(MemberRoleHistory::class.java)
+            verify(roleHistories).save(capture(captor, MemberRoleHistory(targetId, actorId, MemberRole.ROLE_UNVERIFIED, MemberRole.ROLE_UNVERIFIED, null)))
+            return captor.value
+        }
+
+        @Test
+        fun `바꾼 등급은 고정되어 자정 집계가 덮어쓰지 못한다`() {
+            val target = member()
+            givenTarget(target)
+            assertThat(target.roleLocked).isFalse()
+
+            val info = change(MemberRole.ROLE_TRUSTED)
+
+            assertThat(target.roleLocked).isTrue()
+            assertThat(info.roleLocked).isTrue()
+        }
+
+        @Test
+        fun `누가 어떤 등급에서 어떤 등급으로 바꿨는지 이력에 남긴다`() {
+            givenTarget(member(role = MemberRole.ROLE_RECOGNIZED))
+
+            change(MemberRole.ROLE_TRUSTED, reason = "행사 제보 품질이 좋음")
+
+            val history = savedHistory()
+            assertThat(history.memberId).isEqualTo(targetId)
+            assertThat(history.actorId).isEqualTo(actorId)
+            assertThat(history.oldRole).isEqualTo(MemberRole.ROLE_RECOGNIZED)
+            assertThat(history.newRole).isEqualTo(MemberRole.ROLE_TRUSTED)
+            assertThat(history.reason).isEqualTo("행사 제보 품질이 좋음")
+        }
+
+        @Test
+        fun `제재로 바꿀 때는 사유가 필수라서 없으면 거절하고 아무것도 바꾸지 않는다`() {
+            val target = member()
+            givenTarget(target)
+
+            listOf(null, "", "   ", "\t\n").forEach { reason ->
+                assertThatThrownBy { change(MemberRole.ROLE_WARNING, reason = reason) }
+                    .isBusiness(MemberExceptionCode.MEMBER_ROLE_REASON_REQUIRED)
+            }
+
+            assertThat(target.role).isEqualTo(MemberRole.ROLE_UNVERIFIED)
+            assertThat(target.roleLocked).isFalse()
+            verifyNoInteractions(roleHistories)
+        }
+
+        @Test
+        fun `제재 사유가 있으면 앞뒤 공백을 지워 저장한다`() {
+            val target = member()
+            givenTarget(target)
+
+            change(MemberRole.ROLE_WARNING, reason = "  허위 행사 제보 반복  ")
+
+            assertThat(target.role).isEqualTo(MemberRole.ROLE_WARNING)
+            assertThat(savedHistory().reason).isEqualTo("허위 행사 제보 반복")
+        }
+
+        @Test
+        fun `제재가 아닌 변경은 사유가 없어도 되고 빈 사유는 비워서 저장한다`() {
+            givenTarget(member())
+
+            change(MemberRole.ROLE_RECOGNIZED, reason = "   ")
+
+            assertThat(savedHistory().reason).isNull()
+        }
+
+        @Test
+        fun `거절된 변경은 이력을 남기지 않고 고정도 하지 않는다`() {
+            val target = member()
+            givenTarget(target)
+
+            assertThatThrownBy { change(MemberRole.ROLE_ADMIN) }.isInstanceOf(BusinessException::class.java)
+            assertThatThrownBy { change(MemberRole.ROLE_TRUSTED, actor = targetId) }.isInstanceOf(BusinessException::class.java)
+
+            assertThat(target.roleLocked).isFalse()
+            verifyNoInteractions(roleHistories)
+        }
 
         @Test
         fun `관리자가 아닌 회원의 등급을 바꾼다`() {
@@ -142,6 +228,47 @@ class AdminMemberServiceTest {
             givenTarget(null)
 
             assertThatThrownBy { change(MemberRole.ROLE_TRUSTED) }.isBusiness(MemberExceptionCode.MEMBER_NOT_FOUND)
+        }
+    }
+
+    @Nested
+    inner class `등급 변경 이력` {
+
+        @Test
+        fun `바꾼 관리자의 닉네임과 함께 돌려준다`() {
+            val pageable = PageRequest.of(0, 20)
+            givenTarget(member())
+            val history = MemberRoleHistory(targetId, actorId, MemberRole.ROLE_UNVERIFIED, MemberRole.ROLE_WARNING, "도배")
+            `when`(roleHistories.findByMemberId(targetId, pageable)).thenReturn(PageImpl(listOf(history), pageable, 1))
+            `when`(memberRepository.findAllById(setOf(actorId))).thenReturn(
+                listOf(Member(email = "admin@example.com", password = "pw", role = MemberRole.ROLE_ADMIN, nickname = "운영자", id = actorId)),
+            )
+
+            val item = service.roleHistory(targetId, pageable).content.single()
+
+            assertThat(item.oldRole).isEqualTo(MemberRole.ROLE_UNVERIFIED)
+            assertThat(item.newRole).isEqualTo(MemberRole.ROLE_WARNING)
+            assertThat(item.reason).isEqualTo("도배")
+            assertThat(item.actorNickname).isEqualTo("운영자")
+        }
+
+        @Test
+        fun `바꾼 관리자를 찾을 수 없으면 닉네임은 비워 둔다`() {
+            val pageable = PageRequest.of(0, 20)
+            givenTarget(member())
+            val history = MemberRoleHistory(targetId, actorId, MemberRole.ROLE_UNVERIFIED, MemberRole.ROLE_TRUSTED, null)
+            `when`(roleHistories.findByMemberId(targetId, pageable)).thenReturn(PageImpl(listOf(history), pageable, 1))
+            `when`(memberRepository.findAllById(setOf(actorId))).thenReturn(emptyList())
+
+            assertThat(service.roleHistory(targetId, pageable).content.single().actorNickname).isNull()
+        }
+
+        @Test
+        fun `없는 회원의 이력은 조회할 수 없다`() {
+            givenTarget(null)
+
+            assertThatThrownBy { service.roleHistory(targetId, PageRequest.of(0, 20)) }
+                .isBusiness(MemberExceptionCode.MEMBER_NOT_FOUND)
         }
     }
 }

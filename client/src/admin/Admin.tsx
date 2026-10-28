@@ -41,10 +41,18 @@ import { useApp, useLoad } from "../lib/context";
 import { ApiError } from "../lib/api";
 import { DeletionReasonFields } from "./DeletionReasonFields";
 import type { AdminDeletionReason } from "../lib/deletion";
-import { dateText, errorText, period, regions, safeUrl } from "../lib/format";
+import {
+  dateText,
+  dateTimeText,
+  errorText,
+  period,
+  regions,
+  safeUrl,
+} from "../lib/format";
 import type {
   AdminFestivalDetail,
   InquiryCategory,
+  MemberRoleHistoryItem,
   Role,
   SyncResult,
 } from "../lib/types";
@@ -463,27 +471,26 @@ function DetailLine({
 function Reason({
   value,
   onChange,
-  disabled = false,
+  required = true,
+  label = "처리 사유",
+  placeholder = "운영 기록에 남길 사유를 입력해 주세요.",
 }: {
   value: string;
   onChange: (value: string) => void;
-  /** 저장할 곳이 없어 잠가 둔 경우. 입력은 막고 자리만 보여준다. */
-  disabled?: boolean;
+  /** false면 비워 둬도 저장된다. 입력칸은 그대로 보여준다. */
+  required?: boolean;
+  label?: string;
+  placeholder?: string;
 }) {
   return (
-    <Field label="처리 사유" required={!disabled}>
+    <Field label={label} required={required}>
       <textarea
-        required={!disabled}
-        disabled={disabled}
+        required={required}
         maxLength={500}
         rows={3}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={
-          disabled
-            ? "사유 기록 기능은 준비 중입니다."
-            : "운영 기록에 남길 사유를 입력해 주세요."
-        }
+        placeholder={placeholder}
       />
     </Field>
   );
@@ -795,7 +802,7 @@ export function AdminMembers() {
       <Heading
         eyebrow="MEMBERS"
         title="회원 관리"
-        description="전체 회원의 가입 정보와 신뢰 등급을 관리합니다."
+        description="전체 회원의 가입 정보와 신뢰 등급을 관리합니다. 신뢰 등급은 매일 0시에 행사 반응 수로 자동 집계되며, 직접 바꾼 회원은 자동 집계에서 제외됩니다."
       />
       {/* 서버가 준 전체 건수. 목록은 한 페이지만 받아오므로 길이를 세면 안 된다. */}
       <div className="adm-summary-line">
@@ -886,6 +893,7 @@ export function AdminMembers() {
               <td>{member.email}</td>
               <td>
                 <Badge tone={tone(member.role)}>{roleNames[member.role]}</Badge>
+                {member.roleLocked && <Badge tone="blue">수동 고정</Badge>}
               </td>
               <td>{member.joined}</td>
               <td>
@@ -942,81 +950,144 @@ function MemberDialog({
         ? "탈퇴한 회원의 등급은 변경할 수 없습니다."
         : "";
   return (
-    <Modal title="회원 상세 관리" onClose={onClose}>
-      <dl className="adm-details">
-        <DetailLine label="닉네임">{member.name}</DetailLine>
-        <DetailLine label="이메일">{member.email}</DetailLine>
-        <DetailLine label="회원 ID">{member.id}</DetailLine>
-        <DetailLine label="가입일">{member.joined}</DetailLine>
-        <DetailLine label="현재 등급">
-          <Badge tone={tone(member.role)}>{roleNames[member.role]}</Badge>
-        </DetailLine>
-      </dl>
-      {blocked ? (
-        <p className="adm-dialog-note">{blocked}</p>
-      ) : (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setSaving(true);
-            setSaveError("");
-            try {
-              await changeRole(member, role, reason);
-              onClose();
-            } catch (error) {
-              // 실패하면 닫지 않는다. 고른 등급이 남아 있어야 다시 시도한다.
-              setSaveError(errorText(error));
-            } finally {
-              setSaving(false);
-            }
-          }}
-        >
-          <Field label="변경할 등급">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
+    <Modal title="회원 상세 관리" onClose={onClose} wide>
+      <div className="adm-member-split">
+        <div className="adm-member-main">
+          <dl className="adm-details">
+            <DetailLine label="닉네임">{member.name}</DetailLine>
+            <DetailLine label="이메일">{member.email}</DetailLine>
+            <DetailLine label="회원 ID">{member.id}</DetailLine>
+            <DetailLine label="가입일">{member.joined}</DetailLine>
+            <DetailLine label="현재 등급">
+              <Badge tone={tone(member.role)}>{roleNames[member.role]}</Badge>
+              {member.roleLocked && <Badge tone="blue">수동 고정</Badge>}
+            </DetailLine>
+          </dl>
+          {blocked ? (
+            <p className="adm-dialog-note">{blocked}</p>
+          ) : (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSaving(true);
+                setSaveError("");
+                try {
+                  await changeRole(member, role, reason);
+                  onClose();
+                } catch (error) {
+                  // 실패하면 닫지 않는다. 고른 등급이 남아 있어야 다시 시도한다.
+                  setSaveError(errorText(error));
+                } finally {
+                  setSaving(false);
+                }
+              }}
             >
-              {Object.entries(roleNames)
-                .filter(([key]) => key !== "ROLE_ADMIN")
-                .map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-            </select>
-          </Field>
-          {/*
-            TODO 사유 입력칸 살리기.
-                 저장할 이력 테이블이 없어서 지금은 잠가 두고 등급만 바꾼다.
-                 서버에 PATCH /admin/members/{id}/role 의 body로 reason을 받는
-                 이력 테이블이 생기면 disabled를 떼고 required로 되돌릴 것.
-                 백엔드 쪽 TODO는 Member.changeRole() 과 AdminMemberService 참고.
-          */}
-          <Reason value={reason} onChange={setReason} disabled />
-          {role === "ROLE_WARNING" && (
-            <p className="adm-dialog-note">
-              주의 등급은 행사 등록 등 주요 기능이 제한되는 등급입니다.
-            </p>
+              <Field label="변경할 등급">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as Role)}
+                >
+                  {Object.entries(roleNames)
+                    .filter(([key]) => key !== "ROLE_ADMIN")
+                    .map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                </select>
+              </Field>
+              <Reason
+                label="변경 사유"
+                value={reason}
+                onChange={setReason}
+                required={role === "ROLE_WARNING"}
+                placeholder={
+                  role === "ROLE_WARNING"
+                    ? "주의 등급으로 바꾸는 사유를 입력해 주세요."
+                    : "선택 사항입니다. 변경 이력에 함께 남습니다."
+                }
+              />
+              {role === "ROLE_WARNING" && (
+                <p className="adm-dialog-note">
+                  주의 등급은 행사 등록 등 주요 기능이 제한되는 등급입니다.
+                </p>
+              )}
+              <p className="adm-dialog-note">
+                등급을 직접 바꾸면 &lsquo;수동 고정&rsquo;이 되어 자정 자동 집계가
+                더 이상 바꾸지 않습니다. 고정은 풀 수 없습니다.
+              </p>
+              {saveError && (
+                <p className="adm-dialog-note" role="alert">
+                  {saveError}
+                </p>
+              )}
+              <div className="adm-dialog-actions">
+                <button type="button" className="btn secondary" onClick={onClose}>
+                  취소
+                </button>
+                <button
+                  className="btn primary"
+                  disabled={role === member.role || saving}
+                >
+                  {saving ? "변경 중…" : "등급 변경"}
+                </button>
+              </div>
+            </form>
           )}
-          {saveError && (
-            <p className="adm-dialog-note" role="alert">
-              {saveError}
-            </p>
-          )}
-          <div className="adm-dialog-actions">
-            <button type="button" className="btn secondary" onClick={onClose}>
-              취소
-            </button>
-            <button
-              className="btn primary"
-              disabled={role === member.role || saving}
-            >
-              {saving ? "변경 중…" : "등급 변경"}
-            </button>
-          </div>
-        </form>
-      )}
+        </div>
+        <MemberRoleHistory memberId={member.id} />
+      </div>
     </Modal>
+  );
+}
+
+/** 관리자가 회원 등급을 바꾼 기록. 열 때 한 번 불러온다. */
+function MemberRoleHistory({ memberId }: { memberId: string }) {
+  const { api } = useApp();
+  const [items, setItems] = useState<MemberRoleHistoryItem[] | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    api
+      .memberRoleHistory(memberId)
+      .then((page) => {
+        if (active) setItems(page.content);
+      })
+      .catch((e) => {
+        if (active) setError(errorText(e));
+      });
+    return () => {
+      active = false;
+    };
+  }, [api, memberId]);
+  return (
+    <aside className="adm-member-history" aria-label="등급 변경 이력">
+      <h3>등급 변경 이력</h3>
+      {error ? (
+        <p className="adm-dialog-note" role="alert">
+          이력을 불러오지 못했습니다. {error}
+        </p>
+      ) : items === null ? (
+        <p className="adm-dialog-note">불러오는 중…</p>
+      ) : items.length === 0 ? (
+        <p className="adm-dialog-note">직접 바꾼 기록이 없습니다.</p>
+      ) : (
+        <ol className="adm-history-list">
+          {items.map((item) => (
+            <li key={`${item.changedAt}-${item.newRole}`}>
+              <strong>
+                {roleNames[item.oldRole]} → {roleNames[item.newRole]}
+              </strong>
+              <small>
+                {dateTimeText(item.changedAt)}
+                {item.actorNickname && ` · ${item.actorNickname}`}
+              </small>
+              {item.reason && <p>{item.reason}</p>}
+            </li>
+          ))}
+        </ol>
+      )}
+    </aside>
   );
 }
 

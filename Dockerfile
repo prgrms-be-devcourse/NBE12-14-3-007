@@ -1,5 +1,5 @@
-# 로컬 부하 테스트와 Railway 배포가 같은 이미지를 쓰도록 만든 Dockerfile.
-# 레포 루트에 Dockerfile이 있으면 Railway는 Railpack 대신 이걸로 빌드한다.
+# 로컬 부하 테스트와 운영(Render) 배포가 같은 이미지를 쓰도록 만든 Dockerfile.
+# Render는 Docker 런타임으로 레포 루트의 이 파일을 빌드한다.
 
 # ---- 빌드 ----
 FROM eclipse-temurin:25-jdk AS build
@@ -22,7 +22,8 @@ COPY --from=build /workspace/build/libs/*.jar app.jar
 # 그래서 힙은 절반만 쓰고, 힙 바깥(메타스페이스·JIT 코드 캐시·스레드 스택)에도 상한을 건다.
 # - SerialGC: CPU 1개 환경에선 G1보다 부가 메모리가 적다
 # - Xss512k: Tomcat 스레드가 많아져도 스택 메모리가 덜 든다
-# OOM이 나면 좀비로 남지 않고 바로 죽어서 Railway가 재시작하게 한다.
+# OOM이 나면 좀비로 남지 않고 바로 죽어서 Render가 재시작하게 한다.
+# 운영(Render)은 같은 이름의 환경 변수로 이 값을 더 줄여 덮어쓴다 (README의 운영(Render) Environment).
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=50 \
     -XX:MaxMetaspaceSize=160m \
     -XX:ReservedCodeCacheSize=64m \
@@ -31,7 +32,7 @@ ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=50 \
     -XX:+UseSerialGC \
     -XX:+ExitOnOutOfMemoryError"
 
-# 이미지로 뜨면(Railway, 부하 테스트) 항상 운영 프로필이다. 로컬 IDE 실행은 local.
+# 이미지로 뜨면(Render, 부하 테스트) 항상 운영 프로필이다. 로컬 IDE 실행은 local.
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080

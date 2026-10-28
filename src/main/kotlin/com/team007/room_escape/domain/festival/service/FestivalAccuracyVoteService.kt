@@ -9,7 +9,6 @@ import com.team007.room_escape.domain.festival.infra.entity.ProviderType
 import com.team007.room_escape.domain.festival.infra.repository.FestivalAccuracyVoteRepository
 import com.team007.room_escape.domain.festival.infra.repository.FestivalRepository
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.global.exception.BusinessException
 import com.team007.room_escape.global.response.code.FestivalExceptionCode
 import org.springframework.stereotype.Service
@@ -21,7 +20,6 @@ class FestivalAccuracyVoteService(
     private val accuracyVoteRepository: FestivalAccuracyVoteRepository,
     private val festivalRepository: FestivalRepository,
     private val memberReader: MemberReader,
-    private val memberTrustGradeService: MemberTrustGradeService
 ) {
     @Transactional
     fun vote(
@@ -44,9 +42,7 @@ class FestivalAccuracyVoteService(
         vote.changeVote(voteType)
         accuracyVoteRepository.save(vote)
 
-        val response = buildResponse(festival, vote.voteType)
-        memberTrustGradeService.refreshForFestival(festival)
-        return response
+        return buildResponse(festival, vote.voteType)
     }
 
     @Transactional
@@ -58,9 +54,7 @@ class FestivalAccuracyVoteService(
             .findByFestivalAndMember(festival, member)
             ?.let { accuracyVoteRepository.delete(it) }
 
-        val response = buildResponse(festival, null)
-        memberTrustGradeService.refreshForFestival(festival)
-        return response
+        return buildResponse(festival, null)
     }
 
     private fun buildResponse(

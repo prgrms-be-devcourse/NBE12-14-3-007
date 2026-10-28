@@ -402,10 +402,13 @@ export function Modal({
   title,
   children,
   onClose,
+  wide,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  /** 좌우로 나눠 쓰는 넓은 창 */
+  wide?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const label = useId();
@@ -420,7 +423,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      className="modal"
+      className={wide ? "modal wide" : "modal"}
       onCancel={onClose}
       aria-labelledby={label}
       onClick={(e) => {

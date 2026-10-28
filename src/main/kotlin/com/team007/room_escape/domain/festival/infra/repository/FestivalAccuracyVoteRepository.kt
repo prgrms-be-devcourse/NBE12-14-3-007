@@ -42,20 +42,4 @@ interface FestivalAccuracyVoteRepository
     fun countByFestivalIds(
         @Param("festivalIds") festivalIds: MutableCollection<Long>
     ): List<FestivalVoteCount>
-
-    /** 회원이 작성한 삭제되지 않은 행사 제보들이 받은 '정확해요' 합계  */
-    @Query(
-        """
-		SELECT COUNT(v)
-		FROM FestivalAccuracyVote v
-		JOIN v.festival f
-		WHERE f.member.id = :authorId
-		  AND f.providerType = com.team007.room_escape.domain.festival.infra.entity.ProviderType.MEMBER
-		  AND f.deletedAt IS NULL
-		  AND v.voteType = com.team007.room_escape.domain.festival.infra.entity.FestivalAccuracyVoteType.ACCURATE
-		  AND v.member.id <> f.member.id
-		
-		"""
-    )
-    fun countReceivedAccurateVotesByAuthorId(@Param("authorId") authorId: UUID): Long
 }

@@ -10,7 +10,6 @@ import com.team007.room_escape.domain.member.infra.entity.Member
 import com.team007.room_escape.domain.member.infra.entity.MemberRole
 import com.team007.room_escape.domain.member.infra.repository.MemberRepository
 import com.team007.room_escape.domain.member.service.MemberReader
-import com.team007.room_escape.domain.member.service.MemberTrustGradeService
 import com.team007.room_escape.support.TestDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeUnit
     "spring.flyway.locations=classpath:db/migration,classpath:db/migration_v2"
 ])
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(FestivalAccuracyVoteService::class, MemberReader::class, MemberTrustGradeService::class)
+@Import(FestivalAccuracyVoteService::class, MemberReader::class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class FestivalAccuracyVoteConcurrencyTest @Autowired constructor(
     private val service: FestivalAccuracyVoteService,
