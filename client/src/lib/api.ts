@@ -85,7 +85,11 @@ export class ApiError extends Error {
     message: string,
     public status = 0,
     public code = "",
-    public data?: { festivalId?: number },
+    public data?: {
+      festivalId?: number;
+      retryAfterSeconds?: number;
+      remainingAttempts?: number;
+    },
   ) {
     super(message);
   }

@@ -24,6 +24,9 @@ class AuthRateLimiterTest {
 
     private fun wrongPassword(): Nothing = throw BusinessException(AuthExceptionCode.INVALID_CREDENTIALS)
 
+    private fun AuthRateLimiter.failedLoginDetails(email: String, request: MockHttpServletRequest): Map<String, Any>? =
+        blockedCode { guardLogin(email, request) { wrongPassword() } }.details
+
     private fun AuthRateLimiter.failLogin(email: String, request: MockHttpServletRequest) {
         assertThatThrownBy { guardLogin(email, request) { wrongPassword() } }
             .isInstanceOfSatisfying(BusinessException::class.java) {
@@ -55,6 +58,40 @@ class AuthRateLimiterTest {
 
             assertThat(blocked.exceptionCode).isEqualTo(AuthExceptionCode.TOO_MANY_LOGIN_ATTEMPTS)
             assertThat(checked).isFalse()
+        }
+
+        @Test
+        fun `틀릴 때마다 몇 번 더 틀릴 수 있는지 알려 준다`() {
+            val limiter = limiter()
+            val request = from("203.0.113.5")
+
+            val remaining = (1..5).map {
+                limiter.failedLoginDetails("user@example.com", request)?.get(AuthRateLimiter.REMAINING_ATTEMPTS)
+            }
+
+            assertThat(remaining).containsExactly(4, 3, 2, 1, 0)
+        }
+
+        @Test
+        fun `마지막 기회까지 틀리면 다시 시도할 수 있을 때까지의 초도 함께 알려 준다`() {
+            val limiter = limiter()
+            val request = from("203.0.113.5")
+            repeat(4) { limiter.failLogin("user@example.com", request) }
+
+            val details = checkNotNull(limiter.failedLoginDetails("user@example.com", request))
+
+            assertThat(details[AuthRateLimiter.RETRY_AFTER_SECONDS] as Long).isBetween(1L, 300L)
+        }
+
+        @Test
+        fun `남은 횟수는 틀린 사람의 이메일 기준으로만 센다`() {
+            val limiter = limiter()
+            val request = from("203.0.113.5")
+            repeat(3) { limiter.failLogin("a@example.com", request) }
+
+            val details = limiter.failedLoginDetails("b@example.com", request)
+
+            assertThat(details?.get(AuthRateLimiter.REMAINING_ATTEMPTS)).isEqualTo(4)
         }
 
         @Test
