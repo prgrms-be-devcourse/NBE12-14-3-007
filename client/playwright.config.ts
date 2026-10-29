@@ -22,8 +22,7 @@ export default defineConfig({
     command: `corepack pnpm dev --port ${port}`,
     url: baseURL,
     // 로컬 .env가 api여도 미리보기 검증을 재현한다. API 테스트는 sessionStorage로 전환한다.
-    // API 테스트가 가로챈 서버 응답만 보도록 프론트 예시 데이터(showcase.ts)는 끈다.
-    env: { VITE_CONTENT_MODE: "preview", VITE_SHOWCASE: "off" },
+    env: { VITE_CONTENT_MODE: "preview" },
     reuseExistingServer: false,
     timeout: 30_000,
   },

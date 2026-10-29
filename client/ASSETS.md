@@ -16,9 +16,9 @@
 
 ## 운영 화면의 예시 데이터 사진
 
-`src/lib/showcaseData.ts`의 회원 제보 행사·후기·커뮤니티 글은 아래 Unsplash 무료 사진(Unsplash License)을 `images.unsplash.com`에서 그대로 불러옵니다. 파일로 저장하지 않으며 Unsplash+ 유료 사진은 쓰지 않았습니다. 사진은 분위기를 보여주는 이미지이고, 제보한 팝업의 실제 사진이 아닙니다.
+운영 DB 예시 데이터(`src/main/resources/db/showcase/R__showcase_popup_demo.sql`)의 회원 제보 행사·후기·커뮤니티 글은 아래 Unsplash 무료 사진(Unsplash License)을 `images.unsplash.com`에서 그대로 불러옵니다. 파일로 저장하지 않으며 Unsplash+ 유료 사진은 쓰지 않았습니다. 사진은 분위기를 보여주는 이미지이고, 제보한 팝업의 실제 사진이 아닙니다.
 
-| 코드 이름         | 사진                                                                                             |
+| 이름              | 사진                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
 | `latteArt`        | [photo-1742549626436-bf3c11dab212](https://images.unsplash.com/photo-1742549626436-bf3c11dab212) |
 | `cafeLatte`       | [photo-1559001724-fbad036dbc9e](https://images.unsplash.com/photo-1559001724-fbad036dbc9e)       |
@@ -59,5 +59,6 @@
 | `toteBag`         | [photo-1544816155-12df9643f363](https://images.unsplash.com/photo-1544816155-12df9643f363)       |
 | `stickerWall`     | [photo-1625768376503-68d2495d78c5](https://images.unsplash.com/photo-1625768376503-68d2495d78c5) |
 | `stickerCollage`  | [photo-1778278553405-09b847a2af3e](https://images.unsplash.com/photo-1778278553405-09b847a2af3e) |
+| `cinemaHall`      | [photo-1762541693135-fb989de961e1](https://images.unsplash.com/photo-1762541693135-fb989de961e1) |
 
-마도카 마기카 〈발푸르기스의 회천〉 팝업(`900018`) 표지는 [팝가 행사 페이지](https://popga.co.kr/popup/14165)에 올라온 공식 포스터를 그 주소 그대로 불러옵니다. 작품 포스터라 저작권은 권리자에게 있습니다.
+마도카 마기카 〈발푸르기스의 회천〉 팝업의 표지와 그 후기의 첫 사진은 [팝가 행사 페이지](https://popga.co.kr/popup/14165)에 올라온 공식 포스터를 그 주소 그대로 불러옵니다. 작품 포스터라 저작권은 권리자에게 있습니다.
