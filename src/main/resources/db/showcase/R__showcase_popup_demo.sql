@@ -4,26 +4,27 @@
 -- 이 경로(classpath:db/showcase)는 기본 Flyway 경로에 없다. 운영에서는 SPRING_FLYWAY_LOCATIONS에 더해야 실행된다.
 -- 반복 실행 마이그레이션이라 파일이 바뀌면 다시 실행된다. 이미 있는 행은 건드리지 않고 없는 행만 넣는다.
 -- 예시 회원은 로그인할 수 없는 비밀번호를 쓰고, 자정 등급 집계가 바꾸지 않도록 등급을 고정한다.
+-- 이메일은 실제 서비스처럼 보이게 gmail·naver·daum 형식으로 지었다. gmail은 밑줄을 쓸 수 없는 서비스라 실존할 수 없는 주소다.
 -- 좋아요·정확도 투표는 예시 회원이 실제로 누른 기록으로 넣으므로 행사·후기당 최대 13개다.
 
 INSERT INTO member (id, email, password, role, nickname, profile_img, phone, created_at, updated_at, deleted_at, role_locked)
 SELECT seed.id, seed.email, '$2a$10$3J0CLAJcpClv0aXxx62Ir.isAsHcL4iA8CG2ahEZz9vVp9tM4pWge', seed.role, seed.nickname,
        NULL, NULL, '2026-09-01 09:00:00', '2026-09-01 09:00:00', NULL, TRUE
 FROM (VALUES
-    ('00000000-0000-7000-b100-000000000001'::UUID, 'showcase-member-01@example.com', 'ROLE_TRUSTED', '성수동 산책러'),
-    ('00000000-0000-7000-b100-000000000002'::UUID, 'showcase-member-02@example.com', 'ROLE_TRUSTED', '팝업헌터 지니'),
-    ('00000000-0000-7000-b100-000000000003'::UUID, 'showcase-member-03@example.com', 'ROLE_RECOGNIZED', '주말엔 전시'),
-    ('00000000-0000-7000-b100-000000000004'::UUID, 'showcase-member-04@example.com', 'ROLE_RECOGNIZED', '오늘도 탈출'),
-    ('00000000-0000-7000-b100-000000000005'::UUID, 'showcase-member-05@example.com', 'ROLE_UNVERIFIED', '빵순이 하루'),
-    ('00000000-0000-7000-b100-000000000006'::UUID, 'showcase-member-06@example.com', 'ROLE_RECOGNIZED', '홍대 고양이'),
-    ('00000000-0000-7000-b100-000000000007'::UUID, 'showcase-member-07@example.com', 'ROLE_RECOGNIZED', '부산 바다곰'),
-    ('00000000-0000-7000-b100-000000000008'::UUID, 'showcase-member-08@example.com', 'ROLE_UNVERIFIED', '대구 토박이'),
-    ('00000000-0000-7000-b100-000000000009'::UUID, 'showcase-member-09@example.com', 'ROLE_UNVERIFIED', '제주 귤밭'),
-    ('00000000-0000-7000-b100-000000000010'::UUID, 'showcase-member-10@example.com', 'ROLE_TRUSTED', '굿즈 수집가'),
-    ('00000000-0000-7000-b100-000000000011'::UUID, 'showcase-member-11@example.com', 'ROLE_UNVERIFIED', '아이랑 나들이'),
-    ('00000000-0000-7000-b100-000000000012'::UUID, 'showcase-member-12@example.com', 'ROLE_UNVERIFIED', '일산 사는 곰'),
-    ('00000000-0000-7000-b100-000000000013'::UUID, 'showcase-member-13@example.com', 'ROLE_UNVERIFIED', '센텀 출근러'),
-    ('00000000-0000-7000-b100-000000000014'::UUID, 'showcase-member-14@example.com', 'ROLE_RECOGNIZED', '소울젬 지킴이')
+    ('00000000-0000-7000-b100-000000000001'::UUID, 'minjun_park91@gmail.com', 'ROLE_TRUSTED', '성수동 산책러'),
+    ('00000000-0000-7000-b100-000000000002'::UUID, 'jini_kim0712@gmail.com', 'ROLE_TRUSTED', '팝업헌터 지니'),
+    ('00000000-0000-7000-b100-000000000003'::UUID, 'seoyeon_lee@gmail.com', 'ROLE_RECOGNIZED', '주말엔 전시'),
+    ('00000000-0000-7000-b100-000000000004'::UUID, 'dohyun_choi88@gmail.com', 'ROLE_RECOGNIZED', '오늘도 탈출'),
+    ('00000000-0000-7000-b100-000000000005'::UUID, 'haru_bakes92@naver.com', 'ROLE_UNVERIFIED', '빵순이 하루'),
+    ('00000000-0000-7000-b100-000000000006'::UUID, 'hongdae_yuri@gmail.com', 'ROLE_RECOGNIZED', '홍대 고양이'),
+    ('00000000-0000-7000-b100-000000000007'::UUID, 'sunwoo_busan@naver.com', 'ROLE_RECOGNIZED', '부산 바다곰'),
+    ('00000000-0000-7000-b100-000000000008'::UUID, 'daegu_jiho77@naver.com', 'ROLE_UNVERIFIED', '대구 토박이'),
+    ('00000000-0000-7000-b100-000000000009'::UUID, 'yuna_jeju@daum.net', 'ROLE_UNVERIFIED', '제주 귤밭'),
+    ('00000000-0000-7000-b100-000000000010'::UUID, 'goods_hyunsu@gmail.com', 'ROLE_TRUSTED', '굿즈 수집가'),
+    ('00000000-0000-7000-b100-000000000011'::UUID, 'ara_mom_0524@gmail.com', 'ROLE_UNVERIFIED', '아이랑 나들이'),
+    ('00000000-0000-7000-b100-000000000012'::UUID, 'ilsan_gom21@naver.com', 'ROLE_UNVERIFIED', '일산 사는 곰'),
+    ('00000000-0000-7000-b100-000000000013'::UUID, 'centum_jw@daum.net', 'ROLE_UNVERIFIED', '센텀 출근러'),
+    ('00000000-0000-7000-b100-000000000014'::UUID, 'soul_jam_kim@gmail.com', 'ROLE_RECOGNIZED', '소울젬 지킴이')
 ) AS seed (id, email, role, nickname)
 WHERE NOT EXISTS (
     SELECT 1 FROM member existing
