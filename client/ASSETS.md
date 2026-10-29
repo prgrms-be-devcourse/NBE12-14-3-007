@@ -59,4 +59,5 @@
 | `toteBag`         | [photo-1544816155-12df9643f363](https://images.unsplash.com/photo-1544816155-12df9643f363)       |
 | `stickerWall`     | [photo-1625768376503-68d2495d78c5](https://images.unsplash.com/photo-1625768376503-68d2495d78c5) |
 | `stickerCollage`  | [photo-1778278553405-09b847a2af3e](https://images.unsplash.com/photo-1778278553405-09b847a2af3e) |
-| `cinemaHall`      | [photo-1762541693135-fb989de961e1](https://images.unsplash.com/photo-1762541693135-fb989de961e1) |
+
+마도카 마기카 〈발푸르기스의 회천〉 팝업(`900018`) 표지는 [팝가 행사 페이지](https://popga.co.kr/popup/14165)에 올라온 공식 포스터를 그 주소 그대로 불러옵니다. 작품 포스터라 저작권은 권리자에게 있습니다.
