@@ -2807,7 +2807,8 @@ select {
   font-size: 10px;
   font-weight: 700;
 }
-.event-submitter .trust-grade-badge {
+.event-submitter .trust-grade-badge,
+.community-row-meta .trust-grade-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2818,7 +2819,8 @@ select {
   font-weight: 700;
   white-space: nowrap;
 }
-.event-submitter .trust-grade-wrap {
+.event-submitter .trust-grade-wrap,
+.community-row-meta .trust-grade-wrap {
   flex-shrink: 0;
 }
 .trust-grade-wrap {
