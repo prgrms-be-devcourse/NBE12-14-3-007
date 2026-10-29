@@ -60,35 +60,6 @@ import {
   updateDemo,
   type ReviewSort,
 } from "./demo";
-import {
-  SHOWCASE_ENABLED,
-  createShowcaseComment,
-  createShowcaseCommunityComment,
-  createShowcasePost,
-  deleteShowcaseComment,
-  deleteShowcasePost,
-  isShowcaseComment,
-  isShowcaseCommunityComment,
-  isShowcaseCommunityPost,
-  isShowcaseFestival,
-  isShowcasePost,
-  isShowcaseTarget,
-  likeShowcase,
-  likedShowcase,
-  mergeWithServer,
-  pageOf,
-  searchShowcaseCommunity,
-  searchShowcaseFestivals,
-  searchShowcasePosts,
-  showcaseCommentPage,
-  showcaseCommunityCommentPage,
-  showcaseCommunityPost,
-  showcaseFestival,
-  showcasePost,
-  updateShowcaseComment,
-  updateShowcasePost,
-  voteShowcase,
-} from "./showcase";
 import { parseDateTime, formatRegionDetail, normalizeFestivalCategory } from "./format";
 import { matchesRegion } from "./regions";
 
@@ -130,12 +101,6 @@ export function setCurrentMember(member: Member | null) {
   currentMember = member;
 }
 const demoAuthor = () => currentMember ?? readDemo().member;
-/** 프론트 예시 데이터에 좋아요·댓글을 남길 때. 서버 요청과 같은 문구로 로그인을 요구한다. */
-function showcaseAuthor() {
-  if (!currentMember)
-    throw new ApiError("로그인이 필요해요. 다시 로그인해 주세요.", 401);
-  return currentMember;
-}
 export function clearSession() {
   accessToken = null;
   refreshPromise = null;
@@ -272,6 +237,17 @@ function getPost(postId: string): PostDetail {
 export const COMMENT_PAGE_SIZE = 20;
 /** 서버가 삭제된 댓글 자리에 내려주는 문구 (CommentResponse.DELETED_CONTENT). 데모 모드에서만 쓴다. */
 const DELETED_COMMENT = "삭제된 댓글입니다";
+function pageOf<T>(items: T[], page: number, size: number): Page<T> {
+  return {
+    content: items.slice(page * size, (page + 1) * size),
+    totalElements: items.length,
+    totalPages: Math.ceil(items.length / size),
+    number: page,
+    size,
+    first: page === 0,
+    last: (page + 1) * size >= items.length,
+  };
+}
 
 /** 서버 기본 정렬과 같다: 오늘 이후 시작 행사는 가까운 순, 이미 시작한 행사는 최근 시작순으로 뒤에 둔다. */
 function compareNearestStart(a: string, b: string) {
@@ -281,31 +257,6 @@ function compareNearestStart(a: string, b: string) {
   if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
   return aUpcoming ? a.localeCompare(b) : b.localeCompare(a);
 }
-/** 예시 행사를 서버 목록 사이에 끼울 때 쓰는 정렬. 서버 정렬 기준과 같다. */
-function festivalOrder(sort: FestivalSearchInput["sort"]) {
-  return (a: EventView, b: EventView) =>
-    sort === "name"
-      ? a.title < b.title ? -1 : a.title > b.title ? 1 : 0
-      : sort === "likes"
-        ? (b.likeCount ?? 0) - (a.likeCount ?? 0)
-        : sort === "recent"
-          ? // 서버 목록 응답에는 등록일이 없어 예시 행사를 서버 행사보다 최근 등록으로 둔다.
-            (b.writngDe ?? "").localeCompare(a.writngDe ?? "")
-          : compareNearestStart(a.beginDe, b.beginDe);
-}
-function postOrder(sort: ReviewSort) {
-  return (a: PostSummary, b: PostSummary) => {
-    const newestFirst =
-      parseDateTime(b.date).getTime() - parseDateTime(a.date).getTime();
-    if (sort === "likeCount,desc")
-      return (b.likeCount ?? 0) - (a.likeCount ?? 0) || newestFirst;
-    return sort === "createdAt,asc" ? -newestFirst : newestFirst;
-  };
-}
-const newestCommunityFirst = (
-  a: CommunityPostSummary,
-  b: CommunityPostSummary,
-) => b.createdAt.localeCompare(a.createdAt);
 
 function toEventView(item: FestivalSearchItem): EventView {
   return {
@@ -373,8 +324,6 @@ function toDetailEvent(item: FestivalDetailItem): EventView {
 
 export function createApi(mode: Mode) {
   const demo = mode === "preview";
-  /** 공공 행사는 서버에서, 나머지는 프론트 예시 데이터(showcase.ts)를 섞어서 보여 준다. */
-  const showcase = !demo && SHOWCASE_ENABLED;
   const demoAccuracyVotes = new Map<number, FestivalAccuracyVote>();
   return {
     async restore() {
@@ -453,39 +402,28 @@ export function createApi(mode: Mode) {
         return pageOf(items, page, 9);
       }
 
-      const fetchServer = async (page: number, size: number) => {
-        const params = new URLSearchParams({
-          page: String(page),
-          size: String(size),
-        });
-        if (input.keyword?.trim()) params.set("keyword", input.keyword.trim());
-        if (input.region) params.set("region", input.region);
-        if (input.regionDetail) params.set("regionDetail", input.regionDetail);
-        if (input.providerType) params.set("providerType", input.providerType);
-        if (input.category) params.set("category", normalizeFestivalCategory(input.category));
-        if (input.date) params.set("date", input.date);
-        if (input.excludeClosed) params.set("excludeClosed", "true");
-        if (input.sort === "name") params.set("sort", "title,asc");
-        if (input.sort === "likes") params.set("sort", "likeCount,desc");
-        if (input.sort === "recent") params.set("sort", "createdAt,desc");
+      const params = new URLSearchParams({
+        page: String(page),
+        size: "9",
+      });
+      if (input.keyword?.trim()) params.set("keyword", input.keyword.trim());
+      if (input.region) params.set("region", input.region);
+      if (input.regionDetail) params.set("regionDetail", input.regionDetail);
+      if (input.providerType) params.set("providerType", input.providerType);
+      if (input.category) params.set("category", normalizeFestivalCategory(input.category));
+      if (input.date) params.set("date", input.date);
+      if (input.excludeClosed) params.set("excludeClosed", "true");
+      if (input.sort === "name") params.set("sort", "title,asc");
+      if (input.sort === "likes") params.set("sort", "likeCount,desc");
+      if (input.sort === "recent") params.set("sort", "createdAt,desc");
 
-        const result = await transport<Page<FestivalSearchItem>>(
-          `/festivals?${params.toString()}`,
-        );
-        return {
-          ...result,
-          content: result.content.map(toEventView),
-        };
-      };
-      if (!showcase) return fetchServer(page, 9);
-      const order = festivalOrder(input.sort);
-      return mergeWithServer(
-        searchShowcaseFestivals(input, currentMember?.id).sort(order),
-        page,
-        9,
-        order,
-        fetchServer,
+      const result = await transport<Page<FestivalSearchItem>>(
+        `/festivals?${params.toString()}`,
       );
+      return {
+        ...result,
+        content: result.content.map(toEventView),
+      };
     },
     async weather(region: string, date: string): Promise<WeatherView> {
       if (demo) {
@@ -549,20 +487,12 @@ export function createApi(mode: Mode) {
           likedByMe: data.liked.includes(likeKey),
         };
       }
-      if (showcase && isShowcaseFestival(festivalId))
-        return showcaseFestival(festivalId, currentMember?.id)!;
       const result = await transport<FestivalDetailItem>(
         `/festivals/${encodeURIComponent(String(festivalId))}`,
       );
       return toDetailEvent(result);
     },
     async likeFestival(festivalId: number, remove = false) {
-      if (showcase && isShowcaseFestival(festivalId))
-        return likeShowcase(
-          `festival:${festivalId}`,
-          showcaseAuthor().id,
-          remove,
-        );
       if (!demo)
         return transport<{ likeCount: number }>(
           `/festivals/${encodeURIComponent(String(festivalId))}/likes/me`,
@@ -585,8 +515,6 @@ export function createApi(mode: Mode) {
       festivalId: number,
       voteType: "ACCURATE" | "INACCURATE",
     ): Promise<FestivalAccuracyVote> {
-      if (showcase && isShowcaseFestival(festivalId))
-        return voteShowcase(festivalId, showcaseAuthor().id, voteType);
       if (!demo)
         return transport<FestivalAccuracyVote>(
           `/festivals/${encodeURIComponent(String(festivalId))}/accuracy-votes/me`,
@@ -615,8 +543,6 @@ export function createApi(mode: Mode) {
     async cancelAccuracyVote(
       festivalId: number,
     ): Promise<FestivalAccuracyVote> {
-      if (showcase && isShowcaseFestival(festivalId))
-        return voteShowcase(festivalId, showcaseAuthor().id, null);
       if (!demo)
         return transport<FestivalAccuracyVote>(
           `/festivals/${encodeURIComponent(String(festivalId))}/accuracy-votes/me`,
@@ -670,39 +596,20 @@ export function createApi(mode: Mode) {
     ): Promise<Page<PostSummary>> {
       const keyword = search.keyword?.trim();
       if (!demo) {
-        const fetchServer = (page: number, size: number) => {
-          const params = new URLSearchParams({
-            page: String(page),
-            size: String(size),
-            sort,
-          });
-          if (festivalId === undefined && keyword) {
-            params.set("type", search.type ?? "TITLE");
-            params.set("keyword", keyword);
-          }
-          const path =
-            festivalId === undefined
-              ? "/posts"
-              : `/festivals/${festivalId}/posts`;
-          return transport<Page<PostSummary>>(`${path}?${params}`);
-        };
-        if (!showcase) return fetchServer(page, 6);
-        const order = postOrder(sort);
-        const extras = searchShowcasePosts(
-          festivalId,
-          search,
-          currentMember?.id,
-        ).sort(order);
-        // 예시 행사의 후기는 서버에 없다.
-        if (festivalId !== undefined && isShowcaseFestival(festivalId))
-          return pageOf<PostSummary>(extras, page, 6);
-        return mergeWithServer<PostSummary>(
-          extras,
-          page,
-          6,
-          order,
-          fetchServer,
-        );
+        const params = new URLSearchParams({
+          page: String(page),
+          size: "6",
+          sort,
+        });
+        if (festivalId === undefined && keyword) {
+          params.set("type", search.type ?? "TITLE");
+          params.set("keyword", keyword);
+        }
+        const path =
+          festivalId === undefined
+            ? "/posts"
+            : `/festivals/${festivalId}/posts`;
+        return transport(`${path}?${params}`);
       }
       const posts = previewPosts(festivalId, sort).filter((post) => {
         if (festivalId !== undefined || !keyword) return true;
@@ -740,18 +647,11 @@ export function createApi(mode: Mode) {
       return transport<PostDetail>(`/posts/${encodeURIComponent(postId)}`);
     },
     async post(postId: string) {
-      if (showcase && isShowcasePost(postId)) {
-        const post = showcasePost(postId, currentMember?.id);
-        if (!post) throw new ApiError("후기를 찾을 수 없어요.", 404);
-        return post;
-      }
       return demo
         ? { ...getPost(postId), likeCount: readDemo().likes[postId] || 0 }
         : transport<PostDetail>(`/posts/${encodeURIComponent(postId)}`);
     },
     async createPost(festivalId: number, input: PostInput) {
-      if (showcase && isShowcaseFestival(festivalId))
-        return createShowcasePost(festivalId, input, showcaseAuthor());
       if (!demo)
         return transport<{ id: string }>(
           `/festivals/${festivalId}/posts`,
@@ -781,8 +681,6 @@ export function createApi(mode: Mode) {
       });
     },
     async updatePost(postId: string, input: PostInput) {
-      if (showcase && isShowcasePost(postId))
-        return updateShowcasePost(postId, input);
       if (!demo)
         return transport<PostDetail>(
           `/posts/${encodeURIComponent(postId)}`,
@@ -796,7 +694,6 @@ export function createApi(mode: Mode) {
       });
     },
     async deletePost(postId: string) {
-      if (showcase && isShowcasePost(postId)) return deleteShowcasePost(postId);
       if (!demo)
         return transport<void>(
           `/posts/${encodeURIComponent(postId)}`,
@@ -807,8 +704,6 @@ export function createApi(mode: Mode) {
       });
     },
     async comments(postId: string, page = 0) {
-      if (showcase && isShowcasePost(postId))
-        return showcaseCommentPage(postId, page, COMMENT_PAGE_SIZE);
       if (!demo)
         return transport<Page<Comment>>(
           `/posts/${encodeURIComponent(postId)}/comments?page=${page}&size=${COMMENT_PAGE_SIZE}`,
@@ -845,13 +740,6 @@ export function createApi(mode: Mode) {
     },
     /** parentId를 넣으면 대댓글이 된다. 대댓글에 단 답글은 서버가 그 부모 아래에 붙인다. */
     async createComment(postId: string, content: string, parentId?: number) {
-      if (showcase && isShowcasePost(postId))
-        return createShowcaseComment(
-          postId,
-          content,
-          parentId,
-          showcaseAuthor(),
-        );
       if (!demo)
         return transport<Comment>(
           `/posts/${encodeURIComponent(postId)}/comments`,
@@ -881,8 +769,6 @@ export function createApi(mode: Mode) {
       });
     },
     async updateComment(commentId: number, content: string) {
-      if (showcase && isShowcaseComment(commentId))
-        return updateShowcaseComment(commentId, content);
       if (!demo)
         return transport<Comment>(`/comments/${commentId}`, "PATCH", {
           content,
@@ -895,8 +781,6 @@ export function createApi(mode: Mode) {
     },
     /** 서버는 행을 지우지 않는다. 목록에는 "삭제된 댓글입니다"로 남고 대댓글도 그대로 보인다. */
     async deleteComment(commentId: number) {
-      if (showcase && isShowcaseComment(commentId))
-        return deleteShowcaseComment(commentId);
       if (!demo) return transport<void>(`/comments/${commentId}`, "DELETE");
       updateDemo((d) => {
         const c = d.comments.find((c) => c.id === commentId);
@@ -908,31 +792,19 @@ export function createApi(mode: Mode) {
       category?: CommunityCategory,
       keyword?: string,
     ) {
-      const fetchServer = (page: number, size: number) => {
-        const params = new URLSearchParams({
-          page: String(page),
-          size: String(size),
-          sort: "createdAt,desc",
-        });
-        if (category) params.set("category", category);
-        if (keyword?.trim()) params.set("keyword", keyword.trim());
-        return transport<Page<CommunityPostSummary>>(
-          `/community/posts?${params}`,
-        );
-      };
-      if (!showcase) return fetchServer(page, 10);
-      return mergeWithServer(
-        searchShowcaseCommunity(category, keyword).sort(newestCommunityFirst),
-        page,
-        10,
-        newestCommunityFirst,
-        fetchServer,
+      const params = new URLSearchParams({
+        page: String(page),
+        size: "10",
+        sort: "createdAt,desc",
+      });
+      if (category) params.set("category", category);
+      if (keyword?.trim()) params.set("keyword", keyword.trim());
+      return transport<Page<CommunityPostSummary>>(
+        `/community/posts?${params}`,
       );
     },
     /** 서버는 부를 때마다 조회수를 올린다. 수정 화면·관리자 화면처럼 글을 읽는 게 아니면 countView를 끈다. */
     async communityPost(postId: string, { countView = true } = {}) {
-      if (showcase && isShowcaseCommunityPost(postId))
-        return showcaseCommunityPost(postId, countView);
       return transport<CommunityPostDetail>(
         `/community/posts/${encodeURIComponent(postId)}${countView ? "" : "?countView=false"}`,
       );
@@ -941,8 +813,6 @@ export function createApi(mode: Mode) {
       return transport<CommunityPostDetail>("/community/posts", "POST", input);
     },
     async updateCommunityPost(postId: string, input: CommunityPostInput) {
-      if (showcase && isShowcaseCommunityPost(postId))
-        throw new ApiError("이 글은 수정할 수 없어요.", 403);
       return transport<CommunityPostDetail>(
         `/community/posts/${encodeURIComponent(postId)}`,
         "PATCH",
@@ -950,8 +820,6 @@ export function createApi(mode: Mode) {
       );
     },
     async deleteCommunityPost(postId: string) {
-      if (showcase && isShowcaseCommunityPost(postId))
-        throw new ApiError("이 글은 삭제할 수 없어요.", 403);
       return transport<void>(
         `/community/posts/${encodeURIComponent(postId)}`,
         "DELETE",
@@ -959,8 +827,6 @@ export function createApi(mode: Mode) {
     },
     /** 정렬은 서버가 오래된 순으로 고정한다. 페이지는 일반 댓글 기준이다. */
     async communityComments(postId: string, page = 0) {
-      if (showcase && isShowcaseCommunityPost(postId))
-        return showcaseCommunityCommentPage(postId, page, 20);
       const params = new URLSearchParams({
         page: String(page),
         size: "20",
@@ -975,13 +841,6 @@ export function createApi(mode: Mode) {
       content: string,
       parentId?: number,
     ) {
-      if (showcase && isShowcaseCommunityPost(postId))
-        return createShowcaseCommunityComment(
-          postId,
-          content,
-          parentId,
-          showcaseAuthor(),
-        );
       return transport<CommunityComment>(
         `/community/posts/${encodeURIComponent(postId)}/comments`,
         "POST",
@@ -989,8 +848,6 @@ export function createApi(mode: Mode) {
       );
     },
     async updateCommunityComment(commentId: number, content: string) {
-      if (showcase && isShowcaseCommunityComment(commentId))
-        return updateShowcaseComment(commentId, content);
       return transport<CommunityComment>(
         `/community/comments/${commentId}`,
         "PATCH",
@@ -998,13 +855,9 @@ export function createApi(mode: Mode) {
       );
     },
     async deleteCommunityComment(commentId: number) {
-      if (showcase && isShowcaseCommunityComment(commentId))
-        return deleteShowcaseComment(commentId);
       return transport<void>(`/community/comments/${commentId}`, "DELETE");
     },
     async like(postId: string, remove = false) {
-      if (showcase && isShowcasePost(postId))
-        return likeShowcase(postId, showcaseAuthor().id, remove);
       if (!demo)
         return transport<{ likeCount: number }>(
           `/posts/${encodeURIComponent(postId)}/likes/me`,
@@ -1029,24 +882,7 @@ export function createApi(mode: Mode) {
     async inquiry(inquiryId: string) {
       return transport<Inquiry>(`/inquiries/${encodeURIComponent(inquiryId)}`);
     },
-    async createInquiry(input: InquiryInput): Promise<Inquiry> {
-      // 프론트 예시 데이터는 서버가 모르는 대상이라 신고를 서버로 보내지 않는다.
-      if (
-        showcase &&
-        input.targetType &&
-        input.targetId &&
-        isShowcaseTarget(input.targetType, input.targetId)
-      )
-        return {
-          ...input,
-          id: id(),
-          img: input.img ?? null,
-          targetType: input.targetType,
-          targetId: input.targetId,
-          status: "PENDING",
-          answer: null,
-          createdAt: now(),
-        };
+    async createInquiry(input: InquiryInput) {
       return transport<Inquiry>("/inquiries", "POST", input);
     },
     async updateInquiry(inquiryId: string, input: InquiryInput) {
@@ -1175,37 +1011,15 @@ export function createApi(mode: Mode) {
     },
     /** 내가 좋아요한 행사. 최근에 누른 순서로 오고 삭제된 행사는 빠진다. */
     async myLikedFestivals(page = 0): Promise<Page<EventView>> {
-      const fetchServer = async (page: number, size: number) => {
-        const result = await transport<Page<FestivalSearchItem>>(
-          `/members/me/likes/festivals?page=${page}&size=${size}`,
-        );
-        return { ...result, content: result.content.map(toEventView) };
-      };
-      if (!showcase || !currentMember) return fetchServer(page, 20);
-      // 이 브라우저에서 누른 예시 행사 좋아요는 서버 목록보다 앞에 둔다.
-      return mergeWithServer(
-        likedShowcase(currentMember.id).festivals,
-        page,
-        20,
-        (a, b) =>
-          Number(!isShowcaseFestival(a.festivalId)) -
-          Number(!isShowcaseFestival(b.festivalId)),
-        fetchServer,
+      const result = await transport<Page<FestivalSearchItem>>(
+        `/members/me/likes/festivals?page=${page}&size=20`,
       );
+      return { ...result, content: result.content.map(toEventView) };
     },
     /** 내가 좋아요한 후기. 최근에 누른 순서로 오고 삭제된 후기는 빠진다. */
     async myLikedPosts(page = 0) {
-      const fetchServer = (page: number, size: number) =>
-        transport<Page<PostSummary>>(
-          `/members/me/likes/posts?page=${page}&size=${size}`,
-        );
-      if (!showcase || !currentMember) return fetchServer(page, 20);
-      return mergeWithServer<PostSummary>(
-        likedShowcase(currentMember.id).posts,
-        page,
-        20,
-        (a, b) => Number(!isShowcasePost(a.id)) - Number(!isShowcasePost(b.id)),
-        fetchServer,
+      return transport<Page<PostSummary>>(
+        `/members/me/likes/posts?page=${page}&size=20`,
       );
     },
     async adminRestoreContent(
