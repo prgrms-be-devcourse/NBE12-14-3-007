@@ -296,8 +296,11 @@ function toEvent(item: AdminFestivalListItem): ContentItem {
   return {
     id: String(item.festivalId),
     title: item.title,
-    // 공공 행사는 주최 기관, 회원 제보는 기관명이 비어 있을 수 있다.
-    author: item.instNm || (item.providerType === "MEMBER" ? "회원 제보" : "-"),
+    // 회원 제보는 제보자 닉네임, 공공 행사는 주최 기관을 보여 준다.
+    author:
+      item.providerType === "MEMBER"
+        ? item.memberNickname || item.instNm || "회원 제보"
+        : item.instNm || "-",
     source: item.providerType,
     category: item.category,
     date: item.createdAt ? dateText(item.createdAt) : "등록일 확인 불가",

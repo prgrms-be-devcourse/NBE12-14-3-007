@@ -30,6 +30,8 @@
   --c-red-dark: #c93c3c;
   --c-yellow: #eef34f;
   --c-yellow-soft: #fafbd0;
+  --c-orange-soft: #fdebd9;
+  --c-tint: #f2f2f2;
   --c-blue: #e5833a;
   --c-green: #111111;
   --c-display: Pretendard, "Malgun Gothic", sans-serif;
@@ -114,7 +116,7 @@
     border-bottom: 0;
   }
   .theme-c .main-nav a.active {
-    background: var(--c-yellow-soft);
+    background: var(--c-tint);
   }
   .theme-c .account-link {
     padding: 7px 10px;
@@ -191,7 +193,7 @@
 }
 .theme-c .btn {
   border-radius: 999px;
-  border-width: 2px;
+  border-width: 1.5px;
   font-weight: 700;
   font-size: 15px;
 }
@@ -239,7 +241,7 @@
   gap: 8px;
 }
 .theme-c .category-tabs button {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: var(--c-surface);
   color: var(--c-ink);
   border-radius: 999px;
@@ -265,7 +267,7 @@
 .theme-c .filter-search,
 .theme-c .community-search {
   background: var(--c-surface);
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 999px;
   box-shadow: none;
 }
@@ -278,7 +280,7 @@
 .theme-c .source-note {
   background: var(--c-surface);
   border: 1px solid var(--c-line);
-  border-left: 6px solid var(--c-yellow);
+  border-left: 6px solid var(--brand);
   border-radius: 0;
   color: var(--c-text);
 }
@@ -356,7 +358,7 @@
   min-width: 44px;
   height: 44px;
   border-radius: 999px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: var(--c-surface);
   color: var(--c-ink);
   font-weight: 700;
@@ -380,16 +382,16 @@
 /* ---------- 빈 화면·안내 ---------- */
 .theme-c .empty-state {
   background: var(--c-surface);
-  border: 2px dashed var(--c-ink);
+  border: 1.5px dashed var(--c-ink);
   border-radius: 0;
 }
 .theme-c .empty-icon {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
 }
 .theme-c .soft-callout {
   background: var(--c-surface);
-  border: 3px dashed var(--c-ink);
+  border: 1.5px dashed var(--c-ink);
   border-radius: 0;
   color: var(--c-ink);
   font-weight: 600;
@@ -575,7 +577,7 @@
 
 /* ---------- 커뮤니티 ---------- */
 .theme-c .community-categories button {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: var(--c-surface);
   color: var(--c-ink);
   border-radius: 0;
@@ -587,7 +589,7 @@
 }
 .theme-c .community-list {
   background: var(--c-surface);
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
 }
 .theme-c .community-row {
@@ -618,7 +620,7 @@
 .theme-c .field input,
 .theme-c .field select,
 .theme-c .field textarea {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
   color: var(--c-ink);
@@ -652,7 +654,7 @@
   border-radius: 0;
 }
 .theme-c .upload-button {
-  border: 2px dashed var(--c-ink);
+  border: 1.5px dashed var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
 }
@@ -715,7 +717,7 @@
   font-size: 34px;
 }
 .theme-c .consent-box {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: #fff;
 }
@@ -723,7 +725,7 @@
   background: #fdd0e7;
   margin: -16px -18px 11px;
   padding: 14px 18px;
-  border-bottom: 2px solid var(--c-ink);
+  border-bottom: 1.5px solid var(--c-ink);
 }
 @media (max-width: 800px) {
   .theme-c .auth-page {
@@ -1056,7 +1058,7 @@
   min-height: 32px;
   padding: 0 8px 0 11px;
   border-radius: 999px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: var(--c-paper);
   color: var(--c-ink);
   font-size: 13px;
@@ -1096,7 +1098,7 @@
   min-height: 40px;
   padding: 0 14px 0 8px;
   border-radius: 999px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: #fff;
   font-weight: 700;
   font-size: 14px;
@@ -1107,7 +1109,7 @@
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
   background: var(--pink);
   color: #fff;
   font-weight: 800;
@@ -1238,7 +1240,7 @@
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: #fff;
 }
 .home-c .home-grid.map-posters {
@@ -1281,11 +1283,11 @@
   color: #fff;
   font-size: 14px;
   font-weight: 800;
-  border: 2px solid #fff;
+  border: 1.5px solid #fff;
 }
 .poster.on .poster-no {
-  background: var(--c-yellow);
-  color: var(--c-ink);
+  background: var(--c-ink);
+  color: var(--pink);
 }
 .poster-row {
   display: flex;
@@ -1304,7 +1306,7 @@
   font-weight: 800;
   font-size: 12px;
   padding: 1px 6px;
-  border: 2px solid currentColor;
+  border: 1.5px solid currentColor;
   transform: rotate(-4deg);
 }
 .home-c .map-posters .poster-title {
@@ -1588,7 +1590,7 @@
 .home-cta {
   margin-top: 48px;
   margin-bottom: 88px;
-  border: 3px dashed var(--c-ink);
+  border: 1.5px dashed var(--c-ink);
   background: var(--c-surface);
   padding: clamp(24px, 4vw, 44px);
   display: flex;
@@ -1740,7 +1742,7 @@
 .theme-c .review-search select,
 .theme-c .review-search input {
   height: 44px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 999px;
   background-color: var(--c-surface);
   font-size: 14px;
@@ -1773,7 +1775,7 @@
   box-shadow: none;
 }
 .theme-c .profile-avatar {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
   font-weight: 700;
 }
@@ -1819,7 +1821,7 @@
 .theme-c .trust-panel {
   background: var(--c-surface);
   border: 1px solid var(--c-line);
-  border-left: 6px solid var(--c-yellow);
+  border-left: 6px solid var(--brand);
   border-radius: 0;
   color: var(--c-ink);
 }
@@ -1867,7 +1869,7 @@
   background: var(--c-bg);
   color: var(--c-text);
   font-weight: 600;
-  border-bottom: 2px solid var(--c-ink);
+  border-bottom: 1.5px solid var(--c-ink);
 }
 .theme-c .my-content-table td {
   border-bottom: 1px solid var(--c-line-soft);
@@ -1890,7 +1892,7 @@
   color: #fff;
 }
 .theme-c .inquiry-list {
-  border-top: 2px solid var(--c-ink);
+  border-top: 1.5px solid var(--c-ink);
 }
 .theme-c .inquiry-row {
   border-radius: 0;
@@ -1900,14 +1902,14 @@
   background: #f8f8f8;
 }
 .theme-c .inquiry-icon {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
   border-radius: 999px;
 }
 .theme-c .inquiry-answer,
 .theme-c .inquiry-note {
   border-radius: 0;
-  border-left: 4px solid var(--c-yellow);
+  border-left: 4px solid var(--c-ink);
   background: var(--c-paper);
 }
 .theme-c .upload-area {
@@ -2026,7 +2028,7 @@
   color: var(--c-muted);
 }
 .theme-c .avatar {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
   font-weight: 700;
 }
@@ -2056,7 +2058,7 @@
 }
 .theme-c .comment-row textarea,
 .theme-c .community-comment-edit textarea {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   color: var(--c-ink);
 }
@@ -2068,7 +2070,7 @@
   font-weight: 600;
 }
 .theme-c .community-avatar {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
   font-weight: 700;
 }
@@ -2083,7 +2085,7 @@
 /* ---------- 글쓰기 에디터 (행사 제보·후기·커뮤니티 공통) ---------- */
 .theme-c .rich-text-editor,
 .theme-c .rich-text-editor-loading {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
 }
@@ -2092,12 +2094,12 @@
 }
 .theme-c .rich-text-editor:focus-within {
   border-color: var(--c-ink);
-  box-shadow: 4px 4px 0 var(--c-yellow);
+  box-shadow: 4px 4px 0 var(--c-ink);
 }
 .theme-c .rich-text-toolbar {
   gap: 2px;
   padding: 6px 8px;
-  border-bottom: 2px solid var(--c-ink);
+  border-bottom: 1.5px solid var(--c-ink);
   background: var(--c-paper);
 }
 .theme-c .rich-text-toolbar button {
@@ -2106,7 +2108,7 @@
 }
 .theme-c .rich-text-toolbar button:hover:not(:disabled) {
   border-color: transparent;
-  background: var(--c-yellow-soft);
+  background: var(--c-tint);
   color: var(--c-ink);
 }
 .theme-c .rich-text-toolbar button.active {
@@ -2131,7 +2133,7 @@
 }
 .theme-c .rich-text-editor-content blockquote,
 .theme-c .rich-text-content blockquote {
-  border-left: 4px solid var(--c-yellow);
+  border-left: 4px solid var(--palette-orange);
   color: var(--c-text);
 }
 .theme-c .rich-text-editor-content a,
@@ -2143,7 +2145,7 @@
   border-radius: 0;
 }
 .theme-c .rich-text-editor-content img.ProseMirror-selectednode {
-  outline: 3px solid var(--c-yellow);
+  outline: 3px solid var(--brand);
 }
 
 /* ---------- 행사 제보 TIP: 게시판에 붙인 노란 메모 ---------- */
@@ -2153,7 +2155,7 @@
 .theme-c .form-aside > div:first-child {
   position: relative;
   padding: 30px 22px 22px;
-  background: var(--c-yellow-soft);
+  background: var(--c-orange-soft);
   border: 0;
   border-radius: 0;
   color: var(--c-text);
@@ -2200,12 +2202,12 @@
   margin: 0;
   padding: 3px;
   background: var(--c-ink);
-  color: var(--c-yellow);
+  color: var(--palette-orange);
 }
 .theme-c .form-aside > div > span {
   margin-top: 6px;
   padding-top: 14px;
-  border-top: 2px solid var(--c-ink);
+  border-top: 1.5px solid var(--c-ink);
   font-size: 13px;
   line-height: 1.6;
   font-weight: 600;
@@ -2252,7 +2254,7 @@
   padding: 6px 0;
   list-style: none;
   background: var(--c-surface);
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   box-shadow: 5px 5px 0 var(--c-ink);
 }
 .theme-c .nav-group.open .nav-sub {
@@ -2275,13 +2277,13 @@
   display: none;
 }
 .theme-c .main-nav .nav-sub a:hover {
-  background: var(--c-yellow-soft);
+  background: var(--c-tint);
   color: var(--c-ink);
 }
 .theme-c .main-nav .nav-sub a.current {
   color: var(--c-ink);
   font-weight: 700;
-  box-shadow: inset 4px 0 0 var(--c-yellow);
+  box-shadow: inset 4px 0 0 var(--brand);
 }
 @media (max-width: 560px) {
   .theme-c .nav-group {
@@ -2321,7 +2323,7 @@
 }
 .theme-c .support-tabs a {
   padding: 10px 18px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-bottom: 0;
   background: var(--c-surface);
   color: var(--c-ink);
@@ -2329,7 +2331,7 @@
   font-weight: 600;
 }
 .theme-c .support-tabs a:hover {
-  background: var(--c-yellow-soft);
+  background: var(--c-tint);
 }
 .theme-c .support-tabs a.active {
   background: var(--c-ink);
@@ -2337,7 +2339,7 @@
 }
 .theme-c .support-list {
   background: var(--c-surface);
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
 }
 .theme-c .support-list details + details {
   border-top: 1px solid var(--c-line);
@@ -2370,7 +2372,7 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  background: var(--c-yellow);
+  background: var(--brand);
   color: var(--c-ink);
   font-family: var(--c-display);
   font-size: 15px;
@@ -2410,8 +2412,8 @@
   gap: 16px;
   margin-top: 24px;
   padding: 22px 24px;
-  background: var(--c-yellow-soft);
-  border: 2px dashed var(--c-ink);
+  background: var(--c-orange-soft);
+  border: 1.5px dashed var(--c-ink);
 }
 .theme-c .support-contact > div {
   flex: 1;
@@ -2462,7 +2464,7 @@
   box-sizing: border-box;
   max-height: 460px;
   padding: 10px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   background: var(--c-surface);
   box-shadow: 6px 6px 0 #1b1b1b26;
 }
@@ -2507,7 +2509,7 @@
 }
 .theme-c .detail-title .badge {
   padding: 3px 8px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
   color: var(--c-ink);
@@ -2518,7 +2520,7 @@
   display: inline-block;
   margin-left: 4px;
   padding: 1px 6px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   color: var(--c-ink);
   font-size: 12px;
   font-weight: 800;
@@ -2541,7 +2543,7 @@
 }
 .theme-c .detail-tabs {
   gap: 28px;
-  border-bottom: 2px solid var(--c-ink);
+  border-bottom: 1.5px solid var(--c-ink);
 }
 .theme-c .detail-tabs > button {
   margin-bottom: -2px;
@@ -2570,7 +2572,7 @@
 .theme-c .detail-summary {
   gap: 0;
   padding: 0;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
 }
@@ -2599,8 +2601,8 @@
 }
 .theme-c .detail-source {
   border-radius: 0;
-  background: var(--c-yellow-soft);
-  box-shadow: inset 4px 0 0 var(--c-yellow);
+  background: var(--c-orange-soft);
+  box-shadow: inset 4px 0 0 var(--palette-orange);
   padding: 16px 18px 16px 22px;
   color: var(--c-text);
 }
@@ -2608,7 +2610,7 @@
   color: var(--c-ink);
 }
 .theme-c .detail-accuracy-warning {
-  border: 2px solid var(--c-red);
+  border: 1.5px solid var(--c-red);
   border-radius: 0;
   background: #fddfee;
   color: #7a1047;
@@ -2619,12 +2621,12 @@
 .theme-c .submitter-profile,
 .theme-c .festival-like,
 .theme-c .accuracy-vote {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
 }
 .theme-c .submitter-avatar.fallback {
-  background: var(--c-yellow-soft);
+  background: var(--brand-soft);
   color: var(--c-ink);
 }
 .theme-c .submitter-profile-copy small,
@@ -2655,7 +2657,7 @@
   text-align: left;
 }
 .theme-c .accuracy-vote-actions button {
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-radius: 0;
   background: var(--c-surface);
   color: var(--c-ink);
@@ -3035,7 +3037,7 @@
   height: 34px;
   margin: 0;
   padding: 0 12px;
-  border-width: 2px;
+  border-width: 1.5px;
   border-style: solid;
   border-radius: 0;
   font-size: 13px;
@@ -3051,7 +3053,7 @@
 .theme-c .detail-title .source-badge.public {
   background: var(--c-surface);
   color: var(--c-ink);
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
 }
 /* 진행 여부 표시: 검정 바탕에 핑크 글씨 */
 .theme-c .detail-title .state-label {
@@ -3064,14 +3066,14 @@
 /* 고객센터 문의하기 버튼들: 링크와 같은 모양으로 */
 .theme-c .support-tabs button {
   padding: 10px 18px;
-  border: 2px solid var(--c-ink);
+  border: 1.5px solid var(--c-ink);
   border-bottom: 0;
   background: var(--c-surface);
   color: var(--c-ink);
   font-size: 14px;
   font-weight: 600;
 }
-.theme-c .support-tabs button:hover { background: var(--c-yellow-soft); }
+.theme-c .support-tabs button:hover { background: var(--c-tint); }
 .theme-c .main-nav .nav-sub button {
   display: block;
   width: 100%;
@@ -3084,7 +3086,7 @@
   color: var(--c-text);
 }
 .theme-c .main-nav .nav-sub button:hover {
-  background: var(--c-yellow-soft);
+  background: var(--c-tint);
   color: var(--c-ink);
 }
 .theme-c .footer-links button {
