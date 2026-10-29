@@ -675,10 +675,11 @@ export function Home() {
               >
                 <span className="note-event">{post.festivalTitle}</span>
                 <h3>{post.title}</h3>
-                {(post as { content?: string }).content ? (
+                {post.preview || (post as { content?: string }).content ? (
                   <p>
-                    {richTextToPlainText(
-                      (post as { content?: string }).content,
+                    {(
+                      post.preview ||
+                      richTextToPlainText((post as { content?: string }).content)
                     ).slice(0, 80)}
                   </p>
                 ) : null}
