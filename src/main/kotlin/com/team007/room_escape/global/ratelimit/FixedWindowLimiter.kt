@@ -33,10 +33,9 @@ class FixedWindowLimiter(
         return if (current.count >= maxAttempts) remaining(current) else null
     }
 
-    /** 시도 한 번을 센다. 막히지 않을 때 쓴다. */
-    fun record(key: String) {
-        windows.asMap().compute(key) { _, old -> count(old) }
-    }
+    /** 시도 한 번을 세고, 이 구간에서 지금까지 센 횟수를 돌려준다. 막히지 않을 때 쓴다. */
+    fun record(key: String): Int =
+        checkNotNull(windows.asMap().compute(key) { _, old -> count(old) }).count
 
     /**
      * 시도를 허용하면 한 번 세고 null을, 이미 한도를 넘었으면 풀릴 때까지 남은 시간을 돌려준다.

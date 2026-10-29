@@ -208,7 +208,6 @@ export function Layout() {
               <button type="button" onClick={openInquiry}>
                 문의하기
               </button>
-              <Link to="/admin">시스템 관리자</Link>
             </div>
           </div>
           <div className="footer-bottom">

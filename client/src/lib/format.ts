@@ -141,6 +141,14 @@ export function imageUrl(value?: string | null) {
   if (value.startsWith("/images/") || value.startsWith("blob:")) return value;
   return safeUrl(value);
 }
+/** 남은 초를 "1분 30초", "45초"처럼 읽기 좋게 바꾼다. */
+export function waitText(seconds: number) {
+  const total = Math.max(0, Math.ceil(seconds));
+  const minutes = Math.floor(total / 60);
+  const rest = total % 60;
+  if (minutes === 0) return `${rest}초`;
+  return rest === 0 ? `${minutes}분` : `${minutes}분 ${rest}초`;
+}
 export function errorText(error: unknown) {
   return error instanceof Error
     ? error.message

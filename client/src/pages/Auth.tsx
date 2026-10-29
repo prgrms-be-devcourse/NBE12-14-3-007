@@ -1,9 +1,18 @@
-import { useState, type CSSProperties, type FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useApp } from "../lib/context";
-import { errorText } from "../lib/format";
+import { ApiError } from "../lib/api";
+import { errorText, waitText } from "../lib/format";
 import { Field, FormError, Logo, SubmitButton } from "../components/ui";
+
+/** 서버의 로그인 실패 허용 횟수(auth-rate-limit.login-max-failures)와 같다. 문구에 쓰기만 한다. */
+const LOGIN_MAX_FAILURES = 5;
 
 export function AuthPage({ signup = false }: { signup?: boolean }) {
   const { api, setMember, toast, authLoading } = useApp();
@@ -23,6 +32,25 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // 요청 횟수 제한(429)에 걸리면 서버가 알려 준 시각까지 남은 시간을 보여 주고 버튼을 잠근다.
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  // 비밀번호가 틀렸을 때 서버가 알려 준, 막히기 전까지 더 틀릴 수 있는 횟수.
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const waitSeconds = retryAt === null ? 0 : Math.ceil((retryAt - now) / 1000);
+  useEffect(() => {
+    if (retryAt === null) return;
+    const timer = window.setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= retryAt) {
+        setRetryAt(null);
+        setRemaining(null);
+        setError("");
+      }
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [retryAt]);
   const next = params.get("next");
   const target =
     next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\")
@@ -31,6 +59,8 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    setRetryAt(null);
+    setRemaining(null);
     if (signup && password !== confirm) {
       setError("비밀번호가 서로 달라요. 다시 확인해 주세요.");
       return;
@@ -52,6 +82,15 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
         toast("다시 만나 반가워요.");
       }
     } catch (e) {
+      const data = e instanceof ApiError ? e.data : undefined;
+      const seconds = data?.retryAfterSeconds;
+      if (typeof seconds === "number" && seconds > 0) {
+        setNow(Date.now());
+        setRetryAt(Date.now() + seconds * 1000);
+      }
+      if (typeof data?.remainingAttempts === "number") {
+        setRemaining(data.remainingAttempts);
+      }
       setError(errorText(e));
     } finally {
       setBusy(false);
@@ -268,12 +307,21 @@ export function AuthPage({ signup = false }: { signup?: boolean }) {
               <Consents value={consents} onChange={setConsents} />
             </>
           )}
-          <FormError message={error} />
+          <FormError
+            message={
+              waitSeconds > 0
+                ? `${error} ${waitText(waitSeconds)} 뒤에 다시 시도할 수 있어요.`
+                : remaining !== null && remaining > 0
+                  ? `${error} (${LOGIN_MAX_FAILURES}회 중 ${LOGIN_MAX_FAILURES - remaining}회 실패, ${remaining}회 더 틀리면 잠시 로그인할 수 없어요.)`
+                  : error
+            }
+          />
           <SubmitButton
             busy={busy || authLoading}
-            // 필수 동의를 받지 않으면 가입 자체를 막는다.
+            // 필수 동의를 받지 않으면 가입 자체를 막는다. 요청이 너무 많다는 안내가 떠 있는 동안에도 막는다.
             disabled={
-              signup && !(consents.terms && consents.privacy && consents.age)
+              waitSeconds > 0 ||
+              (signup && !(consents.terms && consents.privacy && consents.age))
             }
           >
             {signup ? "회원가입" : "로그인"}
