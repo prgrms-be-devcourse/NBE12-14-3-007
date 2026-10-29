@@ -59,3 +59,4 @@
 | `toteBag`         | [photo-1544816155-12df9643f363](https://images.unsplash.com/photo-1544816155-12df9643f363)       |
 | `stickerWall`     | [photo-1625768376503-68d2495d78c5](https://images.unsplash.com/photo-1625768376503-68d2495d78c5) |
 | `stickerCollage`  | [photo-1778278553405-09b847a2af3e](https://images.unsplash.com/photo-1778278553405-09b847a2af3e) |
+| `cinemaHall`      | [photo-1762541693135-fb989de961e1](https://images.unsplash.com/photo-1762541693135-fb989de961e1) |

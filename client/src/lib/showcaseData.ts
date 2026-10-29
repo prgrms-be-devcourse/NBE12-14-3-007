@@ -59,6 +59,7 @@ const PHOTO = {
   toteBag: "photo-1544816155-12df9643f363",
   stickerWall: "photo-1625768376503-68d2495d78c5",
   stickerCollage: "photo-1778278553405-09b847a2af3e",
+  cinemaHall: "photo-1762541693135-fb989de961e1",
 } as const;
 type PhotoName = keyof typeof PHOTO;
 
@@ -507,6 +508,29 @@ const events: EventSeed[] = [
     ],
     likes: 7,
     votes: [2, 0],
+  },
+  {
+    id: 900018,
+    by: "hongdae",
+    reportedAt: "2026-10-23T21:40:00",
+    title: "마법소녀 마도카☆마기카 <발푸르기스의 회천> 팝업스토어",
+    category: "플리마켓/팝업",
+    region: "SEOUL",
+    district: "마포구",
+    address: "와우산로29길 48-24 JS스토어 2층",
+    begin: "2026-10-30T12:00:00",
+    end: "2026-11-11T20:00:00",
+    hours: "매일 12:00 — 20:00",
+    host: "JS스토어",
+    venue: "JS스토어 홍대",
+    url: "https://www.instagram.com/p/DeiU29Zsetp/",
+    cover: "cinemaHall",
+    content: [
+      "11월 4일 국내 개봉하는 극장판 「마법소녀 마도카☆마기카 <발푸르기스의 회천>」을 기념한 팝업스토어가 홍대 JS스토어 2층에서 열려요. 2013년 「반역의 이야기」에 이어지는 정식 후속편이에요.",
+      "전시 연출과 한정 상품, 특별 구매 혜택이 준비돼 있어요. 상품 목록과 특전은 공식 인스타그램 공지를 확인해 주세요.",
+    ],
+    likes: 31,
+    votes: [6, 0],
   },
 ];
 
