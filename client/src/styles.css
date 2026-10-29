@@ -2901,6 +2901,10 @@ select {
   font-weight: 800;
   line-height: 1;
 }
+/* 커뮤니티 목록은 메타 줄의 span을 모두 inline-flex로 바꾸므로 기호를 다시 가운데에 놓는다. */
+.community-row-meta .trust-grade-symbol {
+  display: grid;
+}
 .trust-grade-badge.maker .trust-grade-symbol {
   color: #ffeef7;
   background: #c91371;
