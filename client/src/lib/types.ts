@@ -456,6 +456,8 @@ export interface AdminFestivalListItem {
   title: string;
   category: string;
   instNm: string | null;
+  /** 행사를 제보한 회원 닉네임. 공공 행사이거나 알 수 없으면 null */
+  memberNickname?: string | null;
   imgUrl: string | null;
   beginDe: string;
   endDe: string;

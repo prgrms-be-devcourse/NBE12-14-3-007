@@ -38,6 +38,9 @@ class AdminFestivalResponse private constructor() {
         @field:Schema(description = "행사 등록 일시")
         val createdAt: LocalDateTime?,
 
+        @field:Schema(description = "제보한 회원 닉네임. 공공 행사이거나 알 수 없으면 null")
+        val memberNickname: String?,
+
         @field:Schema(description = "행사 지역")
         val region: FestivalRegion?,
 
@@ -61,6 +64,7 @@ class AdminFestivalResponse private constructor() {
                     beginDe = festival.beginDe,
                     endDe = festival.endDe,
                     createdAt = festival.createdAt,
+                    memberNickname = festival.member?.nickname,
                     region = festival.region,
                     status = festival.status,
                     deletedAt = festival.deletedAt,

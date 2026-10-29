@@ -84,8 +84,8 @@ docker compose down
 
 | 구성 | 서비스 | 메모 |
 | --- | --- | --- |
-| 프론트 | Vercel `roomescape-one.vercel.app` | `client/vercel.json`의 rewrite가 `/api/*`를 Render로 넘깁니다. `client/`에서 Vercel CLI(`vercel deploy --prod`)로 올렸습니다 |
-| 서버 | Render 무료 `roomescape-api.onrender.com` (싱가포르, 512MB / 0.1 CPU) | 루트 `Dockerfile`로 빌드합니다. `dev` 브랜치를 보지만 자동 배포는 꺼져 있어서 대시보드의 **Manual Deploy**로 올립니다 |
+| 프론트 | Vercel `roomescape-one.vercel.app` | `client/vercel.json`의 rewrite가 `/api/*`를 Render로 넘깁니다. Git과 연결돼 있지 않아 푸시로는 배포되지 않습니다. `main`을 받은 상태에서 `client/`의 Vercel CLI(`vercel deploy --prod`)로 올립니다 |
+| 서버 | Render 무료 `roomescape-api.onrender.com` (싱가포르, 512MB / 0.1 CPU) | 루트 `Dockerfile`로 빌드합니다. **`main` 브랜치**를 보고 자동 배포는 꺼져 있어서, `dev`를 `main`에 올린 뒤 대시보드의 **Manual Deploy**로 배포합니다 |
 | DB | Supabase (도쿄) | Session pooler(5432)로 접속합니다 |
 
 - 무료 서버는 15분 동안 요청이 없으면 잠들고, 깨는 데 1~3분 걸립니다. 그동안 Vercel 프록시는 120초에서 끊고 `502`를 돌려줍니다. 시연 전에는 외부 크론(cron-job.org 등)으로 `/actuator/health`를 10분마다 불러 깨워 둡니다.

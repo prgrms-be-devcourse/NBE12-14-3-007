@@ -286,7 +286,7 @@ select {
   color: #9b2863;
 }
 .badge.green {
-  background: var(--yellow);
+  background: var(--orange);
   color: var(--black);
 }
 .badge.blue {
