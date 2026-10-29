@@ -297,29 +297,39 @@ interface FestivalRepository : JpaRepository<Festival, Long> {
 
     fun existsByIdAndDeletedAtIsNull(festivalId: Long): Boolean
 
-    /** 관리자 행사 검색. keyword는 null 대신 빈 문자열을 받는다. */
+    /**
+     * 관리자 행사 검색. keyword는 null 대신 빈 문자열을 받는다.
+     * 제목·지역·제보자 닉네임은 부분 일치, 행사 번호는 정확히 일치한다.
+     * 목록에 제보자 닉네임을 보여 주므로 member를 함께 가져온다.
+     */
     @Query(
         value = """
 		SELECT f
 		FROM Festival f
+		LEFT JOIN FETCH f.member m
 		WHERE (
 		    (:deletedOnly = true AND f.deletedAt IS NOT NULL)
 		    OR (:deletedOnly = false AND (:includeDeleted = true OR f.deletedAt IS NULL))
 		  )
 		  AND (LOWER(COALESCE(f.title, '')) LIKE CONCAT('%', :keyword, '%')
-			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%'))
+			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%')
+			   OR LOWER(COALESCE(m.nickname, '')) LIKE CONCAT('%', :keyword, '%')
+			   OR CAST(f.id AS string) = :keyword)
 		  AND (:providerType IS NULL OR f.providerType = :providerType)
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		""",
         countQuery = """
 		SELECT COUNT(f)
 		FROM Festival f
+		LEFT JOIN f.member m
 		WHERE (
 		    (:deletedOnly = true AND f.deletedAt IS NOT NULL)
 		    OR (:deletedOnly = false AND (:includeDeleted = true OR f.deletedAt IS NULL))
 		  )
 		  AND (LOWER(COALESCE(f.title, '')) LIKE CONCAT('%', :keyword, '%')
-			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%'))
+			   OR LOWER(COALESCE(f.regionDetail, '')) LIKE CONCAT('%', :keyword, '%')
+			   OR LOWER(COALESCE(m.nickname, '')) LIKE CONCAT('%', :keyword, '%')
+			   OR CAST(f.id AS string) = :keyword)
 		  AND (:providerType IS NULL OR f.providerType = :providerType)
 		  AND (:excludeClosed = false OR f.endDe IS NULL OR f.endDe >= CURRENT_TIMESTAMP)
 		""",

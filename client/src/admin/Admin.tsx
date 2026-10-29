@@ -1398,6 +1398,9 @@ export function AdminContent({ kind }: { kind: "events" | "reviews" }) {
                 {isEvent ? (
                   <span className="adm-source">
                     {item.source === "PUBLIC" ? "지역 문화행사" : "회원 제보"}
+                    {item.source === "MEMBER" && item.author !== "회원 제보" && (
+                      <small className="adm-source-writer">{item.author}</small>
+                    )}
                   </span>
                 ) : (
                   item.author
