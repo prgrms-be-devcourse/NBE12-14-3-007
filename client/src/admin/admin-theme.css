@@ -89,13 +89,13 @@
   background: linear-gradient(
     to right,
     var(--a-surface) 0 232px,
-    var(--a-ink) 232px 235px,
-    var(--a-bg) 235px
+    var(--a-ink) 232px 233px,
+    var(--a-bg) 233px
   );
 }
 .adm-sidebar {
   background: var(--a-surface);
-  border-right: 1.5px solid var(--a-ink);
+  border-right: 1px solid var(--a-ink);
 }
 .adm-brand > span:last-child,
 .adm-nav-label {
@@ -282,6 +282,10 @@
   border: 1px solid var(--a-ink);
   border-radius: 999px;
   color: var(--a-ink);
+}
+.adm-search:focus-within {
+  border-color: var(--a-brand);
+  outline: 0;
 }
 .adm-filters select {
   -webkit-appearance: none;
@@ -500,6 +504,10 @@
 .adm-login input:focus-visible {
   outline: 1px solid #111111;
   outline-offset: 0;
+}
+/* 검색창은 알약 테두리 색만 핑크로 바뀌고, 사각 아웃라인은 따로 그리지 않는다 */
+.adm-search input:focus-visible {
+  outline: 0;
 }
 
 /* 회원 제보 행사: 유입 경로 아래에 제보자 닉네임 */
