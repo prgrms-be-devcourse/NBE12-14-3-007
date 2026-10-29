@@ -33,10 +33,14 @@ class AuthRateLimiter(
     private val clientIps: ClientIpResolver,
 ) {
 
+    private val loginMaxFailures = properties.loginMaxFailures
     private val loginFailures = FixedWindowLimiter(properties.loginMaxFailures, properties.loginWindow)
     private val signups = FixedWindowLimiter(properties.signupMaxAttempts, properties.signupWindow)
 
-    /** 막혀 있으면 로그인을 시도하지 않고 거절한다. 비밀번호가 틀려서 실패하면 센다. */
+    /**
+     * 막혀 있으면 로그인을 시도하지 않고 거절한다. 비밀번호가 틀려서 실패하면 세고,
+     * 그 응답에 몇 번 더 틀릴 수 있는지(remainingAttempts)를 담는다. 마지막 기회까지 틀리면 풀릴 때까지의 초도 함께 담는다.
+     */
     fun <T> guardLogin(email: String?, request: HttpServletRequest, login: () -> T): T {
         val key = loginKey(email, clientIps.resolve(request))
         loginFailures.retryAfter(key)?.let { throw tooMany(AuthExceptionCode.TOO_MANY_LOGIN_ATTEMPTS, it) }
@@ -45,7 +49,7 @@ class AuthRateLimiter(
             login()
         } catch (e: BusinessException) {
             // 가입하지 않은 이메일도 같은 코드로 실패하므로, 이메일이 있는지 없는지와 상관없이 똑같이 센다.
-            if (e.exceptionCode == AuthExceptionCode.INVALID_CREDENTIALS) loginFailures.record(key)
+            if (e.exceptionCode == AuthExceptionCode.INVALID_CREDENTIALS) throw withRemaining(e, loginFailures.record(key), key)
             throw e
         }
         loginFailures.reset(key)
@@ -56,6 +60,15 @@ class AuthRateLimiter(
     fun requireSignupAllowed(request: HttpServletRequest) {
         val ip = clientIps.resolve(request) ?: return
         signups.tryAcquire(ip)?.let { throw tooMany(AuthExceptionCode.TOO_MANY_SIGNUPS, it) }
+    }
+
+    private fun withRemaining(e: BusinessException, failures: Int, key: String): BusinessException {
+        val remaining = maxOf(0, loginMaxFailures - failures)
+        val details = buildMap<String, Any> {
+            put(REMAINING_ATTEMPTS, remaining)
+            if (remaining == 0) loginFailures.retryAfter(key)?.let { put(RETRY_AFTER_SECONDS, secondsOf(it)) }
+        }
+        return BusinessException(e.exceptionCode, e.message, details)
     }
 
     private fun loginKey(email: String?, ip: String?): String {
@@ -74,5 +87,8 @@ class AuthRateLimiter(
     companion object {
         /** 막힌 응답의 details 에 담는 다시 시도할 수 있을 때까지의 초. */
         const val RETRY_AFTER_SECONDS = "retryAfterSeconds"
+
+        /** 비밀번호가 틀린 응답의 details 에 담는, 막히기 전까지 더 틀릴 수 있는 횟수. */
+        const val REMAINING_ATTEMPTS = "remainingAttempts"
     }
 }
