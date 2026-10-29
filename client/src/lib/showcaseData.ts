@@ -59,7 +59,6 @@ const PHOTO = {
   toteBag: "photo-1544816155-12df9643f363",
   stickerWall: "photo-1625768376503-68d2495d78c5",
   stickerCollage: "photo-1778278553405-09b847a2af3e",
-  cinemaHall: "photo-1762541693135-fb989de961e1",
 } as const;
 type PhotoName = keyof typeof PHOTO;
 
@@ -106,7 +105,8 @@ interface EventSeed {
   host: string;
   venue?: string;
   url: string;
-  cover: PhotoName;
+  /** Unsplash 사진 이름, 또는 공식 포스터처럼 그대로 불러올 이미지 주소 */
+  cover: PhotoName | `https://${string}`;
   content: string[];
   likes: number;
   votes: [accurate: number, inaccurate: number];
@@ -524,7 +524,8 @@ const events: EventSeed[] = [
     host: "JS스토어",
     venue: "JS스토어 홍대",
     url: "https://www.instagram.com/p/DeiU29Zsetp/",
-    cover: "cinemaHall",
+    cover:
+      "https://cdn.popga.co.kr/spot/14165/main/2f939217-182c-4f3b-b7eb-7f4e84f67b08_1792130626354_thumbnail_MAIN_W480.webp",
     content: [
       "11월 4일 국내 개봉하는 극장판 「마법소녀 마도카☆마기카 <발푸르기스의 회천>」을 기념한 팝업스토어가 홍대 JS스토어 2층에서 열려요. 2013년 「반역의 이야기」에 이어지는 정식 후속편이에요.",
       "전시 연출과 한정 상품, 특별 구매 혜택이 준비돼 있어요. 상품 목록과 특전은 공식 인스타그램 공지를 확인해 주세요.",
@@ -546,7 +547,8 @@ export const showcaseEvents: EventView[] = events.map((seed) => ({
   region: seed.region,
   district: seed.district,
   regionDetail: `${seed.district} ${seed.address}`,
-  imgUrl: photo(PHOTO[seed.cover]),
+  imgUrl:
+    seed.cover in PHOTO ? photo(PHOTO[seed.cover as PhotoName]) : seed.cover,
   beginDe: seed.begin,
   endDe: seed.end,
   eventTmInfo: seed.hours,
